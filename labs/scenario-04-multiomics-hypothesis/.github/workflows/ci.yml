@@ -1,0 +1,47 @@
+name: ci
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  lint-and-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install tooling
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff
+
+      # Lint the source. ruff is fast and configured to be non-fussy here.
+      - name: Ruff lint
+        run: ruff check src scripts
+
+      # Install runtime deps so the smoke import is meaningful.
+      # mofapy2 is heavy; the smoke test tolerates its absence (integrate.py
+      # falls back to an SVD path), so we install the lighter deps only.
+      - name: Install runtime deps (subset)
+        run: |
+          pip install numpy pandas scikit-learn "openai>=1.40" python-dotenv \
+            azure-identity azure-search-documents requests
+
+      # Smoke test: modules import and the synthetic generator runs end to end.
+      - name: Smoke import + synthetic data
+        env:
+          OFFLINE: "1"
+        run: |
+          python scripts/download_data.py --synthetic
+          python -c "import importlib; importlib.import_module('src.integrate')" || \
+            PYTHONPATH=. python -c "import src.integrate, src.hypothesis_agent; print('imports OK')"
+          # Run the integration on synthetic data (uses SVD fallback if no mofapy2).
+          python src/integrate.py --n-factors 5 --top-k 10
+          # Dry-run the agent assembly without calling Azure OpenAI.
+          python src/hypothesis_agent.py --no-llm --top-factors 2

@@ -1,0 +1,19 @@
+# Variant-interpretation lab dependencies.
+#
+# VCF parsing: we deliberately use a tiny built-in plain-text VCF parser in
+# src/annotate.py so the lab runs with ZERO build/compile steps. pysam and
+# cyvcf2 both require compiling against htslib, which is brittle in many CI /
+# Codespaces environments. If you want a "real" VCF library, cyvcf2 is the more
+# portable of the two (manylinux wheels) -- uncomment it below at your own risk.
+#
+# cyvcf2>=0.30        # optional: wheels available, still links libhts at runtime
+# pysam>=0.22         # optional: usually needs a build toolchain -- avoid in CI
+
+myvariant>=1.0.0          # official MyVariant.info Python client (ClinVar/gnomAD)
+requests>=2.31            # used for direct Ensembl VEP REST calls
+openai>=1.40             # Azure OpenAI via the openai SDK (AzureOpenAI client)
+python-dotenv>=1.0       # load .env config
+azure-identity>=1.16     # AAD / DefaultAzureCredential for keyless auth
+azure-search-documents>=11.4   # optional literature-RAG citations
+pandas>=2.0              # tabular handling of annotation results
+ruff>=0.5               # linter (also used in CI)

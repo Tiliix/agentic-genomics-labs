@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-and-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install ruff (linter only)
+        run: pip install --no-cache-dir ruff
+
+      - name: Lint with ruff
+        run: ruff check src scripts
+
+      - name: Install runtime dependencies
+        run: pip install --no-cache-dir -r requirements.txt
+
+      - name: Generate synthetic data (offline fallback)
+        run: python scripts/download_data.py --synthetic-only
+
+      - name: Smoke import of src modules
+        run: |
+          python -c "import importlib; importlib.import_module('src.pipeline'); print('pipeline import OK')"
+          python -c "import importlib; importlib.import_module('src.agent'); print('agent import OK')"
+
+      - name: Smoke run pipeline (no LLM, offline)
+        run: python src/pipeline.py
