@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" class="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Lab 1 — Agentic RNA-seq Differential Expression</title>
+<style>
+  :root{
+    --bg:#eef3f9; --surface:#ffffff; --surface-2:#f5f8fc; --ink:#16202c; --muted:#5d6b7a;
+    --line:#dce4ee; --navy:#0e2a47; --azure:#1b6ca8; --azure-soft:#e8f1f8;
+    --teal:#149a8a; --teal-soft:#e3f4f1; --amber:#e08a1e; --amber-soft:#fcefdb;
+    --code-bg:#0f1f33; --code-ink:#e7eefb; --code-key:#6fc7ff; --code-com:#7d93ad;
+    --shadow:0 6px 22px rgba(20,40,70,.08); --radius:16px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#0b1320; --surface:#111c2e; --surface-2:#0e1626; --ink:#e8eef6; --muted:#9fb0c4;
+      --line:#22324a; --azure:#5aa9e0; --azure-soft:#16273c; --teal:#3fd0bd; --teal-soft:#10322e;
+      --amber:#f0a946; --amber-soft:#33260f; --navy:#0a1828; --shadow:0 6px 22px rgba(0,0,0,.4);}
+  }
+  :root.dark{ --bg:#0b1320; --surface:#111c2e; --surface-2:#0e1626; --ink:#e8eef6; --muted:#9fb0c4;
+    --line:#22324a; --azure:#5aa9e0; --azure-soft:#16273c; --teal:#3fd0bd; --teal-soft:#10322e;
+    --amber:#f0a946; --amber-soft:#33260f; --navy:#0a1828; --shadow:0 6px 22px rgba(0,0,0,.4);}
+  :root.light{ --bg:#eef3f9; --surface:#ffffff; --surface-2:#f5f8fc; --ink:#16202c; --muted:#5d6b7a;
+    --line:#dce4ee; --azure:#1b6ca8; --azure-soft:#e8f1f8; --teal:#149a8a; --teal-soft:#e3f4f1;
+    --amber:#e08a1e; --amber-soft:#fcefdb; --navy:#0e2a47; --shadow:0 6px 22px rgba(20,40,70,.08);}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.55;-webkit-font-smoothing:antialiased;}
+  a{color:var(--azure)}
+  .wrap{max-width:1060px;margin-inline:auto;padding-inline:20px}
+  /* header */
+  header.top{position:sticky;top:0;z-index:50;background:color-mix(in srgb,var(--surface) 88%,transparent);
+    backdrop-filter:saturate(1.4) blur(8px);border-block-end:1px solid var(--line)}
+  .topbar{display:flex;align-items:center;gap:14px;padding-block:12px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.2px}
+  .dot{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,var(--teal),var(--azure));
+    display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:800}
+  .brand small{display:block;font-weight:600;color:var(--muted);font-size:11px;letter-spacing:.4px}
+  .spacer{flex:1}
+  .themebtn{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;
+    padding:7px 13px;font-size:13px;font-weight:600;cursor:pointer}
+  /* tabs */
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;padding-block:10px 14px}
+  .tab{border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:999px;
+    padding:9px 16px;font-size:14px;font-weight:700;cursor:pointer;transition:.15s}
+  .tab:hover{color:var(--ink)}
+  .tab.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+  @media (prefers-color-scheme: dark){.tab.active{background:var(--azure);border-color:var(--azure);color:#06121f}}
+  :root.dark .tab.active{background:var(--azure);border-color:var(--azure);color:#06121f}
+  /* hero */
+  .hero{background:linear-gradient(135deg,#0e2a47,#143a5e 55%,#106b62);color:#eaf2fb;border-radius:0 0 28px 28px}
+  .hero .wrap{padding-block:46px 40px}
+  .kicker{color:#8fe3d6;font-weight:800;letter-spacing:3px;font-size:12px;margin:0 0 10px}
+  .hero h1{margin:.1em 0;font-size:clamp(26px,4.4vw,42px);line-height:1.08;letter-spacing:-.5px}
+  .hero p.lede{color:#b9cbe0;font-size:17px;max-width:74ch;margin:.6em 0 0}
+  .chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+  .chip{background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.16);border-radius:999px;
+    padding:7px 14px;font-size:13px;font-weight:600;color:#dfeaf6}
+  .chip b{color:#fff}
+  /* layout */
+  section.view{display:none;padding-block:30px 10px}
+  section.view.active{display:block;animation:fade .25s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  h2.section{font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--teal);margin:6px 0 2px;font-weight:800}
+  h3.big{font-size:clamp(22px,3vw,30px);margin:.1em 0 .5em;letter-spacing:-.3px}
+  p.intro{color:var(--muted);font-size:16px;max-width:78ch}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+    box-shadow:var(--shadow);padding:22px 22px;margin:16px 0}
+  .card h4{margin:.1em 0 .5em;font-size:18px}
+  .grid{display:grid;gap:16px}
+  .g2{grid-template-columns:1fr 1fr}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  @media(max-width:780px){.g2,.g3{grid-template-columns:1fr}}
+  .accent-teal{border-inline-start:5px solid var(--teal)}
+  .accent-azure{border-inline-start:5px solid var(--azure)}
+  .accent-amber{border-inline-start:5px solid var(--amber)}
+  .pill{display:inline-block;font-size:12px;font-weight:700;border-radius:999px;padding:3px 10px}
+  .pill.t{background:var(--teal-soft);color:var(--teal)}
+  .pill.a{background:var(--azure-soft);color:var(--azure)}
+  .pill.m{background:var(--amber-soft);color:var(--amber)}
+  /* flow */
+  .flow{display:flex;align-items:stretch;gap:0;flex-wrap:wrap;margin:18px 0}
+  .stage{flex:1;min-width:150px;background:var(--surface);border:1px solid var(--line);border-radius:14px;
+    padding:16px;box-shadow:var(--shadow);position:relative}
+  .stage .n{width:30px;height:30px;border-radius:9px;background:var(--azure);color:#fff;font-weight:800;
+    display:flex;align-items:center;justify-content:center;margin-bottom:8px}
+  .stage h5{margin:.2em 0;font-size:15px}
+  .stage p{margin:.2em 0 0;color:var(--muted);font-size:13px}
+  .arrow{display:flex;align-items:center;justify-content:center;color:var(--azure);font-size:24px;
+    font-weight:800;padding-inline:6px}
+  @media(max-width:780px){.arrow{transform:rotate(90deg);padding-block:4px}}
+  /* tables */
+  table{border-collapse:collapse;width:100%;font-size:14px;margin-top:6px}
+  th,td{text-align:start;padding:10px 12px;border-block-end:1px solid var(--line);vertical-align:top}
+  thead th{background:var(--surface-2);font-size:12px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted)}
+  td code,p code,li code{background:var(--surface-2);border:1px solid var(--line);border-radius:6px;
+    padding:1px 6px;font-family:ui-monospace,"Cascadia Code",Consolas,monospace;font-size:.92em}
+  /* code blocks via details */
+  details.code{margin:12px 0;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--code-bg)}
+  details.code summary{cursor:pointer;list-style:none;padding:11px 16px;font-weight:700;font-size:13.5px;
+    color:#dbe7f6;background:#13243b;display:flex;align-items:center;gap:9px}
+  details.code summary::-webkit-details-marker{display:none}
+  details.code summary::before{content:"▸";color:var(--code-key);font-size:13px}
+  details.code[open] summary::before{content:"▾"}
+  details.code summary .tag{margin-inline-start:auto;font-weight:600;color:#8aa6c6;font-size:12px}
+  pre{margin:0;padding:16px 18px;overflow:auto;color:var(--code-ink);
+    font-family:ui-monospace,"Cascadia Code",Consolas,monospace;font-size:13px;line-height:1.6}
+  pre .c{color:var(--code-com)} pre .k{color:var(--code-key)}
+  .note{background:var(--amber-soft);border:1px solid var(--amber);border-radius:12px;padding:14px 16px;margin:14px 0}
+  .note b{color:var(--amber)}
+  .good{background:var(--teal-soft);border:1px solid var(--teal);border-radius:12px;padding:14px 16px;margin:14px 0}
+  ul.clean{padding-inline-start:20px;margin:.4em 0}
+  ul.clean li{margin:.32em 0}
+  .kv{display:flex;gap:10px;align-items:baseline;margin:.3em 0}
+  .kv b{color:var(--azure);min-width:128px;display:inline-block}
+  .statline{display:flex;gap:18px;flex-wrap:wrap;margin:10px 0}
+  .stat{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 18px;box-shadow:var(--shadow)}
+  .stat .v{font-size:26px;font-weight:800;color:var(--teal)}
+  .stat .l{font-size:12px;color:var(--muted)}
+  footer{color:var(--muted);font-size:13px;text-align:center;padding:34px 16px 50px}
+  .badge{display:inline-block;background:var(--teal);color:#06201c;font-weight:800;border-radius:8px;
+    padding:2px 9px;font-size:12px}
+  @media (prefers-color-scheme: dark){.badge{color:#06201c}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap topbar">
+    <a class="themebtn" href="index.html" style="text-decoration:none">← All use cases</a>
+    <span class="brand"><span class="dot">RX</span><span>Agentic RNA-seq Lab<small>BIOINFORMATICS · LAB 01</small></span></span>
+    <span class="spacer"></span>
+    <button class="themebtn" id="themeToggle" type="button">◐ Theme</button>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="wrap">
+    <p class="kicker">AGENTIC ENGINEERING IN GENOMICS</p>
+    <h1>How an AI agent ran a real RNA-seq<br>differential-expression pipeline</h1>
+    <p class="lede">A walkthrough of Lab 1: the data, the classic bioinformatics pipeline, the code that runs it,
+      the results and how to read them scientifically — and the AI agent that planned, executed, and explained the
+      whole analysis on the Azure + GitHub + VS Code stack.</p>
+    <div class="chips">
+      <span class="chip">Stack: <b>Azure · GitHub · VS Code</b></span>
+      <span class="chip">Data: <b>synthetic fallback</b></span>
+      <span class="chip">Tested: <b>1,997 genes</b></span>
+      <span class="chip">Significant: <b>107 genes</b></span>
+      <span class="chip">Model: <b>Azure OpenAI (gpt-5.1)</b></span>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <nav class="tabs" id="tabs">
+    <button class="tab active" data-target="v1" type="button">1 · The Pipeline</button>
+    <button class="tab" data-target="v2" type="button">2 · The Agent</button>
+    <button class="tab" data-target="v3" type="button">3 · Beyond — scaling it up</button>
+    <button class="tab" data-target="v4" type="button">4 · Advanced: multi-omics cancer</button>
+  </nav>
+</div>
+
+<!-- =================== VIEW 1: PIPELINE =================== -->
+<section class="view active" id="v1"><div class="wrap">
+  <h2 class="section">Part 1</h2>
+  <h3 class="big">The classic pipeline — data, tools, steps & results</h3>
+  <p class="intro">Before any AI, the lab is a standard, deterministic RNA-seq differential-expression workflow.
+    Understanding it is the key to understanding what the agent automates.</p>
+
+  <div class="card accent-amber">
+    <h4>① What data is used — and is it real?</h4>
+    <p>The lab is built around <b>pasilla</b>, a classic small <i>Drosophila</i> RNA-seq dataset (7 samples,
+      <span class="pill m">treated</span> vs <span class="pill m">untreated</span>) distributed with Bioconductor.
+      The downloader tries to fetch it from a public mirror first.</p>
+    <p>In this run the public URL returned <code>404 Not Found</code>, so the script automatically fell back to a
+      <b>synthetic</b> counts matrix. That is what produced your results.</p>
+    <div class="note"><b>Why this matters scientifically.</b> The synthetic generator plants a <b>known ground truth</b>:
+      the first <b>100 genes are truly up-regulated 3–8× in “treated”</b>, drawn from a negative-binomial
+      distribution so DESeq2 sees realistic dispersion. Everything else is noise. So the “right answer” is
+      ~100 differentially expressed genes — which is exactly why the pipeline recovered <b>107 significant</b>
+      (≈100 true signals + ~7 expected false discoveries at a 5% false-discovery rate). The biology isn’t real,
+      but it’s a perfect, self-checking teaching dataset.</div>
+
+    <details class="code"><summary>Code — download with automatic synthetic fallback <span class="tag">scripts/download_data.py</span></summary>
+<pre><span class="k">def</span> main():
+    <span class="k">try</span>:
+        _download_pasilla()              <span class="c"># real Drosophila RNA-seq (Bioconductor mirror)</span>
+    <span class="k">except</span> Exception <span class="k">as</span> exc:        <span class="c"># any failure (offline / 404) -&gt; fallback</span>
+        print(f<span class="k">"Download failed ({exc}). Falling back to synthetic dataset."</span>)
+        _generate_synthetic()            <span class="c"># planted ground truth: 100 DE genes</span></pre></details>
+
+    <details class="code"><summary>Code — the planted differential-expression signal <span class="tag">_generate_synthetic()</span></summary>
+<pre>base_mean = rng.lognormal(mean=3.0, sigma=1.0, size=n_genes)   <span class="c"># per-gene baseline</span>
+fc = np.ones(n_genes)
+fc[:n_de] = rng.uniform(3.0, 8.0, size=n_de)   <span class="c"># first 100 genes: 3-8x up in 'treated'</span>
+
+<span class="k">def</span> nb_counts(mean_vec):                       <span class="c"># negative-binomial counts</span>
+    dispersion = 0.2
+    gamma = rng.gamma(1.0/dispersion, mean_vec*dispersion)
+    <span class="k">return</span> rng.poisson(gamma)</pre></details>
+    <p style="margin:.6em 0 0;color:var(--muted);font-size:14px">Outputs: <code>data/counts.csv</code> (genes × samples)
+      and <code>data/coldata.csv</code> (which sample is treated vs untreated).</p>
+  </div>
+
+  <div class="card accent-azure">
+    <h4>② The pipeline at a glance</h4>
+    <p>Four deterministic stages turn raw counts into interpretable biology:</p>
+    <div class="flow">
+      <div class="stage"><div class="n">1</div><h5>Quality Control</h5><p>Library sizes, gene/sample counts, low-count genes.</p></div>
+      <div class="arrow">&rarr;</div>
+      <div class="stage"><div class="n">2</div><h5>Quantify / filter</h5><p>Drop low-count genes to build the analysis-ready matrix.</p></div>
+      <div class="arrow">&rarr;</div>
+      <div class="stage"><div class="n">3</div><h5>Differential expression</h5><p>DESeq2 (pyDESeq2): which genes change between groups.</p></div>
+      <div class="arrow">&rarr;</div>
+      <div class="stage"><div class="n">4</div><h5>Pathway enrichment</h5><p>gseapy / Enrichr: which biological pathways are involved.</p></div>
+    </div>
+  </div>
+
+  <div class="card accent-azure">
+    <h4>③ The tools — and what each one does</h4>
+    <table>
+      <thead><tr><th>Tool</th><th>Role in the pipeline</th><th>Type</th></tr></thead>
+      <tbody>
+        <tr><td><b>Salmon / STAR</b></td><td>Quantify expression from raw reads (where a full pipeline starts; here counts are provided)</td><td>Open-source</td></tr>
+        <tr><td><b>pyDESeq2</b></td><td>DESeq2 statistics in pure Python — models counts, tests each gene for differential expression</td><td>Open-source</td></tr>
+        <tr><td><b>gseapy / Enrichr</b></td><td>Pathway / gene-set enrichment over the significant genes (e.g. KEGG)</td><td>Open-source</td></tr>
+        <tr><td><b>pandas / numpy</b></td><td>Data handling, the counts matrix, and the synthetic generator</td><td>Open-source</td></tr>
+        <tr><td><b>Azure OpenAI</b></td><td>The agent’s “brain” (Part 2) — plans and narrates the run</td><td>Azure</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card accent-azure">
+    <h4>④ The steps, in code</h4>
+    <p class="intro" style="margin-bottom:6px">Each stage is a small, readable Python function. Toggle any snippet open.</p>
+
+    <details class="code"><summary>Step 1 — Quality control <span class="tag">run_qc()</span></summary>
+<pre><span class="k">def</span> run_qc(min_count=10):
+    counts = load_counts()
+    library_sizes  = counts.sum(axis=0)          <span class="c"># reads per sample</span>
+    gene_totals    = counts.sum(axis=1)          <span class="c"># reads per gene</span>
+    low_count = gene_totals[gene_totals &lt; min_count].index.tolist()
+    <span class="k">return</span> {"n_genes": ..., "n_samples": ...,
+            "conditions": coldata["condition"].value_counts(),
+            "n_low_count_genes": len(low_count)}</pre></details>
+
+    <details class="code"><summary>Step 2 — Quantify / filter <span class="tag">quantify()</span></summary>
+<pre><span class="k">def</span> quantify(min_count=10):
+    counts = load_counts()
+    gene_totals = counts.sum(axis=1)
+    kept = counts.loc[gene_totals &gt;= min_count]   <span class="c"># keep well-expressed genes</span>
+    kept.to_csv("data/results/counts_filtered.csv")</pre></details>
+
+    <details class="code"><summary>Step 3 — Differential expression with DESeq2 <span class="tag">differential_expression()</span></summary>
+<pre><span class="k">from</span> pydeseq2.dds <span class="k">import</span> DeseqDataSet
+<span class="k">from</span> pydeseq2.ds  <span class="k">import</span> DeseqStats
+
+dds = DeseqDataSet(counts=counts_t, metadata=coldata,
+                   design="~" + condition_column)   <span class="c"># model: expression ~ condition</span>
+dds.deseq2()                                          <span class="c"># fit dispersions + log-fold-changes</span>
+
+<span class="c"># explicit comparison: [factor, tested_level, reference_level]</span>
+stats = DeseqStats(dds, contrast=[condition_column, test, ref], alpha=alpha)
+stats.summary()
+res = stats.results_df.sort_values("padj")            <span class="c"># the gene table</span></pre></details>
+
+    <details class="code"><summary>Step 4 — Pathway enrichment <span class="tag">pathway_enrichment()</span></summary>
+<pre><span class="k">import</span> gseapy <span class="k">as</span> gp
+enr = gp.enrichr(gene_list=significant_genes,
+                 gene_sets=["KEGG_2021_Human"],
+                 organism="human")
+table = enr.results.sort_values("Adjusted P-value")   <span class="c"># enriched pathways</span></pre></details>
+  </div>
+
+  <div class="card accent-teal">
+    <h4>⑤ The output — and how to read it scientifically</h4>
+    <p>Stage 3 produces one row per gene. These are the columns that matter:</p>
+    <table>
+      <thead><tr><th>Column</th><th>What it means</th><th>How to use it</th></tr></thead>
+      <tbody>
+        <tr><td><code>baseMean</code></td><td>Average normalized expression across all samples</td><td>How strongly the gene is expressed overall</td></tr>
+        <tr><td><code>log2FoldChange</code></td><td>Change between groups on a log2 scale (+1 = doubled, −1 = halved)</td><td><b>Direction & size</b> of the effect; positive = higher in treated</td></tr>
+        <tr><td><code>lfcSE</code></td><td>Standard error of that fold-change</td><td>Confidence in the estimate</td></tr>
+        <tr><td><code>stat</code></td><td>Wald test statistic</td><td>Signal-to-noise of the change</td></tr>
+        <tr><td><code>pvalue</code></td><td>Raw probability the change is chance</td><td>Before multiple-testing correction</td></tr>
+        <tr><td><code>padj</code></td><td><b>Adjusted p-value</b> (Benjamini–Hochberg FDR)</td><td><b>The column to trust</b> — call a gene significant when <code>padj &lt; 0.05</code></td></tr>
+      </tbody>
+    </table>
+    <div class="statline">
+      <div class="stat"><div class="v">1,997</div><div class="l">genes tested (after filtering)</div></div>
+      <div class="stat"><div class="v">107</div><div class="l">significant (padj &lt; 0.05)</div></div>
+      <div class="stat"><div class="v">~100</div><div class="l">truly DE by design (ground truth)</div></div>
+    </div>
+    <p style="margin-top:6px"><b>Reading it like a scientist:</b></p>
+    <ul class="clean">
+      <li><b>Two filters define a “hit”:</b> a large <code>|log2FoldChange|</code> (biologically meaningful change)
+        <i>and</i> a small <code>padj</code> (statistically reliable). A volcano plot puts these on the two axes.</li>
+      <li><b>Why <code>padj</code>, not <code>pvalue</code>:</b> testing ~2,000 genes at p&lt;0.05 would yield ~100 false
+        positives by chance alone. The FDR adjustment controls that — here it keeps false discoveries to ~5%.</li>
+      <li><b>Sanity check against ground truth:</b> 107 significant vs 100 planted = the pipeline correctly recovered
+        the signal with a handful of expected false positives. On real data you’d instead validate hits against
+        literature and follow-up experiments.</li>
+      <li><b>Pathway enrichment</b> then asks “what biology connects these genes?” by testing whether the hit list is
+        over-represented in known pathways (KEGG). On synthetic data this is mechanical; on real data it turns a gene
+        list into a hypothesis.</li>
+    </ul>
+    <div class="note"><b>Honesty note.</b> Because this run used synthetic data, the specific genes and pathways are
+      <b>not real biology</b> — they’re random numbers exercising the exact same machinery. The <i>workflow</i> is 100%
+      real; the <i>findings</i> are placeholders. Drop a genuine counts file into <code>data/counts.csv</code> and the
+      same run yields interpretable results.</div>
+  </div>
+</div></section>
+
+<!-- =================== VIEW 2: AGENT =================== -->
+<section class="view" id="v2"><div class="wrap">
+  <h2 class="section">Part 2</h2>
+  <h3 class="big">The agent — what it adds, how it’s built, how to read its reasoning</h3>
+  <p class="intro">The pipeline above runs fine as a plain script. The agent wraps it in an Azure OpenAI model that
+    <b>plans the analysis, decides which step to run next, calls the real functions, and writes up the results</b> —
+    while being forbidden from inventing numbers.</p>
+
+  <div class="grid g3">
+    <div class="card accent-teal"><h4>Plans &amp; adapts</h4><p style="color:var(--muted);font-size:14px">Chooses the order of steps, reacts to what each result shows, and can skip or retry — instead of a fixed script.</p></div>
+    <div class="card accent-teal"><h4>Explains itself</h4><p style="color:var(--muted);font-size:14px">Narrates its reasoning before each action, so a non-specialist can follow <i>why</i> each step happened.</p></div>
+    <div class="card accent-teal"><h4>Grounded, not guessing</h4><p style="color:var(--muted);font-size:14px">Every figure it reports comes from a tool result it actually computed — a hard guardrail against fabrication.</p></div>
+  </div>
+
+  <div class="card accent-azure">
+    <h4>① The “skills” the agent possesses</h4>
+    <p>An agent’s skills are the <b>tools it’s allowed to call</b>. This agent has exactly four — the same four
+      pipeline functions — plus two built-in abilities (planning and report-writing) granted by its system prompt.</p>
+    <table>
+      <thead><tr><th>Skill (tool)</th><th>What invoking it does</th></tr></thead>
+      <tbody>
+        <tr><td><span class="pill a">run_qc</span></td><td>Inspect the counts matrix (sizes, balance, low-count genes)</td></tr>
+        <tr><td><span class="pill a">quantify</span></td><td>Build the filtered, analysis-ready matrix</td></tr>
+        <tr><td><span class="pill a">differential_expression</span></td><td>Run the DESeq2 statistics and return significant genes</td></tr>
+        <tr><td><span class="pill a">pathway_enrichment</span></td><td>Run KEGG enrichment over the significant genes</td></tr>
+        <tr><td><span class="pill t">plan</span> + <span class="pill t">report</span></td><td>Built-in: sequence the tools, then write the final markdown report</td></tr>
+      </tbody>
+    </table>
+
+    <details class="code"><summary>Code — the tool registry (what the agent is allowed to do) <span class="tag">agent.py</span></summary>
+<pre>TOOL_IMPLEMENTATIONS = {
+    "run_qc": pipeline.run_qc,
+    "quantify": pipeline.quantify,
+    "differential_expression": pipeline.differential_expression,
+    "pathway_enrichment": pipeline.pathway_enrichment,
+}</pre></details>
+
+    <details class="code"><summary>Code — how a skill is described <i>to the model</i> (a JSON schema) <span class="tag">TOOLS[]</span></summary>
+<pre>{
+  "type": "function",
+  "function": {
+    "name": "differential_expression",
+    "description": "Run a DESeq2 analysis with pydeseq2 on the filtered "
+                   "counts. Returns the significant-gene count and top "
+                   "hits by adjusted p-value. Call after quantify.",
+    "parameters": {"type": "object", "properties": {
+        "alpha": {"type": "number", "default": 0.05}}}
+  }
+}</pre></details>
+    <p style="color:var(--muted);font-size:14px;margin:.4em 0 0">The <i>description</i> is crucial — it’s how the model
+      “knows” what each skill does and when to use it. Good tool descriptions are the prompt engineering of agents.</p>
+  </div>
+
+  <div class="card accent-azure">
+    <h4>② The code that defines the agent’s behavior</h4>
+
+    <details class="code"><summary>Its persona &amp; rules — the system prompt <span class="tag">SYSTEM_PROMPT</span></summary>
+<pre>You are an autonomous bioinformatics pipeline assistant. Run an RNA-seq
+differential-expression analysis end to end and explain every decision.
+
+Plan the run, then call the tools in a sensible order (normally 1 -&gt; 2 -&gt; 3 -&gt; 4).
+Before each tool call, briefly state your reasoning in one or two sentences.
+Base every claim strictly on the JSON the tools return - never invent numbers.
+
+When all steps are complete, produce a FINAL markdown report.</pre></details>
+
+    <details class="code"><summary>Its engine — the tool-calling loop <span class="tag">run_agent()</span></summary>
+<pre><span class="k">for</span> turn <span class="k">in</span> range(MAX_TURNS):
+    response = client.chat.completions.create(
+        model=DEPLOYMENT, messages=messages,
+        tools=TOOLS, tool_choice="auto")          <span class="c"># model may request a tool</span>
+    msg = response.choices[0].message
+
+    <span class="k">if</span> <span class="k">not</span> msg.tool_calls:                       <span class="c"># no tool -&gt; it's done</span>
+        final_report = msg.content; <span class="k">break</span>
+
+    <span class="k">for</span> call <span class="k">in</span> msg.tool_calls:                   <span class="c"># run each requested skill</span>
+        result = _dispatch_tool(call.function.name, call.function.arguments)
+        messages.append({"role": "tool", "tool_call_id": call.id,
+                         "content": json.dumps(result)})   <span class="c"># feed result back</span></pre></details>
+
+    <details class="code"><summary>Its keyless sign-in to Azure (no API keys) <span class="tag">_make_client()</span></summary>
+<pre><span class="k">from</span> azure.identity <span class="k">import</span> DefaultAzureCredential, get_bearer_token_provider
+
+token_provider = get_bearer_token_provider(
+    DefaultAzureCredential(exclude_managed_identity_credential=True),
+    "https://cognitiveservices.azure.com/.default")
+
+client = AzureOpenAI(azure_endpoint=ENDPOINT,
+                     azure_ad_token_provider=token_provider,
+                     api_version=API_VERSION)</pre></details>
+  </div>
+
+  <div class="card accent-teal">
+    <h4>③ How to read the agent’s reasoning output</h4>
+    <p>A run prints three kinds of line. Learning to skim them is how you audit what the agent did.</p>
+<pre style="background:var(--code-bg);border-radius:12px"><span class="c">--- Agent (turn 1) ---</span>
+I'll start by inspecting the counts matrix to confirm size and group balance.
+&gt;&gt; tool call: run_qc({"min_count": 10})
+&gt;&gt; tool call: quantify({})
+&gt;&gt; tool call: differential_expression({})
+&gt;&gt; tool call: pathway_enrichment({})
+
+<span class="k"># RNA-seq Differential Expression Report</span>
+## Dataset &amp; QC ...  ## Differential Expression (107 significant) ...</pre>
+    <ul class="clean">
+      <li><b><code>--- Agent (turn N) ---</code></b> — the model’s plain-English <b>reasoning</b> for what it’s about to do.</li>
+      <li><b><code>&gt;&gt; tool call: …</code></b> — the <b>actions</b>: which skill it invoked and with what arguments.</li>
+      <li><b>The final <code># Report</code></b> — its written interpretation, also saved to <code>data/results/report.md</code>.</li>
+    </ul>
+    <div class="good"><b>Scientific interpretation — the key habit:</b> every number in the report (e.g. “107 significant
+      genes”) must trace back to a <code>&gt;&gt; tool call</code> result, not to the model’s imagination. To validate the
+      agent, open the artifacts it cites (<code>de_results.csv</code>, <code>enrichment.csv</code>) and check the
+      numbers match. The system prompt’s rule <i>“never invent numbers”</i> plus tool-grounding is what makes the
+      agent’s output trustworthy enough for a scientist to act on.</div>
+  </div>
+</div></section>
+
+<!-- =================== VIEW 3: BEYOND =================== -->
+<section class="view" id="v3"><div class="wrap">
+  <h2 class="section">Part 3</h2>
+  <h3 class="big">From a toy lab to real-world complexity</h3>
+  <p class="intro">This lab has four tidy steps. Real bioinformatics is messier — and that mess is exactly where
+    agentic AI earns its keep.</p>
+
+  <div class="grid g2">
+    <div class="card accent-amber">
+      <h4>What “complex” looks like</h4>
+      <ul class="clean">
+        <li>Dozens of tools chained across <b>Nextflow / Snakemake</b>, HPC and cloud</li>
+        <li>Multi-omics: DNA, RNA, methylation, proteomics, single-cell, imaging, clinical data</li>
+        <li>Fragile failure modes: wrong genome build, chromosome-naming mismatches, broken sample sheets, silent version drift</li>
+        <li>Branching scientific decisions at every step (thresholds, batch correction, models)</li>
+        <li>Strict reproducibility &amp; provenance demands</li>
+      </ul>
+    </div>
+    <div class="card accent-teal">
+      <h4>Where the agent pattern scales</h4>
+      <ul class="clean">
+        <li><b>Orchestration of glue work</b> — the same plan→call→check→report loop, over 40 tools instead of 4</li>
+        <li><b>QC &amp; anomaly detection</b> — catch sample swaps, batch effects, contamination automatically</li>
+        <li><b>Provenance &amp; reproducibility</b> — record every parameter, version and input as it goes</li>
+        <li><b>Literature-to-analysis</b> — connect dataset findings to published evidence, with citations</li>
+        <li><b>Natural-language access</b> — ask a question in English instead of writing pipeline code</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card accent-azure">
+    <h4>Value by stakeholder</h4>
+    <div class="grid g3" style="margin-top:6px">
+      <div>
+        <span class="pill a">Bioinformaticians</span>
+        <p style="color:var(--muted);font-size:14px;margin-top:8px">Less time on brittle glue and re-runs; the agent handles orchestration, logs, and first-pass QC — freeing experts for study design and edge cases.</p>
+      </div>
+      <div>
+        <span class="pill t">Researchers</span>
+        <p style="color:var(--muted);font-size:14px;margin-top:8px">Self-serve analysis in plain language (“compare treated vs untreated and show enriched pathways”) without waiting on a queue or learning the toolchain.</p>
+      </div>
+      <div>
+        <span class="pill m">Clinicians</span>
+        <p style="color:var(--muted);font-size:14px;margin-top:8px">Interpretable, cited, governed summaries — provided humans stay in the loop and outputs are validated, never used for diagnosis unaided.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card accent-amber">
+    <h4>The non-negotiable: guardrails</h4>
+    <p>Scaling agentic AI safely depends on the same principles this small lab already demonstrates:</p>
+    <ul class="clean">
+      <li><b>Tool-grounded, never fabricated</b> — claims trace to computed results, with artifacts to verify them.</li>
+      <li><b>Human-in-the-loop</b> — the agent proposes and executes; a qualified person reviews and decides.</li>
+      <li><b>Full provenance</b> — every step, parameter and version is logged and reproducible.</li>
+      <li><b>Bounded autonomy</b> — clinical or wet-lab actions require validation and explicit approval.</li>
+    </ul>
+    <div class="good" style="margin-top:14px"><b>The big idea:</b> the bottleneck in modern genomics is <i>interpretation and orchestration</i>, not sequencing.
+      A scientist-supervised agent that plans, runs, explains and documents analyses — exactly what you saw in Lab 1 —
+      is how that bottleneck starts to open, from a 4-step demo to production pipelines.</div>
+  </div>
+</div></section>
+
+<!-- =================== VIEW 4: ADVANCED MULTI-OMICS =================== -->
+<section class="view" id="v4"><div class="wrap">
+  <h2 class="section">Advanced</h2>
+  <h3 class="big">Multi-omics tumor board — where the agent chooses the tools</h3>
+  <p class="intro">A harder sequel to the RNA-seq lab. Instead of one fixed 4-step pipeline, the agent has
+    <b>12 tools</b> across four omics layers of a human breast-cancer case and must <b>decide which to run based on
+    what it finds</b> — a conditional, non-sequential workup, like a molecular tumor board.</p>
+
+  <div class="note"><b>Why it's harder.</b> Lab 1's pipeline always runs 1→2→3→4. Here the <i>path changes per case</i>:
+    the agent only confirms HER2 amplification if HER2 looks high, only profiles immunity if mutational burden is high
+    or BRCA is hit, and skips a whole omics layer when it's missing. The order of skills is an outcome of the data,
+    not a script.</div>
+
+  <div class="card accent-amber">
+    <h4>① The data — multi-omics, human breast cancer</h4>
+    <p>Four omics layers per case: <b>RNA expression</b>, <b>somatic mutations</b>, <b>copy-number (CNA)</b>, and
+      (optionally) <b>promoter methylation</b>, plus clinical receptor status. Real source: <b>TCGA-BRCA via the public
+      cBioPortal API</b> (no key). For reproducible routing, the downloader falls back to <b>three synthetic cases with
+      planted ground truth</b>:</p>
+    <table>
+      <thead><tr><th>Case</th><th>Planted profile</th><th>Methylation layer</th></tr></thead>
+      <tbody>
+        <tr><td><span class="pill m">A · HER2_AMP</span></td><td>ERBB2 amplified &amp; overexpressed, low TMB, HR-negative</td><td>present</td></tr>
+        <tr><td><span class="pill a">B · TNBC_BRCA</span></td><td>Basal/triple-negative, BRCA1 mutation, high TMB</td><td><b>absent</b></td></tr>
+        <tr><td><span class="pill t">C · LUMINAL_A</span></td><td>ER/PR-high (HR+), low TMB, no actionable amp/mutation</td><td>present</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card accent-azure">
+    <h4>② The 12 skills the agent can call</h4>
+    <table>
+      <thead><tr><th>Skill</th><th>What it returns</th></tr></thead>
+      <tbody>
+        <tr><td><code>inspect_case</code></td><td>Which omics layers exist + metadata (called first)</td></tr>
+        <tr><td><code>expression_qc</code></td><td>QC flags on the expression layer</td></tr>
+        <tr><td><code>receptor_status</code></td><td>ER/PR/HER2 from ESR1/PGR/ERBB2 (HER2 “high” if ERBB2 ≥ 12)</td></tr>
+        <tr><td><code>differential_expression</code></td><td>Tumor-vs-normal top up/down genes</td></tr>
+        <tr><td><code>cna_analysis(gene)</code></td><td>Copy-number state; confirms ERBB2 amplification</td></tr>
+        <tr><td><code>mutation_analysis</code></td><td>Driver mutations + TMB (“high” if ≥ 10 mut/Mb), BRCA status</td></tr>
+        <tr><td><code>hrd_status</code></td><td>Homologous-recombination deficiency (scar score ≥ 42)</td></tr>
+        <tr><td><code>immune_infiltration</code></td><td>Cytolytic / IFN-γ signature → hot vs cold tumor</td></tr>
+        <tr><td><code>methylation_analysis(gene)</code></td><td>Promoter methylation — or returns “layer_absent”</td></tr>
+        <tr><td><code>pathway_enrichment</code></td><td>Affected pathways over DE genes + drivers</td></tr>
+        <tr><td><code>survival_association(marker)</code></td><td>Prognostic direction for a chosen marker</td></tr>
+        <tr><td><code>therapy_hint</code></td><td>Findings → actionable biomarker → therapy class (called last)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card accent-azure">
+    <h4>③ The heart of it — conditional, non-sequential routing</h4>
+    <p>The agent's system prompt forbids running every tool and gives explicit <b>if/then</b> rules. It must state why it
+      runs — or skips — each one.</p>
+    <details class="code" open><summary>The conditional rules in the system prompt <span class="tag">agent.py</span></summary>
+<pre>... choose tools based on what previous results reveal. Do NOT call every tool.
+
+- Run cna_analysis('ERBB2') <span class="k">ONLY IF</span> receptor_status shows HER2 is high.
+- Always run mutation_analysis.
+- Run hrd_status AND immune_infiltration <span class="k">ONLY IF</span> mutation_analysis shows
+  TMB-high OR a pathogenic BRCA1/2 mutation. Otherwise skip both and say why.
+- Run methylation_analysis <span class="k">ONLY IF</span> the methylation layer is present.
+- ALWAYS finish with therapy_hint.</pre></details>
+
+    <details class="code"><summary>The same logic as verifiable code (the non-LLM “router” twin) <span class="tag">router.py</span></summary>
+<pre><span class="c"># ERBB2 copy-number ONLY if HER2 looked high</span>
+<span class="k">if</span> rec["her2_high"]:
+    run("cna_analysis", "HER2 high -&gt; confirm ERBB2 amplification", {"gene": "ERBB2"})
+<span class="k">else</span>:
+    skip("cna_analysis", "HER2 not high -&gt; amplification check not warranted")
+
+<span class="c"># HRD + immune ONLY if TMB-high OR BRCA mutated</span>
+<span class="k">if</span> mut["tmb_high"] <span class="k">or</span> mut["brca_mutated"]:
+    run("hrd_status", ...); run("immune_infiltration", ...)
+<span class="k">else</span>:
+    skip("hrd_status", "TMB low and no BRCA -&gt; not warranted")
+
+<span class="c"># Methylation ONLY if the layer exists (graceful skip otherwise)</span>
+<span class="k">if</span> "methylation" <span class="k">in</span> layers:
+    run("methylation_analysis", "layer present", {"gene": "BRCA1"})
+<span class="k">else</span>:
+    skip("methylation_analysis", "layer ABSENT -&gt; skip")</pre></details>
+    <p style="color:var(--muted);font-size:14px;margin:.3em 0 0">The router exists so the branching can be tested
+      <b>without any Azure credentials</b> — <code>tests/test_router.py</code> pins each case to its expected path.</p>
+  </div>
+
+  <div class="card accent-teal">
+    <h4>④ Test cases — the agent takes a different path per case</h4>
+    <p>This is the whole point: identical code, three cases, <b>three different tool sequences</b> chosen by the data.</p>
+    <table>
+      <thead><tr><th>Case</th><th>Tool path the agent chooses</th><th>Therapy hint</th></tr></thead>
+      <tbody>
+        <tr><td><b>A · HER2+</b></td><td>inspect → qc → receptor_status → <b>cna_analysis(ERBB2)</b> → mutation_analysis → methylation → pathway → survival → therapy_hint</td><td>anti-HER2</td></tr>
+        <tr><td><b>B · TNBC/BRCA</b></td><td>inspect → qc → receptor_status → mutation_analysis → <b>hrd_status → immune_infiltration</b> → pathway → survival → therapy_hint <i>(methylation skipped — layer absent)</i></td><td>PARP + immunotherapy</td></tr>
+        <tr><td><b>C · Luminal A</b></td><td>inspect → qc → receptor_status → mutation_analysis → methylation → pathway → survival → therapy_hint <i>(no CNA, no HRD/immune)</i></td><td>endocrine</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:8px"><b>The three branch points:</b></p>
+    <ul class="clean">
+      <li><code>cna_analysis(ERBB2)</code> fires <b>only for Case A</b> (HER2 high).</li>
+      <li><code>hrd_status</code> + <code>immune_infiltration</code> fire <b>only for Case B</b> (high TMB / BRCA mutation).</li>
+      <li><code>methylation_analysis</code> is <b>skipped for Case B</b> because that case has no methylation layer.</li>
+    </ul>
+    <details class="code"><summary>See the paths yourself — no Azure needed <span class="tag">scripts/run_cases.py</span></summary>
+<pre><span class="c"># prints each case's RUN/SKIP plan + final tool path (no credentials needed)</span>
+python scripts/run_cases.py --router-only
+
+<span class="c"># with Azure credentials, run the real LLM agent on one case:</span>
+python -m src.agent data/case_B.json</pre></details>
+  </div>
+
+  <div class="card accent-azure">
+    <h4>⑤ The output, and how to read it</h4>
+    <p>Each run prints the agent's reasoning, the <b>TOOL PATH</b> it took, and a final <b>“Molecular Tumor Board
+      Summary”</b> with: case &amp; subtype, key molecular findings (each citing a tool + value), <b>the tools it skipped
+      and why</b>, and a biomarker → therapy-class hint.</p>
+    <ul class="clean">
+      <li><b>Read the skips, not just the runs</b> — the value is the agent <i>justifying</i> what it didn't do
+        (e.g. “skipped immune profiling: TMB low and no BRCA”).</li>
+      <li><b>Every finding is tool-grounded</b> — a “TMB = 14 mut/Mb” in the report traces to a
+        <code>mutation_analysis</code> result, never invented.</li>
+      <li><b>The therapy hint is a pointer, not a prescription</b> — it maps a biomarker to a drug <i>class</i> for learning only.</li>
+    </ul>
+    <div class="good"><b>Why this matters for real pipelines:</b> production bioinformatics is exactly this — dozens of
+      tools, branching decisions, optional or missing data layers. An agent that <i>chooses</i> tools by condition,
+      explains each choice, and grounds every number is how the pattern scales beyond a fixed script — with a human
+      tumor board still making the call.</div>
+    <div class="note" style="margin-top:14px"><b>Research / education only.</b> Synthetic or public research data and
+      simplified heuristics. Not for diagnosis or treatment — real molecular tumor boards require board-certified
+      clinicians and accredited (CAP/CLIA) testing.</div>
+  </div>
+
+  <div class="card accent-teal">
+    <h4>Repository</h4>
+    <p>The full code for this advanced lab — 12 tools, the conditional agent, the router + tests, and the cBioPortal
+      client (replace YOUR-USERNAME after you push):</p>
+    <p style="margin:.2em 0"><code>github.com/YOUR-USERNAME/agentic-genomics-labs/tree/main/scenario-01b-multiomics-cancer</code></p>
+  </div>
+</div></section>
+
+<footer>
+  Built from Lab 1 of the “Agentic Engineering in Bioinformatics &amp; Genomics” series ·
+  Synthetic demo data · For education &amp; research only — not for clinical use without validation.
+</footer>
+
+<script>
+  (function(){
+    var tabs = document.querySelectorAll('.tab');
+    var views = document.querySelectorAll('.view');
+    tabs.forEach(function(t){
+      t.addEventListener('click', function(){
+        tabs.forEach(function(x){x.classList.remove('active');});
+        views.forEach(function(x){x.classList.remove('active');});
+        t.classList.add('active');
+        document.getElementById(t.getAttribute('data-target')).classList.add('active');
+        window.scrollTo({top:0, behavior:'smooth'});
+      });
+    });
+    var root = document.documentElement;
+    var btn = document.getElementById('themeToggle');
+    btn.addEventListener('click', function(){
+      var dark = root.classList.contains('dark');
+      var light = root.classList.contains('light');
+      var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      var currentlyDark = dark || (!light && prefersDark);
+      root.classList.remove('dark','light');
+      root.classList.add(currentlyDark ? 'light' : 'dark');
+    });
+  })();
+</script>
+</body>
+</html>

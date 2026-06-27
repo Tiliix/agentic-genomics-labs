@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" class="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Agentic Engineering in Bioinformatics &amp; Genomics — Use Cases</title>
+<style>
+  :root{
+    --bg:#eef3f9; --surface:#ffffff; --ink:#16202c; --muted:#5d6b7a; --line:#dce4ee;
+    --shadow:0 10px 30px rgba(20,40,70,.10); --radius:18px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#070d18; --surface:#101a2c; --ink:#e8eef6; --muted:#9fb0c4; --line:#22324a;
+      --shadow:0 12px 34px rgba(0,0,0,.5);}
+  }
+  :root.dark{ --bg:#070d18; --surface:#101a2c; --ink:#e8eef6; --muted:#9fb0c4; --line:#22324a;
+    --shadow:0 12px 34px rgba(0,0,0,.5);}
+  :root.light{ --bg:#eef3f9; --surface:#ffffff; --ink:#16202c; --muted:#5d6b7a; --line:#dce4ee;
+    --shadow:0 10px 30px rgba(20,40,70,.10);}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.55;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1120px;margin-inline:auto;padding-inline:22px}
+  header.top{position:sticky;top:0;z-index:30;
+    background:color-mix(in srgb,var(--surface) 86%,transparent);backdrop-filter:blur(8px);
+    border-block-end:1px solid var(--line)}
+  .topbar{display:flex;align-items:center;gap:12px;padding-block:13px}
+  .brand{display:flex;align-items:center;gap:11px;font-weight:800}
+  .dot{width:28px;height:28px;border-radius:9px;background:linear-gradient(135deg,#149a8a,#1b6ca8);
+    display:inline-flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:13px}
+  .brand small{display:block;font-weight:600;color:var(--muted);font-size:11px;letter-spacing:.4px}
+  .spacer{flex:1}
+  .themebtn{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;
+    padding:7px 13px;font-size:13px;font-weight:600;cursor:pointer}
+  .hero{background:linear-gradient(135deg,#0a1f3a,#123a5e 50%,#0f5f57);color:#eaf2fb;
+    border-radius:0 0 30px 30px}
+  .hero .wrap{padding-block:50px 44px}
+  .kicker{color:#84e6d6;font-weight:800;letter-spacing:3px;font-size:12px;margin:0 0 10px}
+  .hero h1{margin:.1em 0;font-size:clamp(27px,4.6vw,44px);line-height:1.08;letter-spacing:-.5px}
+  .hero p{color:#bccde2;font-size:17px;max-width:80ch;margin:.6em 0 0}
+  .hint{color:var(--muted);font-size:14px;margin:26px 0 6px;text-align:center}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin:14px 0 10px}
+  @media(max-width:900px){.grid{grid-template-columns:1fr 1fr}}
+  @media(max-width:620px){.grid{grid-template-columns:1fr}}
+  a.card{display:flex;flex-direction:column;text-decoration:none;color:var(--ink);
+    border:1px solid var(--line);border-radius:var(--radius);padding:22px 20px 18px;
+    box-shadow:var(--shadow);position:relative;overflow:hidden;transition:transform .16s,box-shadow .16s,border-color .16s;
+    border-inline-start:6px solid var(--c)}
+  a.card:hover{transform:translateY(-5px);border-color:var(--c);
+    box-shadow:0 18px 40px rgba(0,0,0,.45)}
+  a.card::after{content:"";position:absolute;inset-block-start:-40%;inset-inline-end:-30%;
+    width:200px;height:200px;border-radius:50%;background:var(--c);opacity:.12;filter:blur(10px)}
+  .num{width:40px;height:40px;border-radius:11px;background:var(--c);color:#06121f;font-weight:800;
+    font-size:18px;display:flex;align-items:center;justify-content:center;margin-bottom:12px}
+  a.card h3{margin:.1em 0 .35em;font-size:18px;letter-spacing:-.2px}
+  a.card p{margin:0;color:var(--muted);font-size:13.5px;flex:1}
+  .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+  .tag{font-size:11px;font-weight:700;border-radius:999px;padding:3px 9px;
+    background:color-mix(in srgb,var(--c) 18%,transparent);color:var(--c);
+    border:1px solid color-mix(in srgb,var(--c) 40%,transparent)}
+  .go{margin-top:14px;color:var(--c);font-weight:800;font-size:13px}
+  /* per-lab accents + subtle distinct card backgrounds */
+  .lab1{--c:#5aa9e0;background:linear-gradient(180deg,#0f2238,var(--surface))}
+  .lab2{--c:#9b8cf2;background:linear-gradient(180deg,#1a1533,var(--surface))}
+  .lab3{--c:#3fd0a0;background:linear-gradient(180deg,#0e2a24,var(--surface))}
+  .lab4{--c:#e879a6;background:linear-gradient(180deg,#2a1826,var(--surface))}
+  .lab5{--c:#3fc6d8;background:linear-gradient(180deg,#0c2a36,var(--surface))}
+  .lab6{--c:#f0b54a;background:linear-gradient(180deg,#2c2212,var(--surface))}
+  :root.light .lab1,:root.light .lab2,:root.light .lab3,:root.light .lab4,:root.light .lab5,:root.light .lab6{background:var(--surface)}
+  .legend{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+    box-shadow:var(--shadow);padding:20px 22px;margin:18px 0 8px}
+  .legend h4{margin:.1em 0 .5em}
+  .legend ul{margin:.3em 0;padding-inline-start:20px;color:var(--muted);font-size:14px}
+  .legend li{margin:.3em 0}
+  footer{color:var(--muted);font-size:13px;text-align:center;padding:34px 16px 52px}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap topbar">
+    <span class="brand"><span class="dot">AG</span><span>Agentic Genomics Labs<small>BIOINFORMATICS · 6 USE CASES</small></span></span>
+    <span class="spacer"></span>
+    <button class="themebtn" id="themeToggle" type="button">◐ Theme</button>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="wrap">
+    <p class="kicker">AGENTIC ENGINEERING IN GENOMICS</p>
+    <h1>Six hands-on use cases for agentic AI<br>in bioinformatics &amp; genomics</h1>
+    <p>Each card is a complete, runnable lab on the Azure + GitHub + VS Code stack, using public data.
+      Click any one to open its deep-dive: the data, the classic pipeline and its code, the results and how to
+      read them scientifically, the AI agent that drives it, and how the pattern scales to real-world complexity.</p>
+  </div>
+</div>
+
+<div class="wrap">
+  <p class="hint">Pick a use case to explore &nbsp;↓</p>
+  <div class="grid">
+
+    <a class="card lab1" href="Lab1-RNAseq-Agent-Explained.html">
+      <div class="num">1</div>
+      <h3>Pipeline automation</h3>
+      <p>An LLM agent plans, runs, and documents an RNA-seq differential-expression workflow end to end.</p>
+      <div class="tags"><span class="tag">RNA-seq</span><span class="tag">pyDESeq2</span><span class="tag">Enrichr</span></div>
+      <div class="go">Open deep-dive →</div>
+    </a>
+
+    <a class="card lab2" href="Lab2-Variant-Interpretation-Explained.html">
+      <div class="num">2</div>
+      <h3>Variant interpretation</h3>
+      <p>Annotate a VCF against ClinVar &amp; gnomAD, apply ACMG logic, and draft a cited interpretation memo.</p>
+      <div class="tags"><span class="tag">VCF</span><span class="tag">ACMG/AMP</span><span class="tag">ClinVar</span></div>
+      <div class="go">Open deep-dive →</div>
+    </a>
+
+    <a class="card lab3" href="Lab3-Single-Cell-Explained.html">
+      <div class="num">3</div>
+      <h3>Single-cell analysis</h3>
+      <p>A Scanpy agent clusters cells and annotates cell types from marker genes — with cautious self-critique.</p>
+      <div class="tags"><span class="tag">scRNA-seq</span><span class="tag">Scanpy</span><span class="tag">PBMC 3k</span></div>
+      <div class="go">Open deep-dive →</div>
+    </a>
+
+    <a class="card lab4" href="Lab4-Multi-Omics-Explained.html">
+      <div class="num">4</div>
+      <h3>Multi-omics hypothesis</h3>
+      <p>Integrate omics layers with MOFA+ and rank candidate-driver hypotheses, each traceable to the data.</p>
+      <div class="tags"><span class="tag">MOFA+</span><span class="tag">multi-omics</span><span class="tag">factors</span></div>
+      <div class="go">Open deep-dive →</div>
+    </a>
+
+    <a class="card lab5" href="Lab5-Target-Discovery-Explained.html">
+      <div class="num">5</div>
+      <h3>Drug-target discovery</h3>
+      <p>Mine human genetics via Open Targets and prioritize druggable targets with transparent, cited scoring.</p>
+      <div class="tags"><span class="tag">Open Targets</span><span class="tag">GWAS</span><span class="tag">tractability</span></div>
+      <div class="go">Open deep-dive →</div>
+    </a>
+
+    <a class="card lab6" href="Lab6-Perturbation-Design-Explained.html">
+      <div class="num">6</div>
+      <h3>Perturbation design</h3>
+      <p>A BioDiscoveryAgent-style loop proposes the next CRISPR knockouts from prior results and literature.</p>
+      <div class="tags"><span class="tag">CRISPR</span><span class="tag">Perturb-seq</span><span class="tag">active learning</span></div>
+      <div class="go">Open deep-dive →</div>
+    </a>
+
+  </div>
+
+  <div class="legend">
+    <h4>How to read each deep-dive</h4>
+    <ul>
+      <li><b>1 · The Pipeline</b> — the data (real or synthetic), the classic bioinformatics steps and their code, and the output explained scientifically.</li>
+      <li><b>2 · The Agent</b> — what the AI agent adds, the code that defines its behavior and "skills", and how to read its reasoning for scientific interpretation.</li>
+      <li><b>3 · Beyond</b> — how the pattern scales to complex pipelines, and its value for bioinformaticians, researchers, and clinicians (with guardrails).</li>
+    </ul>
+  </div>
+</div>
+
+<footer>
+  Agentic Engineering in Bioinformatics &amp; Genomics · Self-contained explainers · Public demo data ·
+  For education &amp; research only — not for clinical use without validation.
+</footer>
+
+<script>
+  (function(){
+    var root = document.documentElement;
+    var btn = document.getElementById('themeToggle');
+    btn.addEventListener('click', function(){
+      var dark = root.classList.contains('dark');
+      var light = root.classList.contains('light');
+      var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      var currentlyDark = dark || (!light && prefersDark);
+      root.classList.remove('dark','light');
+      root.classList.add(currentlyDark ? 'light' : 'dark');
+    });
+  })();
+</script>
+</body>
+</html>

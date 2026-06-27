@@ -1,0 +1,11 @@
+# Secrets
+.env
+
+# Data + results (regenerate with scripts/download_data.py)
+data/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.ruff_cache/

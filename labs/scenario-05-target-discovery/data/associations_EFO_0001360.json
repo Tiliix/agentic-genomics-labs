@@ -1,0 +1,74 @@
+{
+  "disease": {
+    "id": "EFO_0001360",
+    "name": "type 2 diabetes mellitus"
+  },
+  "count": 5,
+  "_note": "BUNDLED FALLBACK \u2014 illustrative scores, re-run online for real data.",
+  "targets": [
+    {
+      "ensemblId": "ENSG00000132170",
+      "symbol": "PPARG",
+      "name": "peroxisome proliferator activated receptor gamma",
+      "biotype": "protein_coding",
+      "overallScore": 0.91,
+      "datatypeScores": {
+        "genetic_association": 0.88,
+        "known_drug": 0.95,
+        "affected_pathway": 0.7,
+        "rna_expression": 0.4,
+        "literature": 0.8
+      }
+    },
+    {
+      "ensemblId": "ENSG00000254647",
+      "symbol": "INS",
+      "name": "insulin",
+      "biotype": "protein_coding",
+      "overallScore": 0.86,
+      "datatypeScores": {
+        "genetic_association": 0.75,
+        "known_drug": 0.9,
+        "literature": 0.85,
+        "rna_expression": 0.5
+      }
+    },
+    {
+      "ensemblId": "ENSG00000186951",
+      "symbol": "PPARA",
+      "name": "peroxisome proliferator activated receptor alpha",
+      "biotype": "protein_coding",
+      "overallScore": 0.62,
+      "datatypeScores": {
+        "genetic_association": 0.55,
+        "known_drug": 0.6,
+        "affected_pathway": 0.45
+      }
+    },
+    {
+      "ensemblId": "ENSG00000174697",
+      "symbol": "LEP",
+      "name": "leptin",
+      "biotype": "protein_coding",
+      "overallScore": 0.58,
+      "datatypeScores": {
+        "genetic_association": 0.62,
+        "literature": 0.7,
+        "rna_expression": 0.3
+      }
+    },
+    {
+      "ensemblId": "ENSG00000169174",
+      "symbol": "PCSK9",
+      "name": "proprotein convertase subtilisin/kexin type 9",
+      "biotype": "protein_coding",
+      "overallScore": 0.41,
+      "datatypeScores": {
+        "genetic_association": 0.66,
+        "known_drug": 0.3,
+        "literature": 0.4
+      }
+    }
+  ],
+  "_source": "fallback"
+}

@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" class="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Lab 2 — Agentic Variant Interpretation (ACMG/AMP)</title>
+<style>
+  :root{
+    --bg:#eef3f9; --surface:#ffffff; --surface-2:#f5f8fc; --ink:#16202c; --muted:#5d6b7a;
+    --line:#dce4ee; --navy:#0e2a47; --azure:#6f5ad0; --azure-soft:#e8f1f8;
+    --teal:#b8479e; --teal-soft:#e3f4f1; --amber:#e08a1e; --amber-soft:#fcefdb;
+    --code-bg:#0f1f33; --code-ink:#e7eefb; --code-key:#6fc7ff; --code-com:#7d93ad;
+    --shadow:0 6px 22px rgba(20,40,70,.08); --radius:16px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#120f22; --surface:#1a1533; --surface-2:#15102a; --ink:#e8eef6; --muted:#9fb0c4;
+      --line:#22324a; --azure:#9b8cf2; --azure-soft:#231b40; --teal:#e07bd0; --teal-soft:#33183a;
+      --amber:#f0a946; --amber-soft:#33260f; --navy:#1a1238; --shadow:0 6px 22px rgba(0,0,0,.4);}
+  }
+  :root.dark{ --bg:#120f22; --surface:#1a1533; --surface-2:#15102a; --ink:#e8eef6; --muted:#9fb0c4;
+    --line:#22324a; --azure:#9b8cf2; --azure-soft:#231b40; --teal:#e07bd0; --teal-soft:#33183a;
+    --amber:#f0a946; --amber-soft:#33260f; --navy:#1a1238; --shadow:0 6px 22px rgba(0,0,0,.4);}
+  :root.light{ --bg:#eef3f9; --surface:#ffffff; --surface-2:#f5f8fc; --ink:#16202c; --muted:#5d6b7a;
+    --line:#dce4ee; --azure:#6f5ad0; --azure-soft:#e8f1f8; --teal:#b8479e; --teal-soft:#e3f4f1;
+    --amber:#e08a1e; --amber-soft:#fcefdb; --navy:#0e2a47; --shadow:0 6px 22px rgba(20,40,70,.08);}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.55;-webkit-font-smoothing:antialiased;}
+  a{color:var(--azure)}
+  .wrap{max-width:1060px;margin-inline:auto;padding-inline:20px}
+  /* header */
+  header.top{position:sticky;top:0;z-index:50;background:color-mix(in srgb,var(--surface) 88%,transparent);
+    backdrop-filter:saturate(1.4) blur(8px);border-block-end:1px solid var(--line)}
+  .topbar{display:flex;align-items:center;gap:14px;padding-block:12px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.2px}
+  .dot{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,var(--teal),var(--azure));
+    display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:800}
+  .brand small{display:block;font-weight:600;color:var(--muted);font-size:11px;letter-spacing:.4px}
+  .spacer{flex:1}
+  .themebtn{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;
+    padding:7px 13px;font-size:13px;font-weight:600;cursor:pointer}
+  /* tabs */
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;padding-block:10px 14px}
+  .tab{border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:999px;
+    padding:9px 16px;font-size:14px;font-weight:700;cursor:pointer;transition:.15s}
+  .tab:hover{color:var(--ink)}
+  .tab.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+  @media (prefers-color-scheme: dark){.tab.active{background:var(--azure);border-color:var(--azure);color:#06121f}}
+  :root.dark .tab.active{background:var(--azure);border-color:var(--azure);color:#06121f}
+  /* hero */
+  .hero{background:linear-gradient(135deg,#241a4d,#3a2a6e 55%,#5a2a6e);color:#eaf2fb;border-radius:0 0 28px 28px}
+  .hero .wrap{padding-block:46px 40px}
+  .kicker{color:#8fe3d6;font-weight:800;letter-spacing:3px;font-size:12px;margin:0 0 10px}
+  .hero h1{margin:.1em 0;font-size:clamp(26px,4.4vw,42px);line-height:1.08;letter-spacing:-.5px}
+  .hero p.lede{color:#b9cbe0;font-size:17px;max-width:74ch;margin:.6em 0 0}
+  .chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+  .chip{background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.16);border-radius:999px;
+    padding:7px 14px;font-size:13px;font-weight:600;color:#dfeaf6}
+  .chip b{color:#fff}
+  /* layout */
+  section.view{display:none;padding-block:30px 10px}
+  section.view.active{display:block;animation:fade .25s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  h2.section{font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--teal);margin:6px 0 2px;font-weight:800}
+  h3.big{font-size:clamp(22px,3vw,30px);margin:.1em 0 .5em;letter-spacing:-.3px}
+  p.intro{color:var(--muted);font-size:16px;max-width:78ch}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+    box-shadow:var(--shadow);padding:22px 22px;margin:16px 0}
+  .card h4{margin:.1em 0 .5em;font-size:18px}
+  .grid{display:grid;gap:16px}
+  .g2{grid-template-columns:1fr 1fr}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  @media(max-width:780px){.g2,.g3{grid-template-columns:1fr}}
+  .accent-teal{border-inline-start:5px solid var(--teal)}
+  .accent-azure{border-inline-start:5px solid var(--azure)}
+  .accent-amber{border-inline-start:5px solid var(--amber)}
+  .pill{display:inline-block;font-size:12px;font-weight:700;border-radius:999px;padding:3px 10px}
+  .pill.t{background:var(--teal-soft);color:var(--teal)}
+  .pill.a{background:var(--azure-soft);color:var(--azure)}
+  .pill.m{background:var(--amber-soft);color:var(--amber)}
+  /* flow */
+  .flow{display:flex;align-items:stretch;gap:0;flex-wrap:wrap;margin:18px 0}
+  .stage{flex:1;min-width:150px;background:var(--surface);border:1px solid var(--line);border-radius:14px;
+    padding:16px;box-shadow:var(--shadow);position:relative}
+  .stage .n{width:30px;height:30px;border-radius:9px;background:var(--azure);color:#fff;font-weight:800;
+    display:flex;align-items:center;justify-content:center;margin-bottom:8px}
+  .stage h5{margin:.2em 0;font-size:15px}
+  .stage p{margin:.2em 0 0;color:var(--muted);font-size:13px}
+  .arrow{display:flex;align-items:center;justify-content:center;color:var(--azure);font-size:24px;
+    font-weight:800;padding-inline:6px}
+  @media(max-width:780px){.arrow{transform:rotate(90deg);padding-block:4px}}
+  /* tables */
+  table{border-collapse:collapse;width:100%;font-size:14px;margin-top:6px}
+  th,td{text-align:start;padding:10px 12px;border-block-end:1px solid var(--line);vertical-align:top}
+  thead th{background:var(--surface-2);font-size:12px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted)}
+  td code,p code,li code{background:var(--surface-2);border:1px solid var(--line);border-radius:6px;
+    padding:1px 6px;font-family:ui-monospace,"Cascadia Code",Consolas,monospace;font-size:.92em}
+  /* code blocks via details */
+  details.code{margin:12px 0;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--code-bg)}
+  details.code summary{cursor:pointer;list-style:none;padding:11px 16px;font-weight:700;font-size:13.5px;
+    color:#dbe7f6;background:#13243b;display:flex;align-items:center;gap:9px}
+  details.code summary::-webkit-details-marker{display:none}
+  details.code summary::before{content:"▸";color:var(--code-key);font-size:13px}
+  details.code[open] summary::before{content:"▾"}
+  details.code summary .tag{margin-inline-start:auto;font-weight:600;color:#8aa6c6;font-size:12px}
+  pre{margin:0;padding:16px 18px;overflow:auto;color:var(--code-ink);
+    font-family:ui-monospace,"Cascadia Code",Consolas,monospace;font-size:13px;line-height:1.6}
+  pre .c{color:var(--code-com)} pre .k{color:var(--code-key)}
+  .note{background:var(--amber-soft);border:1px solid var(--amber);border-radius:12px;padding:14px 16px;margin:14px 0}
+  .note b{color:var(--amber)}
+  .good{background:var(--teal-soft);border:1px solid var(--teal);border-radius:12px;padding:14px 16px;margin:14px 0}
+  ul.clean{padding-inline-start:20px;margin:.4em 0}
+  ul.clean li{margin:.32em 0}
+  .kv{display:flex;gap:10px;align-items:baseline;margin:.3em 0}
+  .kv b{color:var(--azure);min-width:128px;display:inline-block}
+  .statline{display:flex;gap:18px;flex-wrap:wrap;margin:10px 0}
+  .stat{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 18px;box-shadow:var(--shadow)}
+  .stat .v{font-size:26px;font-weight:800;color:var(--teal)}
+  .stat .l{font-size:12px;color:var(--muted)}
+  footer{color:var(--muted);font-size:13px;text-align:center;padding:34px 16px 50px}
+  .badge{display:inline-block;background:var(--teal);color:#06201c;font-weight:800;border-radius:8px;
+    padding:2px 9px;font-size:12px}
+  @media (prefers-color-scheme: dark){.badge{color:#06201c}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap topbar">
+    <a class="themebtn" href="index.html" style="text-decoration:none">← All use cases</a>
+    <span class="brand"><span class="dot">VC</span><span>Agentic Variant Lab<small>BIOINFORMATICS · LAB 02</small></span></span>
+    <span class="spacer"></span>
+    <button class="themebtn" id="themeToggle" type="button">◐ Theme</button>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="wrap">
+    <p class="kicker">AGENTIC ENGINEERING IN GENOMICS</p>
+    <h1>How an AI agent interprets DNA variants<br>and writes a cited ACMG memo</h1>
+    <p class="lede">A walkthrough of Lab 2: the VCF and public evidence sources, the classic clinical-genetics
+      pipeline that classifies each variant, the code that runs it, the ACMG/AMP criteria and how to read them
+      scientifically — and the AI agent that assembles evidence, applies the rules, and writes a grounded,
+      disclaimer-bearing interpretation memo on the Azure + GitHub + VS Code stack.</p>
+    <div class="chips">
+      <span class="chip">Stack: <b>Azure · GitHub · VS Code</b></span>
+      <span class="chip">Data: <b>bundled VCF + GIAB NA12878</b></span>
+      <span class="chip">Evidence: <b>ClinVar · gnomAD · VEP</b></span>
+      <span class="chip">Engine: <b>simplified ACMG/AMP</b></span>
+      <span class="chip">Model: <b>Azure OpenAI (gpt-4o)</b></span>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <nav class="tabs" id="tabs">
+    <button class="tab active" data-target="v1" type="button">1 · The Pipeline</button>
+    <button class="tab" data-target="v2" type="button">2 · The Agent</button>
+    <button class="tab" data-target="v3" type="button">3 · Beyond — scaling it up</button>
+  </nav>
+</div>
+
+<!-- =================== VIEW 1: PIPELINE =================== -->
+<section class="view active" id="v1"><div class="wrap">
+  <h2 class="section">Part 1</h2>
+  <h3 class="big">The classic pipeline — data, tools, steps &amp; results</h3>
+  <p class="intro">Before any AI, the lab is a standard, deterministic variant-interpretation workflow: parse a VCF,
+    annotate each variant against public knowledgebases, apply ACMG/AMP rules, and classify.
+    Understanding it is the key to understanding what the agent automates.</p>
+
+  <div class="card accent-amber">
+    <h4>① What data is used — and is it real?</h4>
+    <p>The lab is built around a <b>sample VCF</b>. A tiny <b>bundled example</b> ships at <code>data/example.vcf</code> —
+      a handful of well-known variants in <span class="pill m">BRCA1</span>, <span class="pill m">CFTR</span> and
+      <span class="pill m">HBB</span> — so it runs even offline. A helper script can additionally pull a small subset of
+      <b>Genome in a Bottle (GIAB) NA12878 / HG001</b>, the gold-standard high-confidence small-variant callset.</p>
+    <p>Annotation then pulls <b>real, public evidence</b> over the network: <b>MyVariant.info</b> (which aggregates
+      <b>ClinVar</b> clinical significance and <b>gnomAD</b> population allele frequency, plus dbNSFP in-silico scores)
+      and the <b>Ensembl VEP REST API</b> (the most-severe predicted consequence). This is genuine public data — no
+      synthetic fallback is needed beyond the bundled VCF, which itself is real well-characterized biology.</p>
+    <div class="note"><b>Why this matters scientifically.</b> Unlike a toy dataset, every annotation here is a real
+      community assertion: ClinVar tells you what clinical labs have <i>submitted</i> about a variant, gnomAD tells you
+      how <i>common</i> it is across ~140k human genomes, and VEP tells you what the variant is predicted to <i>do</i>
+      to the protein. The classification you get is only as good as that evidence — which is exactly why the workflow
+      cites its sources for every call.</div>
+
+    <details class="code"><summary>Code — the real, public, keyless evidence sources <span class="tag">scripts/download_data.py</span></summary>
+<pre>SOURCES = {
+    <span class="c"># GIAB NA12878 (HG001) high-confidence small variants, GRCh38.</span>
+    <span class="k">"giab"</span>: (
+        <span class="k">"https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/release/"</span>
+        <span class="k">"NA12878_HG001/latest/GRCh38/"</span>
+        <span class="k">"HG001_GRCh38_1_22_v4.2.1_benchmark.vcf.gz"</span>
+    ),
+    <span class="c"># 1000 Genomes phase-3, chromosome 22 (smallest autosome), GRCh38.</span>
+    <span class="k">"1000g_chr22"</span>: (...),
+}</pre></details>
+
+    <details class="code"><summary>Code — stream just the header + first N records (a valid, small VCF) <span class="tag">download_subset()</span></summary>
+<pre>raw = io.BufferedReader(resp.raw)
+gz  = gzip.GzipFile(fileobj=raw)            <span class="c"># decompress on the fly</span>
+kept = 0
+<span class="k">with</span> open(out, <span class="k">"w"</span>, encoding=<span class="k">"utf-8"</span>) <span class="k">as</span> fh:
+    <span class="k">for</span> bline <span class="k">in</span> gz:
+        line = bline.decode(<span class="k">"utf-8"</span>, errors=<span class="k">"replace"</span>)
+        <span class="k">if</span> line.startswith(<span class="k">"#"</span>):    <span class="c"># always keep the header</span>
+            fh.write(line); <span class="k">continue</span>
+        <span class="k">if</span> kept &gt;= max_records: <span class="k">break</span>     <span class="c"># stop after N data rows</span>
+        fh.write(line); kept += 1</pre></details>
+    <p style="margin:.6em 0 0;color:var(--muted);font-size:14px">Outputs: a small valid <code>.vcf</code> you can annotate.
+      No internet? The bundled <code>data/example.vcf</code> works offline.</p>
+  </div>
+
+  <div class="card accent-azure">
+    <h4>② The pipeline at a glance</h4>
+    <p>Four deterministic stages turn raw VCF rows into a classified, cited interpretation:</p>
+    <div class="flow">
+      <div class="stage"><div class="n">1</div><h5>Parse VCF</h5><p>Read each record into a minimal variant (chrom, pos, ref, alt).</p></div>
+      <div class="arrow">&rarr;</div>
+      <div class="stage"><div class="n">2</div><h5>Annotate</h5><p>ClinVar / gnomAD via MyVariant.info; consequence via Ensembl VEP.</p></div>
+      <div class="arrow">&rarr;</div>
+      <div class="stage"><div class="n">3</div><h5>ACMG/AMP rules</h5><p>A transparent rule engine fires criteria (PVS1, PM2, PP3, …).</p></div>
+      <div class="arrow">&rarr;</div>
+      <div class="stage"><div class="n">4</div><h5>Classify + memo</h5><p>Combine criteria → Pathogenic…Benign, with a cited write-up.</p></div>
+    </div>
+  </div>
+
+  <div class="card accent-azure">
+    <h4>③ The tools — and what each one does</h4>
+    <table>
+      <thead><tr><th>Tool</th><th>Role in the pipeline</th><th>Type</th></tr></thead>
+      <tbody>
+        <tr><td><b>VCF parsing</b> (cyvcf2-style)</td><td>Read variants from the VCF; here a tiny dependency-free text parser keeps the lab build-step-free</td><td>Open-source</td></tr>
+        <tr><td><b>MyVariant.info</b></td><td>Keyless aggregator — returns ClinVar significance, gnomAD allele frequency, and dbNSFP scores</td><td>Public API</td></tr>
+        <tr><td><b>Ensembl VEP REST</b></td><td>Variant Effect Predictor — the most-severe predicted consequence term (drives PVS1)</td><td>Public API</td></tr>
+        <tr><td><b>ACMG rule engine</b></td><td>A transparent, simplified subset of ACMG/AMP criteria → a single classification</td><td>Open-source (this lab)</td></tr>
+        <tr><td><b>Azure OpenAI</b></td><td>The agent’s “brain” (Part 2) — calls the tools and writes the cited memo</td><td>Azure</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card accent-azure">
+    <h4>④ The steps, in code</h4>
+    <p class="intro" style="margin-bottom:6px">Each stage is a small, readable Python function. Toggle any snippet open.</p>
+
+    <details class="code"><summary>Step 2a — annotation lookup against MyVariant.info <span class="tag">annotate.py · query_myvariant()</span></summary>
+<pre>url = f<span class="k">"{MYVARIANT_URL}/{variant.hgvs_id}"</span>     <span class="c"># e.g. chr17:g.43045712C&gt;T</span>
+resp = requests.get(url, params={<span class="k">"assembly"</span>: assembly}, timeout=30)
+<span class="k">if</span> resp.status_code == 404:
+    <span class="k">return</span> {<span class="k">"found"</span>: <span class="k">False</span>}
+data = resp.json()
+
+<span class="c"># ClinVar significance can be a str or list depending on submissions.</span>
+clnsig = _safe_get(data, <span class="k">"clinvar"</span>, <span class="k">"rcv"</span>, <span class="k">"clinical_significance"</span>)
+
+<span class="c"># gnomAD allele frequency: prefer exome, fall back to genome.</span>
+af = _safe_get(data, <span class="k">"gnomad_exome"</span>, <span class="k">"af"</span>, <span class="k">"af"</span>)
+<span class="k">if</span> af <span class="k">is</span> <span class="k">None</span>:
+    af = _safe_get(data, <span class="k">"gnomad_genome"</span>, <span class="k">"af"</span>, <span class="k">"af"</span>)</pre></details>
+
+    <details class="code"><summary>Step 2b — most-severe consequence from Ensembl VEP <span class="tag">annotate.py · query_vep()</span></summary>
+<pre><span class="c"># Ensembl VEP HGVS endpoint expects e.g. 17:g.43045712C&gt;T (no 'chr').</span>
+chrom = variant.chrom[3:] <span class="k">if</span> variant.chrom.startswith(<span class="k">"chr"</span>) <span class="k">else</span> variant.chrom
+hgvs  = f<span class="k">"{chrom}:g.{variant.pos}{variant.ref}&gt;{variant.alt}"</span>
+resp = requests.get(f<span class="k">"{VEP_URL}/{hgvs}"</span>,
+                    headers={<span class="k">"Content-Type"</span>: <span class="k">"application/json"</span>}, timeout=30)
+rec = resp.json()[0]
+<span class="k">return</span> {<span class="k">"most_severe_consequence"</span>: rec.get(<span class="k">"most_severe_consequence"</span>), ...}</pre></details>
+
+    <details class="code"><summary>Step 3a — the ACMG criteria engine (pathogenic direction) <span class="tag">acmg.py · evaluate()</span></summary>
+<pre>af = _as_float(annotation.get(<span class="k">"gnomad_af"</span>))
+consequence = (annotation.get(<span class="k">"most_severe_consequence"</span>) <span class="k">or</span> <span class="k">""</span>).lower()
+clnsig = (annotation.get(<span class="k">"clinvar_significance"</span>) <span class="k">or</span> <span class="k">""</span>).lower()
+
+<span class="k">if</span> consequence <span class="k">in</span> LOF_TERMS:                 <span class="c"># PVS1: predicted loss-of-function</span>
+    hits.append(CriterionHit(<span class="k">"PVS1"</span>, <span class="k">"pathogenic"</span>, <span class="k">"very_strong"</span>, ...))
+
+<span class="k">if</span> af <span class="k">is</span> <span class="k">None</span> <span class="k">or</span> af &lt; PM2_MAX_AF:           <span class="c"># PM2: rare/absent in gnomAD (&lt; 1e-4)</span>
+    hits.append(CriterionHit(<span class="k">"PM2"</span>, <span class="k">"pathogenic"</span>, <span class="k">"moderate"</span>, ...))
+
+insilico_damaging = (                            <span class="c"># PP3: in-silico predictors agree</span>
+    (cadd <span class="k">is</span> <span class="k">not</span> <span class="k">None</span> <span class="k">and</span> cadd &gt;= PP3_CADD_MIN)
+    <span class="k">or</span> sift.startswith(<span class="k">"D"</span>) <span class="k">or</span> polyphen.startswith((<span class="k">"D"</span>, <span class="k">"P"</span>)))</pre></details>
+
+    <details class="code"><summary>Step 3b — combining fired criteria into one classification <span class="tag">acmg.py · _combine()</span></summary>
+<pre>weights = {<span class="k">"stand_alone"</span>: 8, <span class="k">"very_strong"</span>: 8,
+           <span class="k">"strong"</span>: 4, <span class="k">"moderate"</span>: 2, <span class="k">"supporting"</span>: 1}
+path_score   = sum(weights[h.strength] <span class="k">for</span> h <span class="k">in</span> hits <span class="k">if</span> h.direction == <span class="k">"pathogenic"</span>)
+benign_score = sum(weights[h.strength] <span class="k">for</span> h <span class="k">in</span> hits <span class="k">if</span> h.direction == <span class="k">"benign"</span>)
+
+<span class="k">if</span> any(h.code == <span class="k">"BA1"</span> <span class="k">for</span> h <span class="k">in</span> hits): <span class="k">return</span> <span class="k">"Benign"</span>, ...   <span class="c"># BA1 dominates</span>
+<span class="k">if</span> path_score &gt;= 4 <span class="k">and</span> benign_score &gt;= 4:                       <span class="c"># conflicting -&gt; VUS</span>
+    <span class="k">return</span> <span class="k">"Uncertain significance (VUS)"</span>, ...
+<span class="k">if</span> path_score &gt;= 8:   cat = <span class="k">"Pathogenic"</span>
+<span class="k">elif</span> path_score &gt;= 4: cat = <span class="k">"Likely pathogenic"</span>
+<span class="k">elif</span> benign_score &gt;= 4: cat = <span class="k">"Likely benign"</span>
+<span class="k">elif</span> path_score == 0 <span class="k">and</span> benign_score == 0: cat = <span class="k">"Uncertain significance (VUS)"</span></pre></details>
+  </div>
+
+  <div class="card accent-teal">
+    <h4>⑤ The output — and how to read it scientifically</h4>
+    <p>The engine produces one classification per variant. These are the fields that matter:</p>
+    <table>
+      <thead><tr><th>Field</th><th>What it means</th><th>How to use it</th></tr></thead>
+      <tbody>
+        <tr><td><code>clinvar_significance</code></td><td>What clinical labs have submitted to ClinVar (Pathogenic, Benign, VUS, Conflicting…)</td><td>Prior community evidence; weigh by review status</td></tr>
+        <tr><td><code>gnomad_af</code></td><td>Population allele frequency across reference genomes</td><td><b>Rarity</b> — disease alleles are usually very rare; common = likely benign</td></tr>
+        <tr><td><code>most_severe_consequence</code></td><td>VEP-predicted effect (e.g. <code>stop_gained</code>, <code>missense_variant</code>)</td><td>Is it a null/LoF variant? Drives PVS1</td></tr>
+        <tr><td><code>criteria</code></td><td>ACMG codes that fired — e.g. <code>PVS1</code>, <code>PM2</code>, <code>PP3</code></td><td>The <b>evidence trail</b> behind the call</td></tr>
+        <tr><td><code>classification</code></td><td>Pathogenic / Likely pathogenic / VUS / Likely benign / Benign</td><td><b>The five-tier ACMG verdict</b></td></tr>
+      </tbody>
+    </table>
+    <div class="statline">
+      <div class="stat"><div class="v">5</div><div class="l">classification tiers (Path → Benign)</div></div>
+      <div class="stat"><div class="v">3</div><div class="l">public evidence sources (ClinVar, gnomAD, VEP)</div></div>
+      <div class="stat"><div class="v">7</div><div class="l">heuristic criteria implemented (of 28)</div></div>
+    </div>
+    <p style="margin-top:6px"><b>Reading it like a clinical geneticist:</b></p>
+    <ul class="clean">
+      <li><b>ACMG criteria come in categories:</b> pathogenic codes range from <code>PVS1</code> (very strong — a null
+        variant where loss-of-function causes disease) through <code>PM2</code> (moderate — rare/absent in gnomAD) to
+        <code>PP3</code> (supporting — in-silico predictors agree it’s damaging). Benign codes mirror them:
+        <code>BA1</code> (stand-alone — too common to cause a rare disease), <code>BS1</code> (strong), <code>BP6</code>
+        (supporting). Each fired criterion is a <i>line of evidence</i>.</li>
+      <li><b>What a VUS is:</b> a <i>Variant of Uncertain Significance</i> — the evidence is insufficient or
+        contradictory, so neither “pathogenic” nor “benign” is justified. It is <b>not</b> a diagnosis; it means
+        “we don’t know yet.” Here, no criteria firing, or strong evidence on <i>both</i> sides, both resolve to VUS.</li>
+      <li><b>Why rare + predicted-damaging + segregation matters:</b> no single line is conclusive. A variant that is
+        <i>rare</i> (PM2) <b>and</b> <i>predicted to break the protein</i> (PP3/PVS1) <b>and</b> tracks with disease in
+        a family (segregation) is far more convincing than any one alone. ACMG’s power is in <b>combining multiple
+        independent lines of evidence</b>, weighted by strength — exactly what <code>_combine()</code> models.</li>
+      <li><b>Conservative by design:</b> conflicting strong evidence collapses to VUS rather than guessing, and a
+        single common-allele observation (BA1) can outweigh everything else — mirroring real ACMG practice.</li>
+    </ul>
+    <div class="note"><b>Important — simplified, educational subset.</b> This engine implements only a handful of
+      <i>heuristic</i> criteria (roughly PVS1, PM2, PP3, PP5, BA1, BS1, BP6) — <b>not</b> the full ACMG/AMP 2015
+      framework of 28 criteria with its complete combining-rule table. Real classification needs curated evidence,
+      segregation and functional data, and expert judgment in an accredited lab. This lab is for
+      <b>research / education ONLY — never for clinical diagnosis</b>.</div>
+  </div>
+</div></section>
+
+<!-- =================== VIEW 2: AGENT =================== -->
+<section class="view" id="v2"><div class="wrap">
+  <h2 class="section">Part 2</h2>
+  <h3 class="big">The agent — what it adds, how it’s built, how to read its reasoning</h3>
+  <p class="intro">The pipeline above runs fine as a plain script. The agent wraps it in an Azure OpenAI model that
+    <b>assembles the evidence, applies the rules consistently, and writes a cited interpretation memo</b> — while being
+    forbidden from inventing numbers or dropping its disclaimer.</p>
+
+  <div class="grid g3">
+    <div class="card accent-teal"><h4>Assembles evidence</h4><p style="color:var(--muted);font-size:14px">Calls annotate, then classify, pulling ClinVar / gnomAD / VEP together so a reader sees all the evidence in one place.</p></div>
+    <div class="card accent-teal"><h4>Applies rules consistently</h4><p style="color:var(--muted);font-size:14px">Every variant goes through the same ACMG engine in the same order — no ad-hoc judgment, no skipped steps.</p></div>
+    <div class="card accent-teal"><h4>Writes a cited memo</h4><p style="color:var(--muted);font-size:14px">Produces a structured markdown memo that lists each fired criterion, cites its sources, and ends with the disclaimer.</p></div>
+  </div>
+
+  <div class="card accent-azure">
+    <h4>① The “skills” the agent possesses</h4>
+    <p>An agent’s skills are the <b>tools it’s allowed to call</b>. This agent has exactly two — the two pipeline
+      functions — plus the built-in ability (granted by its system prompt) to write the final memo.</p>
+    <table>
+      <thead><tr><th>Skill (tool)</th><th>What invoking it does</th></tr></thead>
+      <tbody>
+        <tr><td><span class="pill a">annotate_variant</span></td><td>Annotate one variant against MyVariant.info (ClinVar, gnomAD, dbNSFP) and Ensembl VEP</td></tr>
+        <tr><td><span class="pill a">classify_variant</span></td><td>Run the simplified ACMG/AMP rule engine on that annotation → fired criteria + classification</td></tr>
+        <tr><td><span class="pill t">memo</span></td><td>Built-in: stitch the results into a cited markdown interpretation memo with the disclaimer</td></tr>
+      </tbody>
+    </table>
+
+    <details class="code"><summary>Code — its persona &amp; rules (the system prompt) <span class="tag">agent.py · SYSTEM_PROMPT</span></summary>
+<pre>You are a careful genomics teaching assistant. <span class="c">For the given variant, you</span>
+MUST call the annotate_variant tool, then the classify_variant tool, and
+only then write a concise markdown interpretation memo. The memo MUST:
+(1) state the variant, gene, ClinVar significance, and gnomAD allele
+frequency; (2) list each ACMG criterion that fired with its rationale and
+the final classification; (3) include a 'Data sources' section citing
+MyVariant.info (ClinVar, gnomAD) and Ensembl VEP as applicable; (4) end
+with the exact disclaimer provided to you. Never overstate certainty.
+Make clear this is a simplified educational classification.</pre></details>
+
+    <details class="code"><summary>Code — the tool registry (what the agent is allowed to do) <span class="tag">agent.py · TOOL_IMPLS</span></summary>
+<pre>TOOL_IMPLS = {
+    <span class="k">"annotate_variant"</span>: <span class="k">lambda</span> args: _tool_annotate(**args),
+    <span class="k">"classify_variant"</span>: <span class="k">lambda</span> args: _tool_classify(args[<span class="k">"annotation"</span>]),
+}</pre></details>
+
+    <details class="code"><summary>Code — how a skill is described <i>to the model</i> (a JSON schema) <span class="tag">agent.py · TOOLS[]</span></summary>
+<pre>{
+  <span class="k">"type"</span>: <span class="k">"function"</span>,
+  <span class="k">"function"</span>: {
+    <span class="k">"name"</span>: <span class="k">"annotate_variant"</span>,
+    <span class="k">"description"</span>: (
+        <span class="k">"Annotate a single genomic variant against MyVariant.info "</span>
+        <span class="k">"(ClinVar significance, gnomAD allele frequency, dbNSFP scores) "</span>
+        <span class="k">"and Ensembl VEP (most-severe consequence)."</span>),
+    <span class="k">"parameters"</span>: {<span class="k">"type"</span>: <span class="k">"object"</span>, <span class="k">"properties"</span>: {
+        <span class="k">"chrom"</span>: {...}, <span class="k">"pos"</span>: {...}, <span class="k">"ref"</span>: {...}, <span class="k">"alt"</span>: {...}},
+        <span class="k">"required"</span>: [<span class="k">"chrom"</span>, <span class="k">"pos"</span>, <span class="k">"ref"</span>, <span class="k">"alt"</span>]}
+  }
+}</pre></details>
+    <p style="color:var(--muted);font-size:14px;margin:.4em 0 0">The <i>description</i> is crucial — it’s how the model
+      “knows” what each skill does and when to use it. Good tool descriptions are the prompt engineering of agents.</p>
+  </div>
+
+  <div class="card accent-azure">
+    <h4>② The code that defines the agent’s behavior</h4>
+
+    <details class="code"><summary>Its engine — the tool-calling loop <span class="tag">agent.py · interpret_variant()</span></summary>
+<pre><span class="c"># Bounded loop: the model may call annotate, then classify, then answer.</span>
+<span class="k">for</span> _ <span class="k">in</span> range(6):
+    resp = client.chat.completions.create(
+        model=deployment, messages=messages,
+        tools=TOOLS, tool_choice=<span class="k">"auto"</span>, temperature=0.2)
+    msg = resp.choices[0].message
+    messages.append(msg.model_dump(exclude_none=<span class="k">True</span>))
+
+    <span class="k">if</span> <span class="k">not</span> msg.tool_calls:                       <span class="c"># no tool -&gt; it's the memo</span>
+        content = msg.content <span class="k">or</span> <span class="k">""</span>
+        <span class="k">if</span> <span class="k">"NOT FOR CLINICAL USE"</span> <span class="k">not</span> <span class="k">in</span> content.upper():   <span class="c"># guarantee disclaimer</span>
+            content = content.rstrip() + <span class="k">"\n\n"</span> + DISCLAIMER
+        <span class="k">return</span> content
+
+    <span class="k">for</span> call <span class="k">in</span> msg.tool_calls:                   <span class="c"># run each requested skill</span>
+        args = json.loads(call.function.arguments <span class="k">or</span> <span class="k">"{}"</span>)
+        result = TOOL_IMPLS[call.function.name](args)
+        messages.append({<span class="k">"role"</span>: <span class="k">"tool"</span>, <span class="k">"tool_call_id"</span>: call.id,
+                         <span class="k">"name"</span>: call.function.name,
+                         <span class="k">"content"</span>: json.dumps(result, default=str)})</pre></details>
+
+    <details class="code"><summary>Its keyless sign-in to Azure (no API keys) <span class="tag">agent.py · build_client()</span></summary>
+<pre><span class="k">if</span> os.getenv(<span class="k">"AZURE_OPENAI_USE_AAD"</span>, <span class="k">"false"</span>).lower() == <span class="k">"true"</span>:
+    <span class="c"># Keyless auth via azure-identity (no secret in .env).</span>
+    <span class="k">from</span> azure.identity <span class="k">import</span> DefaultAzureCredential, get_bearer_token_provider
+
+    token_provider = get_bearer_token_provider(
+        DefaultAzureCredential(),
+        <span class="k">"https://cognitiveservices.azure.com/.default"</span>)
+    <span class="k">return</span> AzureOpenAI(azure_endpoint=endpoint, api_version=api_version,
+                       azure_ad_token_provider=token_provider)</pre></details>
+
+    <details class="code"><summary>The disclaimer it is required to carry <span class="tag">agent.py · DISCLAIMER</span></summary>
+<pre>&gt; **DISCLAIMER -- RESEARCH / EDUCATION ONLY. NOT FOR CLINICAL USE.**
+This memo was generated by an automated teaching pipeline using a
+simplified ACMG/AMP heuristic subset and must not be used to diagnose,
+treat, or make any medical decision. Clinical interpretation requires a
+qualified molecular geneticist in an accredited (CAP/CLIA) laboratory.</pre></details>
+  </div>
+
+  <div class="card accent-teal">
+    <h4>③ How to read the agent’s reasoning output</h4>
+    <p>For each variant the agent prints which tools it called, then the memo it wrote. Learning to skim them is how you
+      audit what the agent did.</p>
+<pre style="background:var(--code-bg);border-radius:12px">Interpreting chr17:g.43045712C&gt;T ...
+&gt;&gt; tool call: annotate_variant({"chrom":"17","pos":43045712,"ref":"C","alt":"T"})
+&gt;&gt; tool call: classify_variant({"annotation": { ... }})
+
+<span class="k"># Variant Interpretation Memo</span>
+## Variant &amp; gene ...  ## ACMG criteria (PVS1, PM2, PP3) ...
+## Classification: Likely pathogenic
+## Data sources: MyVariant.info (ClinVar, gnomAD), Ensembl VEP
+&gt; **DISCLAIMER -- RESEARCH / EDUCATION ONLY. NOT FOR CLINICAL USE.** ...</pre>
+    <ul class="clean">
+      <li><b><code>&gt;&gt; tool call: annotate_variant(…)</code></b> — the agent gathering evidence from the public APIs.</li>
+      <li><b><code>&gt;&gt; tool call: classify_variant(…)</code></b> — the agent running the deterministic ACMG engine.</li>
+      <li><b>The final <code># Memo</code></b> — its written interpretation, saved to <code>output/memos/memo_*.md</code>.</li>
+    </ul>
+    <div class="good"><b>Scientific interpretation — the key habit:</b> every claim in the memo (a fired criterion, a
+      gnomAD frequency, the final class) must trace back to a <code>&gt;&gt; tool call</code> result, not to the model’s
+      imagination. The system prompt forces the annotate→classify→write order, and the loop <i>defensively re-appends
+      the disclaimer</i> if the model ever omits it — so the memo is never presented as clinical advice. To validate,
+      open the annotation JSON and confirm the criteria and class match what the engine returned.</div>
+  </div>
+</div></section>
+
+<!-- =================== VIEW 3: BEYOND =================== -->
+<section class="view" id="v3"><div class="wrap">
+  <h2 class="section">Part 3</h2>
+  <h3 class="big">From a teaching engine to clinical-grade interpretation</h3>
+  <p class="intro">This lab classifies a few variants with seven heuristic rules. Real variant interpretation is far
+    heavier — and that weight is exactly where agentic AI earns its keep.</p>
+
+  <div class="grid g2">
+    <div class="card accent-amber">
+      <h4>What “clinical-grade” looks like</h4>
+      <ul class="clean">
+        <li>The full <b>28 ACMG/AMP criteria</b> plus the Bayesian/points refinements and gene-specific (ClinGen VCEP) rules</li>
+        <li>Curated evidence: <b>segregation</b>, functional studies, case-level and phenotype data — not just automated annotations</li>
+        <li><b>Backlogs</b>: labs face thousands of variants and a growing mountain of <b>VUS</b> awaiting reclassification</li>
+        <li><b>Consistency</b>: different curators can reach different calls; reproducibility and concordance are hard</li>
+        <li><b>Audit &amp; provenance</b>: every classification must be defensible, versioned, and traceable to its evidence</li>
+      </ul>
+    </div>
+    <div class="card accent-teal">
+      <h4>Where the agent pattern scales</h4>
+      <ul class="clean">
+        <li><b>Evidence assembly</b> — pull ClinVar, gnomAD, VEP, literature and internal cases into one place per variant</li>
+        <li><b>Consistent rule application</b> — apply the same criteria the same way across every variant, every time</li>
+        <li><b>VUS triage &amp; re-curation</b> — flag VUS that new population or functional data could now reclassify</li>
+        <li><b>Cited, audit-ready memos</b> — draft the write-up with every claim traced to a source for human sign-off</li>
+        <li><b>Natural-language access</b> — “interpret these variants and cite the evidence” instead of bespoke scripts</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card accent-azure">
+    <h4>The commercial landscape</h4>
+    <p>Clinical variant interpretation is a mature, regulated software market. A few of the platforms in this space:</p>
+    <table>
+      <thead><tr><th>Platform</th><th>Focus</th></tr></thead>
+      <tbody>
+        <tr><td><b>Genoox Franklin</b> / <b>QIAGEN QCI</b></td><td>Community + curated ACMG interpretation and knowledge bases</td></tr>
+        <tr><td><b>Illumina Emedgene</b></td><td>AI-assisted, automation-forward tertiary analysis and interpretation</td></tr>
+        <tr><td><b>Golden Helix VarSeq</b></td><td>Configurable ACMG classifier and clinical reporting workflows</td></tr>
+        <tr><td><b>VarSome (Saphetor)</b></td><td>Aggregated annotations with an automated ACMG implementation</td></tr>
+        <tr><td><b>SeqOne</b> / <b>Congenica</b></td><td>Clinical decision-support and rare-disease interpretation platforms</td></tr>
+      </tbody>
+    </table>
+    <p style="color:var(--muted);font-size:14px;margin:.6em 0 0">The agent pattern in this lab is a teaching-scale view
+      of what these tools industrialize — with the same need for grounding, citation, and human sign-off.</p>
+  </div>
+
+  <div class="card accent-azure">
+    <h4>Value by stakeholder</h4>
+    <div class="grid g3" style="margin-top:6px">
+      <div>
+        <span class="pill a">Clinical labs</span>
+        <p style="color:var(--muted);font-size:14px;margin-top:8px">Cut the per-variant grind and VUS backlog; the agent assembles evidence and drafts consistent, audit-ready memos — freeing curators for the hard, judgment-heavy cases.</p>
+      </div>
+      <div>
+        <span class="pill t">Researchers</span>
+        <p style="color:var(--muted);font-size:14px;margin-top:8px">Self-serve, cited interpretation across a cohort in plain language, without hand-writing annotation glue or learning every API.</p>
+      </div>
+      <div>
+        <span class="pill m">Clinicians</span>
+        <p style="color:var(--muted);font-size:14px;margin-top:8px">Interpretable, source-cited summaries to support a conversation with a geneticist — provided humans stay in the loop and nothing is used for diagnosis unaided.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card accent-amber">
+    <h4>The non-negotiable: guardrails</h4>
+    <p>Scaling agentic AI into clinical genetics depends on the same principles this small lab already demonstrates:</p>
+    <ul class="clean">
+      <li><b>Evidence-grounded, never fabricated</b> — every criterion and figure traces to a tool result, with the source cited.</li>
+      <li><b>Human geneticist sign-off</b> — the agent proposes; a qualified molecular geneticist in an accredited (CAP/CLIA) lab reviews and decides.</li>
+      <li><b>Never autonomous clinical decisions</b> — the mandatory disclaimer is structural, and clinical action requires explicit human approval.</li>
+      <li><b>Full provenance</b> — annotations, criteria, thresholds and versions are logged so every call is reproducible and defensible.</li>
+    </ul>
+    <div class="good" style="margin-top:14px"><b>The big idea:</b> the bottleneck in clinical genomics is <i>interpretation</i>,
+      not sequencing. A geneticist-supervised agent that assembles evidence, applies the ACMG rules consistently, and
+      writes a cited, disclaimer-bearing memo — exactly what you saw in Lab 2 — is how that bottleneck starts to open,
+      from a seven-rule demo to clinical-grade pipelines.</div>
+  </div>
+</div></section>
+
+<footer>
+  Built from Lab 2 of the “Agentic Engineering in Bioinformatics &amp; Genomics” series ·
+  Real public evidence (ClinVar · gnomAD · Ensembl VEP) · Simplified educational ACMG subset —
+  For education &amp; research only, NOT for clinical diagnosis.
+</footer>
+
+<script>
+  (function(){
+    var tabs = document.querySelectorAll('.tab');
+    var views = document.querySelectorAll('.view');
+    tabs.forEach(function(t){
+      t.addEventListener('click', function(){
+        tabs.forEach(function(x){x.classList.remove('active');});
+        views.forEach(function(x){x.classList.remove('active');});
+        t.classList.add('active');
+        document.getElementById(t.getAttribute('data-target')).classList.add('active');
+        window.scrollTo({top:0, behavior:'smooth'});
+      });
+    });
+    var root = document.documentElement;
+    var btn = document.getElementById('themeToggle');
+    btn.addEventListener('click', function(){
+      var dark = root.classList.contains('dark');
+      var light = root.classList.contains('light');
+      var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      var currentlyDark = dark || (!light && prefersDark);
+      root.classList.remove('dark','light');
+      root.classList.add(currentlyDark ? 'light' : 'dark');
+    });
+  })();
+</script>
+</body>
+</html>

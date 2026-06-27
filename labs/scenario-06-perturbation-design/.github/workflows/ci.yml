@@ -1,0 +1,40 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  lint-and-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install ruff
+
+      - name: Ruff lint
+        run: ruff check src scripts
+
+      - name: Generate synthetic ground-truth table
+        run: python scripts/download_data.py
+
+      - name: Smoke import + offline loop
+        env:
+          # Force the offline heuristic proposer in CI (no Azure secrets).
+          AZURE_OPENAI_ENDPOINT: ""
+          AZURE_OPENAI_API_KEY: ""
+          AZURE_OPENAI_DEPLOYMENT: ""
+        run: |
+          python -c "import src.screen_env, src.discovery_agent; print('imports OK')"
+          python src/discovery_agent.py --rounds 3 --batch-size 6 --no-llm

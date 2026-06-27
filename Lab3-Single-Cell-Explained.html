@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" class="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Lab 3 — Agentic Single-Cell RNA-seq Analysis</title>
+<style>
+  :root{
+    --bg:#eef3f9; --surface:#ffffff; --surface-2:#f5f8fc; --ink:#16202c; --muted:#5d6b7a;
+    --line:#dce4ee; --navy:#0e2a47; --azure:#149a73; --azure-soft:#e8f1f8;
+    --teal:#5a9a2a; --teal-soft:#e3f4f1; --amber:#e08a1e; --amber-soft:#fcefdb;
+    --code-bg:#0f1f33; --code-ink:#e7eefb; --code-key:#6fc7ff; --code-com:#7d93ad;
+    --shadow:0 6px 22px rgba(20,40,70,.08); --radius:16px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#07201b; --surface:#0e2a24; --surface-2:#0b231e; --ink:#e8eef6; --muted:#9fb0c4;
+      --line:#22324a; --azure:#3fd0a0; --azure-soft:#0f3a30; --teal:#9bd85a; --teal-soft:#1d3a16;
+      --amber:#f0a946; --amber-soft:#33260f; --navy:#08241e; --shadow:0 6px 22px rgba(0,0,0,.4);}
+  }
+  :root.dark{ --bg:#07201b; --surface:#0e2a24; --surface-2:#0b231e; --ink:#e8eef6; --muted:#9fb0c4;
+    --line:#22324a; --azure:#3fd0a0; --azure-soft:#0f3a30; --teal:#9bd85a; --teal-soft:#1d3a16;
+    --amber:#f0a946; --amber-soft:#33260f; --navy:#08241e; --shadow:0 6px 22px rgba(0,0,0,.4);}
+  :root.light{ --bg:#eef3f9; --surface:#ffffff; --surface-2:#f5f8fc; --ink:#16202c; --muted:#5d6b7a;
+    --line:#dce4ee; --azure:#149a73; --azure-soft:#e8f1f8; --teal:#5a9a2a; --teal-soft:#e3f4f1;
+    --amber:#e08a1e; --amber-soft:#fcefdb; --navy:#0e2a47; --shadow:0 6px 22px rgba(20,40,70,.08);}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.55;-webkit-font-smoothing:antialiased;}
+  a{color:var(--azure)}
+  .wrap{max-width:1060px;margin-inline:auto;padding-inline:20px}
+  /* header */
+  header.top{position:sticky;top:0;z-index:50;background:color-mix(in srgb,var(--surface) 88%,transparent);
+    backdrop-filter:saturate(1.4) blur(8px);border-block-end:1px solid var(--line)}
+  .topbar{display:flex;align-items:center;gap:14px;padding-block:12px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.2px}
+  .dot{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,var(--teal),var(--azure));
+    display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:800}
+  .brand small{display:block;font-weight:600;color:var(--muted);font-size:11px;letter-spacing:.4px}
+  .spacer{flex:1}
+  .themebtn{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;
+    padding:7px 13px;font-size:13px;font-weight:600;cursor:pointer}
+  /* tabs */
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;padding-block:10px 14px}
+  .tab{border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:999px;
+    padding:9px 16px;font-size:14px;font-weight:700;cursor:pointer;transition:.15s}
+  .tab:hover{color:var(--ink)}
+  .tab.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+  @media (prefers-color-scheme: dark){.tab.active{background:var(--azure);border-color:var(--azure);color:#06121f}}
+  :root.dark .tab.active{background:var(--azure);border-color:var(--azure);color:#06121f}
+  /* hero */
+  .hero{background:linear-gradient(135deg,#0a2e28,#0f4a3e 55%,#14695a);color:#eaf2fb;border-radius:0 0 28px 28px}
+  .hero .wrap{padding-block:46px 40px}
+  .kicker{color:#8fe3d6;font-weight:800;letter-spacing:3px;font-size:12px;margin:0 0 10px}
+  .hero h1{margin:.1em 0;font-size:clamp(26px,4.4vw,42px);line-height:1.08;letter-spacing:-.5px}
+  .hero p.lede{color:#b9cbe0;font-size:17px;max-width:74ch;margin:.6em 0 0}
+  .chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+  .chip{background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.16);border-radius:999px;
+    padding:7px 14px;font-size:13px;font-weight:600;color:#dfeaf6}
+  .chip b{color:#fff}
+  /* layout */
+  section.view{display:none;padding-block:30px 10px}
+  section.view.active{display:block;animation:fade .25s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  h2.section{font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--teal);margin:6px 0 2px;font-weight:800}
+  h3.big{font-size:clamp(22px,3vw,30px);margin:.1em 0 .5em;letter-spacing:-.3px}
+  p.intro{color:var(--muted);font-size:16px;max-width:78ch}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+    box-shadow:var(--shadow);padding:22px 22px;margin:16px 0}
+  .card h4{margin:.1em 0 .5em;font-size:18px}
+  .grid{display:grid;gap:16px}
+  .g2{grid-template-columns:1fr 1fr}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  @media(max-width:780px){.g2,.g3{grid-template-columns:1fr}}
+  .accent-teal{border-inline-start:5px solid var(--teal)}
+  .accent-azure{border-inline-start:5px solid var(--azure)}
+  .accent-amber{border-inline-start:5px solid var(--amber)}
+  .pill{display:inline-block;font-size:12px;font-weight:700;border-radius:999px;padding:3px 10px}
+  .pill.t{background:var(--teal-soft);color:var(--teal)}
+  .pill.a{background:var(--azure-soft);color:var(--azure)}
+  .pill.m{background:var(--amber-soft);color:var(--amber)}
+  /* flow */
+  .flow{display:flex;align-items:stretch;gap:0;flex-wrap:wrap;margin:18px 0}
+  .stage{flex:1;min-width:150px;background:var(--surface);border:1px solid var(--line);border-radius:14px;
+    padding:16px;box-shadow:var(--shadow);position:relative}
+  .stage .n{width:30px;height:30px;border-radius:9px;background:var(--azure);color:#fff;font-weight:800;
+    display:flex;align-items:center;justify-content:center;margin-bottom:8px}
+  .stage h5{margin:.2em 0;font-size:15px}
+  .stage p{margin:.2em 0 0;color:var(--muted);font-size:13px}
+  .arrow{display:flex;align-items:center;justify-content:center;color:var(--azure);font-size:24px;
+    font-weight:800;padding-inline:6px}
+  @media(max-width:780px){.arrow{transform:rotate(90deg);padding-block:4px}}
+  /* tables */
+  table{border-collapse:collapse;width:100%;font-size:14px;margin-top:6px}
+  th,td{text-align:start;padding:10px 12px;border-block-end:1px solid var(--line);vertical-align:top}
+  thead th{background:var(--surface-2);font-size:12px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted)}
+  td code,p code,li code{background:var(--surface-2);border:1px solid var(--line);border-radius:6px;
+    padding:1px 6px;font-family:ui-monospace,"Cascadia Code",Consolas,monospace;font-size:.92em}
+  /* code blocks via details */
+  details.code{margin:12px 0;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--code-bg)}
+  details.code summary{cursor:pointer;list-style:none;padding:11px 16px;font-weight:700;font-size:13.5px;
+    color:#dbe7f6;background:#13243b;display:flex;align-items:center;gap:9px}
+  details.code summary::-webkit-details-marker{display:none}
+  details.code summary::before{content:"▸";color:var(--code-key);font-size:13px}
+  details.code[open] summary::before{content:"▾"}
+  details.code summary .tag{margin-inline-start:auto;font-weight:600;color:#8aa6c6;font-size:12px}
+  pre{margin:0;padding:16px 18px;overflow:auto;color:var(--code-ink);
+    font-family:ui-monospace,"Cascadia Code",Consolas,monospace;font-size:13px;line-height:1.6}
+  pre .c{color:var(--code-com)} pre .k{color:var(--code-key)}
+  .note{background:var(--amber-soft);border:1px solid var(--amber);border-radius:12px;padding:14px 16px;margin:14px 0}
+  .note b{color:var(--amber)}
+  .good{background:var(--teal-soft);border:1px solid var(--teal);border-radius:12px;padding:14px 16px;margin:14px 0}
+  ul.clean{padding-inline-start:20px;margin:.4em 0}
+  ul.clean li{margin:.32em 0}
+  .kv{display:flex;gap:10px;align-items:baseline;margin:.3em 0}
+  .kv b{color:var(--azure);min-width:128px;display:inline-block}
+  .statline{display:flex;gap:18px;flex-wrap:wrap;margin:10px 0}
+  .stat{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 18px;box-shadow:var(--shadow)}
+  .stat .v{font-size:26px;font-weight:800;color:var(--teal)}
+  .stat .l{font-size:12px;color:var(--muted)}
+  footer{color:var(--muted);font-size:13px;text-align:center;padding:34px 16px 50px}
+  .badge{display:inline-block;background:var(--teal);color:#06201c;font-weight:800;border-radius:8px;
+    padding:2px 9px;font-size:12px}
+  @media (prefers-color-scheme: dark){.badge{color:#06201c}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap topbar">
+    <a class="themebtn" href="index.html" style="text-decoration:none">← All use cases</a>
+    <span class="brand"><span class="dot">SC</span><span>Agentic Single-Cell Lab<small>BIOINFORMATICS · LAB 03</small></span></span>
+    <span class="spacer"></span>
+    <button class="themebtn" id="themeToggle" type="button">◐ Theme</button>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="wrap">
+    <p class="kicker">AGENTIC ENGINEERING IN GENOMICS</p>
+    <h1>How an AI agent clustered single cells<br>and named the cell types it found</h1>
+    <p class="lede">A walkthrough of Lab 3: the data, the classic single-cell RNA-seq pipeline, the code that runs it,
+      the clusters it produces and how to read them scientifically — and the AI agent that annotates each cluster
+      from its marker genes, then critiques its own calls, on the Azure + Scanpy stack.</p>
+    <div class="chips">
+      <span class="chip">Stack: <b>Scanpy · AnnData · Azure</b></span>
+      <span class="chip">Data: <b>10x PBMC 3k (real)</b></span>
+      <span class="chip">Cells: <b>~2,700 PBMCs</b></span>
+      <span class="chip">Clustering: <b>Leiden</b></span>
+      <span class="chip">Model: <b>Azure OpenAI (GPTCelltype-style)</b></span>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <nav class="tabs" id="tabs">
+    <button class="tab active" data-target="v1" type="button">1 · The Pipeline</button>
+    <button class="tab" data-target="v2" type="button">2 · The Agent</button>
+    <button class="tab" data-target="v3" type="button">3 · Beyond — scaling it up</button>
+  </nav>
+</div>
+
+<!-- =================== VIEW 1: PIPELINE =================== -->
+<section class="view active" id="v1"><div class="wrap">
+  <h2 class="section">Part 1</h2>
+  <h3 class="big">The classic pipeline — data, tools, steps &amp; results</h3>
+  <p class="intro">Before any AI, the lab is a standard, deterministic single-cell RNA-seq workflow.
+    Understanding it is the key to understanding what the agent automates.</p>
+
+  <div class="card accent-amber">
+    <h4>① What data is used — and is it real?</h4>
+    <p>The lab is built around <b>PBMC 3k</b>, the classic Scanpy tutorial dataset: <b>real</b> single-cell RNA-seq of
+      <b>~2,700 peripheral blood mononuclear cells</b> from a healthy donor, sequenced on the
+      <span class="pill m">10x Genomics</span> platform (Cell Ranger 1.1.0).</p>
+    <p>It is loaded directly via <code>scanpy.datasets.pbmc3k()</code>, which fetches the filtered gene-barcode matrix
+      and returns a ready-to-use <b>AnnData</b> object. If the loader can't reach the internet, the script falls back
+      to downloading the raw 10x <code>.tar.gz</code> and parsing the MTX triplet.</p>
+    <div class="note"><b>What the matrix actually is.</b> Single-cell data is a <b>genes × cells</b> count matrix: each
+      column is one cell, each row is one gene, each entry is how many transcripts of that gene were captured in that
+      cell. It is overwhelmingly <b>sparse</b> — most genes are zero in most cells — because only a few thousand of the
+      ~20,000 genes are detectably expressed per cell. This is real biology, not synthetic: the cells, the donor, and
+      the counts are genuine, which is exactly why PBMC 3k is the reference dataset for learning the workflow.</div>
+
+    <details class="code"><summary>Code — load PBMC3k via Scanpy, with a manual 10x fallback <span class="tag">scripts/download_data.py</span></summary>
+<pre><span class="k">def</span> main():
+    <span class="k">try</span>:
+        adata = via_scanpy()             <span class="c"># scanpy.datasets.pbmc3k() -> AnnData</span>
+        print(<span class="k">"Loaded PBMC3k via scanpy.datasets.pbmc3k()."</span>)
+    <span class="k">except</span> Exception <span class="k">as</span> exc:        <span class="c"># network / SSL / proxy issues</span>
+        print(f<span class="k">"pbmc3k() failed ({exc!r}); using manual fallback."</span>)
+        adata = via_manual_download()    <span class="c"># pull .tar.gz, read_10x_mtx()</span>
+
+    adata.var_names_make_unique()        <span class="c"># some gene symbols repeat</span>
+    adata.write_h5ad(H5AD_RAW)           <span class="c"># cache as data/pbmc3k_raw.h5ad</span></pre></details>
+
+    <details class="code"><summary>Code — the manual fallback reads the MTX triplet <span class="tag">via_manual_download()</span></summary>
+<pre><span class="c"># Cell Ranger 1.1.0 lays files out under filtered_gene_bc_matrices/hg19/</span>
+mtx_dir = DATA_DIR / <span class="k">"filtered_gene_bc_matrices"</span> / <span class="k">"hg19"</span>
+<span class="c"># read_10x_mtx reads matrix.mtx + genes.tsv + barcodes.tsv into AnnData</span>
+adata = sc.read_10x_mtx(mtx_dir, var_names=<span class="k">"gene_symbols"</span>, cache=<span class="k">True</span>)</pre></details>
+    <p style="margin:.6em 0 0;color:var(--muted);font-size:14px">Output: <code>data/pbmc3k_raw.h5ad</code> — the raw
+      genes × cells AnnData consumed by <code>src/pipeline.py</code>.</p>
+  </div>
+
+  <div class="card accent-azure">
+    <h4>② The pipeline at a glance</h4>
+    <p>Four deterministic stages turn a raw sparse count matrix into labelled cell populations:</p>
+    <div class="flow">
+      <div class="stage"><div class="n">1</div><h5>Quality control</h5><p>Filter cells &amp; genes; drop high-% mitochondrial (dying) cells and likely doublets.</p></div>
+      <div class="arrow">&rarr;</div>
+      <div class="stage"><div class="n">2</div><h5>Normalize + HVG + PCA</h5><p>Library-size normalize, log1p, pick highly-variable genes, reduce with PCA.</p></div>
+      <div class="arrow">&rarr;</div>
+      <div class="stage"><div class="n">3</div><h5>Neighbors + Leiden</h5><p>kNN graph in PCA space, UMAP, then Leiden community detection into clusters.</p></div>
+      <div class="arrow">&rarr;</div>
+      <div class="stage"><div class="n">4</div><h5>Marker genes</h5><p><code>rank_genes_groups</code> finds each cluster's top markers → cell-type annotation.</p></div>
+    </div>
+  </div>
+
+  <div class="card accent-azure">
+    <h4>③ The tools — and what each one does</h4>
+    <table>
+      <thead><tr><th>Tool</th><th>Role in the pipeline</th><th>Type</th></tr></thead>
+      <tbody>
+        <tr><td><b>Scanpy / AnnData</b></td><td>The core scRNA-seq toolkit — QC, normalization, PCA, UMAP, DE; AnnData holds the genes × cells matrix and all annotations</td><td>Open-source</td></tr>
+        <tr><td><b>Leiden</b></td><td>Graph-based community detection that partitions the kNN cell graph into clusters (candidate cell populations)</td><td>Open-source</td></tr>
+        <tr><td><b>CellTypist</b></td><td>Reference-based automated cell-type classifier — a complementary, model-driven annotation route</td><td>Open-source</td></tr>
+        <tr><td><b>Azure OpenAI</b></td><td>The annotation agent's "brain" (Part 2) — names clusters from their markers and self-critiques ambiguous ones</td><td>Azure</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card accent-azure">
+    <h4>④ The steps, in code</h4>
+    <p class="intro" style="margin-bottom:6px">Each stage is a small, readable Scanpy function. Toggle any snippet open.</p>
+
+    <details class="code"><summary>Step 1 — Quality control filtering <span class="tag">quality_control()</span></summary>
+<pre><span class="c"># Basic count-based filtering of empty/low-complexity cells and rare genes.</span>
+sc.pp.filter_cells(adata, min_genes=MIN_GENES_PER_CELL)   <span class="c"># 200</span>
+sc.pp.filter_genes(adata, min_cells=MIN_CELLS_PER_GENE)   <span class="c"># 3</span>
+
+<span class="c"># Flag mitochondrial genes (human symbols start with "MT-").</span>
+adata.var[<span class="k">"mt"</span>] = adata.var_names.str.startswith(<span class="k">"MT-"</span>)
+sc.pp.calculate_qc_metrics(adata, qc_vars=[<span class="k">"mt"</span>], percent_top=<span class="k">None</span>,
+                           log1p=<span class="k">False</span>, inplace=<span class="k">True</span>)
+
+<span class="c"># Remove probable doublets (very high gene counts) and dying cells (high mito).</span>
+adata = adata[adata.obs[<span class="k">"n_genes_by_counts"</span>] &lt; MAX_GENES_PER_CELL, :].copy()  <span class="c"># 2500</span>
+adata = adata[adata.obs[<span class="k">"pct_counts_mt"</span>] &lt; MAX_PCT_MITO, :].copy()           <span class="c"># 5.0%</span></pre></details>
+
+    <details class="code"><summary>Step 2 — Normalize, log1p, highly-variable genes, PCA <span class="tag">normalize() + embed_and_cluster()</span></summary>
+<pre>adata.layers[<span class="k">"counts"</span>] = adata.X.copy()    <span class="c"># keep raw counts for later</span>
+
+<span class="c"># Normalize each cell to 10,000 total counts, then natural-log(1+x).</span>
+sc.pp.normalize_total(adata, target_sum=1e4)
+sc.pp.log1p(adata)
+adata.raw = adata                          <span class="c"># stash full gene set for DE</span>
+
+<span class="c"># Select highly variable genes, then scale + PCA.</span>
+sc.pp.highly_variable_genes(adata, n_top_genes=N_TOP_HVG, flavor=<span class="k">"seurat"</span>)  <span class="c"># 2000</span>
+adata = adata[:, adata.var[<span class="k">"highly_variable"</span>]].copy()
+sc.pp.scale(adata, max_value=10)
+sc.tl.pca(adata, svd_solver=<span class="k">"arpack"</span>, n_comps=N_PCS)   <span class="c"># 40 PCs</span></pre></details>
+
+    <details class="code"><summary>Step 3 — Neighbor graph + Leiden clustering <span class="tag">embed_and_cluster()</span></summary>
+<pre><span class="c"># Build the kNN graph in PCA space, then a UMAP embedding for visualization.</span>
+sc.pp.neighbors(adata, n_neighbors=N_NEIGHBORS, n_pcs=N_PCS)   <span class="c"># 15 / 40</span>
+sc.tl.umap(adata)
+
+<span class="c"># Leiden community detection -> one integer label per cell.</span>
+sc.tl.leiden(
+    adata,
+    resolution=LEIDEN_RESOLUTION,   <span class="c"># 1.0 — higher = more, finer clusters</span>
+    flavor=<span class="k">"igraph"</span>,
+    n_iterations=2,
+    directed=<span class="k">False</span>,
+)</pre></details>
+
+    <details class="code"><summary>Step 4 — Marker genes per cluster <span class="tag">rank_markers()</span></summary>
+<pre><span class="c"># Wilcoxon rank-sum test is the recommended default for scRNA-seq DE.</span>
+sc.tl.rank_genes_groups(adata, groupby=<span class="k">"leiden"</span>, method=<span class="k">"wilcoxon"</span>)
+
+<span class="c"># Flatten Scanpy's structured result into a long DataFrame.</span>
+result = adata.uns[<span class="k">"rank_genes_groups"</span>]
+groups = result[<span class="k">"names"</span>].dtype.names            <span class="c"># cluster labels</span>
+<span class="k">for</span> cluster <span class="k">in</span> groups:
+    <span class="k">for</span> rank <span class="k">in</span> range(N_TOP_MARKERS):           <span class="c"># top 25 per cluster</span>
+        rows.append({<span class="k">"cluster"</span>: cluster, <span class="k">"rank"</span>: rank + 1,
+                     <span class="k">"gene"</span>: result[<span class="k">"names"</span>][cluster][rank],
+                     <span class="k">"log2fc"</span>: float(result[<span class="k">"logfoldchanges"</span>][cluster][rank]),
+                     <span class="k">"pval_adj"</span>: float(result[<span class="k">"pvals_adj"</span>][cluster][rank])})</pre></details>
+  </div>
+
+  <div class="card accent-teal">
+    <h4>⑤ The output — and how to read it scientifically</h4>
+    <p>The pipeline produces three artifacts: a UMAP coloured by cluster, a top-marker table per cluster, and the
+      processed AnnData. The science lives in turning <b>clusters</b> into <b>cell identities</b>:</p>
+    <table>
+      <thead><tr><th>Artifact</th><th>What it contains</th><th>How to read it</th></tr></thead>
+      <tbody>
+        <tr><td><code>umap_leiden.png</code></td><td>2-D map of all cells, coloured by Leiden cluster</td><td>Sanity check — well-separated blobs suggest real, distinct populations</td></tr>
+        <tr><td><code>markers_top.csv</code></td><td>Top-25 differentially expressed genes per cluster</td><td>The fingerprint of each cluster; canonical markers reveal identity</td></tr>
+        <tr><td><code>pbmc3k_processed.h5ad</code></td><td>Full AnnData: embeddings, clusters, DE results</td><td>The reproducible object every downstream step reads</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:10px"><b>From markers to cell types.</b> Each cluster's top markers map to a known PBMC
+      population:</p>
+    <table>
+      <thead><tr><th>Marker genes</th><th>Cell type</th></tr></thead>
+      <tbody>
+        <tr><td><code>CD3D</code>, <code>IL7R</code></td><td>T cells (CD4+ / CD8+)</td></tr>
+        <tr><td><code>MS4A1</code>, <code>CD79A</code></td><td>B cells</td></tr>
+        <tr><td><code>CD14</code>, <code>LYZ</code></td><td>CD14+ Monocytes</td></tr>
+        <tr><td><code>FCGR3A</code>, <code>MS4A7</code></td><td>FCGR3A+ Monocytes</td></tr>
+        <tr><td><code>NKG7</code>, <code>GNLY</code></td><td>NK cells</td></tr>
+        <tr><td><code>FCER1A</code>, <code>CST3</code></td><td>Dendritic cells</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:6px"><b>Reading it like a scientist:</b></p>
+    <ul class="clean">
+      <li><b>Clusters are not cell types — yet.</b> Leiden returns numbered groups. They only become biology once a
+        marker fingerprint is matched to a canonical cell identity.</li>
+      <li><b>Resolution is a judgment call.</b> <code>LEIDEN_RESOLUTION</code> directly controls how many clusters you
+        get — too low merges distinct types, too high splits one type into artificial fragments. There is no single
+        "correct" number.</li>
+      <li><b>Annotation is a judgment call too.</b> Some clusters have clean, unambiguous markers; others sit between
+        states (e.g. cycling vs. exhausted T cells) and reasonable experts can disagree.</li>
+      <li><b>Both choices ripple downstream.</b> Every later result — proportions, differential abundance, trajectory
+        — inherits the cluster boundaries and labels you set here.</li>
+    </ul>
+    <div class="note"><b>Honesty note.</b> The data is real, but the <i>labels are inferred</i>: a cluster called
+      "NK cells" is a hypothesis supported by its markers, not a measured fact. The <i>workflow</i> is canonical; the
+      <i>annotations</i> still require expert validation before they drive any biological conclusion.</div>
+  </div>
+</div></section>
+
+<!-- =================== VIEW 2: AGENT =================== -->
+<section class="view" id="v2"><div class="wrap">
+  <h2 class="section">Part 2</h2>
+  <h3 class="big">The agent — what it adds, how it's built, how to read its reasoning</h3>
+  <p class="intro">The pipeline above produces numbered clusters and marker lists. The agent reads those markers and does
+    the part that used to require a human poring over the literature: it <b>names each cell type, scores its own
+    confidence, justifies the call from specific genes, and then critiques its own labels</b> — the
+    <b>GPTCelltype</b> idea, plus a self-review pass.</p>
+
+  <div class="grid g3">
+    <div class="card accent-teal"><h4>Drives parameter choices</h4><p style="color:var(--muted);font-size:14px">In the agent-driven variant, an LLM can propose QC thresholds and clustering resolution from the QC plots — instead of fixed defaults.</p></div>
+    <div class="card accent-teal"><h4>Annotates from markers</h4><p style="color:var(--muted);font-size:14px">Maps each cluster's top marker genes to a canonical PBMC cell type, with a confidence score and a one-line justification.</p></div>
+    <div class="card accent-teal"><h4>Self-critiques</h4><p style="color:var(--muted);font-size:14px">Re-reads its own labels and flags genuinely ambiguous clusters (cycling vs. exhausted, monocyte vs. dendritic) for human review.</p></div>
+  </div>
+
+  <div class="card accent-azure">
+    <h4>① The "skills" the agent possesses</h4>
+    <p>This agent's skills are two structured LLM behaviors over the marker table — <b>annotate</b> and
+      <b>critique</b> — mirroring the GPTCelltype paper (Hou &amp; Ji, 2024) and adding a review pass on top.</p>
+    <table>
+      <thead><tr><th>Skill (pass)</th><th>What invoking it does</th></tr></thead>
+      <tbody>
+        <tr><td><span class="pill a">annotate_clusters</span></td><td>Pass 1 — labels every cluster in one structured call: cell type + confidence + justification</td></tr>
+        <tr><td><span class="pill a">self_critique</span></td><td>Pass 2 — re-examines each label vs. its markers and flags ambiguity with an alternative</td></tr>
+        <tr><td><span class="pill t">load_marker_lists</span></td><td>Reads <code>markers_top.csv</code> into the top-N gene list per cluster sent to the model</td></tr>
+        <tr><td><span class="pill t">build_client</span></td><td>Constructs the Azure OpenAI client (API key or keyless Entra ID)</td></tr>
+      </tbody>
+    </table>
+
+    <details class="code"><summary>Code — how the marker genes are sent to the model <span class="tag">annotate_clusters()</span></summary>
+<pre><span class="c"># Compact, deterministic prompt. We request strict JSON so it parses cleanly.</span>
+cluster_block = <span class="k">"\n"</span>.join(
+    f<span class="k">"- Cluster {cid}: {', '.join(genes)}"</span> <span class="k">for</span> cid, genes <span class="k">in</span> markers.items()
+)
+
+system_prompt = (
+    <span class="k">"You are an expert single-cell genomics annotator. Given the top "</span>
+    <span class="k">"differentially expressed marker genes for each cluster, assign the most "</span>
+    <span class="k">"likely cell type. Be cautious: base labels strictly on canonical marker "</span>
+    <span class="k">"biology, and lower your confidence when markers are mixed or generic."</span>
+)</pre></details>
+
+    <details class="code"><summary>Code — it returns label + confidence + justification (strict JSON) <span class="tag">annotate_clusters()</span></summary>
+<pre>user_prompt = (
+    f<span class="k">"Tissue context: {TISSUE_CONTEXT}.\n\n"</span>            <span class="c"># human PBMC</span>
+    f<span class="k">"Marker genes per cluster (ranked, most significant first):\n{cluster_block}\n\n"</span>
+    <span class="k">"For EACH cluster return a JSON object with this exact schema:\n"</span>
+    <span class="k">'{"annotations": [{"cluster": "&lt;id&gt;", "cell_type": "&lt;label&gt;", '</span>
+    <span class="k">'"confidence": &lt;0.0-1.0&gt;, "justification": "&lt;one line citing the key '</span>
+    <span class="k">'markers&gt;"}]}\n'</span>
+    <span class="k">"Use standard PBMC cell-type names (e.g. CD4+ T cells, CD8+ T cells, "</span>
+    <span class="k">"NK cells, B cells, CD14+ Monocytes, FCGR3A+ Monocytes, Dendritic cells, "</span>
+    <span class="k">"Megakaryocytes). Output JSON only."</span>
+)
+
+resp = client.chat.completions.create(
+    model=deployment,
+    temperature=0.0,                          <span class="c"># deterministic labelling</span>
+    response_format={<span class="k">"type"</span>: <span class="k">"json_object"</span>},
+    messages=[{<span class="k">"role"</span>: <span class="k">"system"</span>, <span class="k">"content"</span>: system_prompt},
+              {<span class="k">"role"</span>: <span class="k">"user"</span>, <span class="k">"content"</span>: user_prompt}],
+)
+annotations = json.loads(resp.choices[0].message.content)[<span class="k">"annotations"</span>]</pre></details>
+
+    <details class="code"><summary>Code — the self-critique pass flags ambiguity <span class="tag">self_critique()</span></summary>
+<pre><span class="c"># Guards against confident-but-wrong labels — the classic LLM failure mode.</span>
+user_prompt = (
+    <span class="k">"Here are proposed annotations with their marker genes:\n"</span>
+    f<span class="k">"{json.dumps(review_input, indent=2)}\n\n"</span>
+    <span class="k">"For EACH cluster, decide whether the label is ambiguous. Pay special "</span>
+    <span class="k">"attention to commonly confused states, e.g.:\n"</span>
+    <span class="k">"  - cycling (MKI67, TOP2A) vs. exhausted (PDCD1, LAG3, HAVCR2) T cells\n"</span>
+    <span class="k">"  - CD14+ monocytes vs. dendritic cells (FCER1A, CST3)\n"</span>
+    <span class="k">"  - naive vs. memory T-cell subsets\n"</span>
+    <span class="k">'{"review": [{"cluster": "&lt;id&gt;", "ambiguous": &lt;true|false&gt;, '</span>
+    <span class="k">'"alternative": "&lt;other plausible cell type or null&gt;", '</span>
+    <span class="k">'"reason": "&lt;short explanation&gt;"}]}\n'</span>
+)</pre></details>
+
+    <details class="code"><summary>Code — the Azure OpenAI client (keyless Entra ID or API key) <span class="tag">build_client()</span></summary>
+<pre>use_ad = os.environ.get(<span class="k">"USE_AZURE_AD_AUTH"</span>, <span class="k">"false"</span>).lower() == <span class="k">"true"</span>
+
+<span class="k">if</span> use_ad:
+    <span class="c"># Keyless auth via Entra ID ("Cognitive Services OpenAI User" role).</span>
+    <span class="k">from</span> azure.identity <span class="k">import</span> DefaultAzureCredential, get_bearer_token_provider
+    token_provider = get_bearer_token_provider(
+        DefaultAzureCredential(),
+        <span class="k">"https://cognitiveservices.azure.com/.default"</span>)
+    client = AzureOpenAI(azure_endpoint=endpoint, api_version=api_version,
+                         azure_ad_token_provider=token_provider)
+<span class="k">else</span>:
+    client = AzureOpenAI(azure_endpoint=endpoint, api_version=api_version,
+                         api_key=os.environ[<span class="k">"AZURE_OPENAI_API_KEY"</span>])</pre></details>
+  </div>
+
+  <div class="card accent-teal">
+    <h4>② How to read the agent's reasoning output</h4>
+    <p>Both passes are merged into one tidy table, then printed with flagged clusters surfaced for review. Learning to
+      skim it is how you audit what the agent decided.</p>
+<pre style="background:var(--code-bg);border-radius:12px"><span class="c"># results/cell_type_annotations.csv (one row per cluster)</span>
+cluster, cell_type,        confidence, justification,                      ambiguous, alternative
+0,       CD4+ T cells,     0.93,       "IL7R, CD3D — canonical CD4 T",     False,     null
+3,       NK cells,         0.88,       "NKG7, GNLY cytotoxic markers",     False,     null
+6,       T cells (state?), 0.55,       "CD3D+ but MKI67 high",             True,      "cycling vs exhausted"
+
+<span class="c"># console summary</span>
+  cluster  6: T cells (state?)     conf=0.55  &lt;-- REVIEW (ambiguous)</pre>
+    <ul class="clean">
+      <li><b><code>cell_type</code> + <code>confidence</code></b> — Pass 1's label and how sure the model is; low
+        confidence is itself a signal.</li>
+      <li><b><code>justification</code></b> — the specific markers the model used, so you can check its reasoning
+        against canonical biology.</li>
+      <li><b><code>ambiguous</code> + <code>alternative</code></b> — Pass 2's verdict; a <code>REVIEW</code> flag is the
+        agent explicitly asking for a human.</li>
+    </ul>
+    <div class="good"><b>Scientific interpretation — the key habit:</b> treat every label as a <i>justified
+      hypothesis</i>, not a fact. Read the <code>justification</code> markers, trust high-confidence clusters with clean
+      canonical fingerprints, and prioritize the <code>ambiguous</code>-flagged clusters for manual inspection. The
+      self-critique pass exists precisely because GPTCelltype-style annotation can be confidently wrong — the flag is
+      what keeps a scientist in the loop before these labels drive any downstream biology.</div>
+  </div>
+</div></section>
+
+<!-- =================== VIEW 3: BEYOND =================== -->
+<section class="view" id="v3"><div class="wrap">
+  <h2 class="section">Part 3</h2>
+  <h3 class="big">From a toy lab to real-world complexity</h3>
+  <p class="intro">This lab clusters ~2,700 cells from one healthy donor. Real single-cell work spans millions of cells,
+    many tissues, and added spatial context — and that scale is exactly where agentic AI earns its keep.</p>
+
+  <div class="grid g2">
+    <div class="card accent-amber">
+      <h4>What "complex" looks like</h4>
+      <ul class="clean">
+        <li><b>Large atlases</b> — millions of cells across donors, tissues and conditions (HCA-scale), with batch effects to integrate</li>
+        <li><b>Spatial transcriptomics</b> — expression tied to physical location, so cell types must be read in tissue context</li>
+        <li><b>Many cell states, not just types</b> — cycling, exhausted, activated, transitional — a continuum, not tidy boxes</li>
+        <li>Reference mapping, label transfer and harmonizing ontologies across studies</li>
+        <li>Annotation that must survive expert and clinical scrutiny</li>
+      </ul>
+    </div>
+    <div class="card accent-teal">
+      <h4>Where the agent pattern scales</h4>
+      <ul class="clean">
+        <li><b>Single-cell foundation models</b> — <b>scGPT</b>, <b>Geneformer</b> and <b>CellTypist</b> bring learned priors over millions of cells</li>
+        <li><b>Automated, scalable annotation</b> — the same annotate→critique loop, over hundreds of clusters instead of a handful</li>
+        <li><b>Ambiguity triage</b> — surface only the clusters that genuinely need an expert, saving human time</li>
+        <li><b>Literature-grounded labels</b> — justify each call from canonical markers and published evidence</li>
+        <li><b>Natural-language access</b> — ask "which clusters are exhausted T cells?" instead of writing code</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card accent-amber">
+    <h4>The reliability caveat</h4>
+    <div class="note"><b>Benchmarks vary.</b> Foundation models and LLM annotators are powerful but <b>inconsistent</b>:
+      reported accuracy swings by tissue, cell-state granularity, and benchmark choice, and a model confident on PBMCs
+      can falter on rare or transitional states. None is a drop-in replacement for expert judgment — they are
+      accelerators that still require validation against canonical markers and orthogonal evidence.</div>
+  </div>
+
+  <div class="card accent-azure">
+    <h4>Value by stakeholder</h4>
+    <div class="grid g3" style="margin-top:6px">
+      <div>
+        <span class="pill a">Researchers</span>
+        <p style="color:var(--muted);font-size:14px;margin-top:8px">First-pass annotation of large datasets in minutes, with justifications and an ambiguity shortlist — turning weeks of manual marker-checking into a review task.</p>
+      </div>
+      <div>
+        <span class="pill t">Biotech</span>
+        <p style="color:var(--muted);font-size:14px;margin-top:8px">Consistent, scalable, auditable cell-typing across pipelines and studies — reproducible labels that hold up as datasets and headcount grow.</p>
+      </div>
+      <div>
+        <span class="pill m">Clinicians</span>
+        <p style="color:var(--muted);font-size:14px;margin-top:8px">Interpretable, cited cell-composition summaries — provided humans stay in the loop and labels are validated, never used for diagnosis unaided.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card accent-amber">
+    <h4>The non-negotiable: guardrails</h4>
+    <p>Scaling agentic annotation safely depends on the same principles this small lab already demonstrates:</p>
+    <ul class="clean">
+      <li><b>Annotations need expert validation</b> — every label is a hypothesis to confirm against canonical markers, not a measurement.</li>
+      <li><b>Self-critique by default</b> — the agent must surface what it is unsure about, not hide it behind a confident label.</li>
+      <li><b>Human-in-the-loop</b> — the agent proposes and flags; a qualified person reviews and decides identity.</li>
+      <li><b>Bounded autonomy</b> — clinical or therapeutic use requires validation and explicit approval.</li>
+    </ul>
+    <div class="good" style="margin-top:14px"><b>The big idea:</b> in single-cell genomics the bottleneck is
+      <i>interpretation</i> — turning clusters into trustworthy cell identities at scale. A scientist-supervised agent
+      that annotates, justifies and critiques its own calls — exactly what you saw in Lab 3 — is how that bottleneck
+      starts to open, from a 2,700-cell demo to million-cell atlases.</div>
+  </div>
+</div></section>
+
+<footer>
+  Built from Lab 3 of the "Agentic Engineering in Bioinformatics &amp; Genomics" series ·
+  Real 10x PBMC 3k data · Inferred annotations · For education &amp; research only — not for clinical use without validation.
+</footer>
+
+<script>
+  (function(){
+    var tabs = document.querySelectorAll('.tab');
+    var views = document.querySelectorAll('.view');
+    tabs.forEach(function(t){
+      t.addEventListener('click', function(){
+        tabs.forEach(function(x){x.classList.remove('active');});
+        views.forEach(function(x){x.classList.remove('active');});
+        t.classList.add('active');
+        document.getElementById(t.getAttribute('data-target')).classList.add('active');
+        window.scrollTo({top:0, behavior:'smooth'});
+      });
+    });
+    var root = document.documentElement;
+    var btn = document.getElementById('themeToggle');
+    btn.addEventListener('click', function(){
+      var dark = root.classList.contains('dark');
+      var light = root.classList.contains('light');
+      var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      var currentlyDark = dark || (!light && prefersDark);
+      root.classList.remove('dark','light');
+      root.classList.add(currentlyDark ? 'light' : 'dark');
+    });
+  })();
+</script>
+</body>
+</html>

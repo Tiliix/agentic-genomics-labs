@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" class="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Lab 4 — Agentic Multi-Omics Hypothesis Generation</title>
+<style>
+  :root{
+    --bg:#eef3f9; --surface:#ffffff; --surface-2:#f5f8fc; --ink:#16202c; --muted:#5d6b7a;
+    --line:#dce4ee; --navy:#0e2a47; --azure:#c0467e; --azure-soft:#e8f1f8;
+    --teal:#c2702a; --teal-soft:#e3f4f1; --amber:#e08a1e; --amber-soft:#fcefdb;
+    --code-bg:#0f1f33; --code-ink:#e7eefb; --code-key:#6fc7ff; --code-com:#7d93ad;
+    --shadow:0 6px 22px rgba(20,40,70,.08); --radius:16px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#20121c; --surface:#2a1826; --surface-2:#241420; --ink:#e8eef6; --muted:#9fb0c4;
+      --line:#22324a; --azure:#e879a6; --azure-soft:#3a1c2e; --teal:#f0a35a; --teal-soft:#3a2614;
+      --amber:#f0a946; --amber-soft:#33260f; --navy:#241320; --shadow:0 6px 22px rgba(0,0,0,.4);}
+  }
+  :root.dark{ --bg:#20121c; --surface:#2a1826; --surface-2:#241420; --ink:#e8eef6; --muted:#9fb0c4;
+    --line:#22324a; --azure:#e879a6; --azure-soft:#3a1c2e; --teal:#f0a35a; --teal-soft:#3a2614;
+    --amber:#f0a946; --amber-soft:#33260f; --navy:#241320; --shadow:0 6px 22px rgba(0,0,0,.4);}
+  :root.light{ --bg:#eef3f9; --surface:#ffffff; --surface-2:#f5f8fc; --ink:#16202c; --muted:#5d6b7a;
+    --line:#dce4ee; --azure:#c0467e; --azure-soft:#e8f1f8; --teal:#c2702a; --teal-soft:#e3f4f1;
+    --amber:#e08a1e; --amber-soft:#fcefdb; --navy:#0e2a47; --shadow:0 6px 22px rgba(20,40,70,.08);}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.55;-webkit-font-smoothing:antialiased;}
+  a{color:var(--azure)}
+  .wrap{max-width:1060px;margin-inline:auto;padding-inline:20px}
+  /* header */
+  header.top{position:sticky;top:0;z-index:50;background:color-mix(in srgb,var(--surface) 88%,transparent);
+    backdrop-filter:saturate(1.4) blur(8px);border-block-end:1px solid var(--line)}
+  .topbar{display:flex;align-items:center;gap:14px;padding-block:12px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.2px}
+  .dot{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,var(--teal),var(--azure));
+    display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:800}
+  .brand small{display:block;font-weight:600;color:var(--muted);font-size:11px;letter-spacing:.4px}
+  .spacer{flex:1}
+  .themebtn{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;
+    padding:7px 13px;font-size:13px;font-weight:600;cursor:pointer}
+  /* tabs */
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;padding-block:10px 14px}
+  .tab{border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:999px;
+    padding:9px 16px;font-size:14px;font-weight:700;cursor:pointer;transition:.15s}
+  .tab:hover{color:var(--ink)}
+  .tab.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+  @media (prefers-color-scheme: dark){.tab.active{background:var(--azure);border-color:var(--azure);color:#06121f}}
+  :root.dark .tab.active{background:var(--azure);border-color:var(--azure);color:#06121f}
+  /* hero */
+  .hero{background:linear-gradient(135deg,#3a1730,#5a2040 55%,#7a2a4a);color:#eaf2fb;border-radius:0 0 28px 28px}
+  .hero .wrap{padding-block:46px 40px}
+  .kicker{color:#8fe3d6;font-weight:800;letter-spacing:3px;font-size:12px;margin:0 0 10px}
+  .hero h1{margin:.1em 0;font-size:clamp(26px,4.4vw,42px);line-height:1.08;letter-spacing:-.5px}
+  .hero p.lede{color:#b9cbe0;font-size:17px;max-width:74ch;margin:.6em 0 0}
+  .chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+  .chip{background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.16);border-radius:999px;
+    padding:7px 14px;font-size:13px;font-weight:600;color:#dfeaf6}
+  .chip b{color:#fff}
+  /* layout */
+  section.view{display:none;padding-block:30px 10px}
+  section.view.active{display:block;animation:fade .25s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  h2.section{font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--teal);margin:6px 0 2px;font-weight:800}
+  h3.big{font-size:clamp(22px,3vw,30px);margin:.1em 0 .5em;letter-spacing:-.3px}
+  p.intro{color:var(--muted);font-size:16px;max-width:78ch}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+    box-shadow:var(--shadow);padding:22px 22px;margin:16px 0}
+  .card h4{margin:.1em 0 .5em;font-size:18px}
+  .grid{display:grid;gap:16px}
+  .g2{grid-template-columns:1fr 1fr}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  @media(max-width:780px){.g2,.g3{grid-template-columns:1fr}}
+  .accent-teal{border-inline-start:5px solid var(--teal)}
+  .accent-azure{border-inline-start:5px solid var(--azure)}
+  .accent-amber{border-inline-start:5px solid var(--amber)}
+  .pill{display:inline-block;font-size:12px;font-weight:700;border-radius:999px;padding:3px 10px}
+  .pill.t{background:var(--teal-soft);color:var(--teal)}
+  .pill.a{background:var(--azure-soft);color:var(--azure)}
+  .pill.m{background:var(--amber-soft);color:var(--amber)}
+  /* flow */
+  .flow{display:flex;align-items:stretch;gap:0;flex-wrap:wrap;margin:18px 0}
+  .stage{flex:1;min-width:150px;background:var(--surface);border:1px solid var(--line);border-radius:14px;
+    padding:16px;box-shadow:var(--shadow);position:relative}
+  .stage .n{width:30px;height:30px;border-radius:9px;background:var(--azure);color:#fff;font-weight:800;
+    display:flex;align-items:center;justify-content:center;margin-bottom:8px}
+  .stage h5{margin:.2em 0;font-size:15px}
+  .stage p{margin:.2em 0 0;color:var(--muted);font-size:13px}
+  .arrow{display:flex;align-items:center;justify-content:center;color:var(--azure);font-size:24px;
+    font-weight:800;padding-inline:6px}
+  @media(max-width:780px){.arrow{transform:rotate(90deg);padding-block:4px}}
+  /* tables */
+  table{border-collapse:collapse;width:100%;font-size:14px;margin-top:6px}
+  th,td{text-align:start;padding:10px 12px;border-block-end:1px solid var(--line);vertical-align:top}
+  thead th{background:var(--surface-2);font-size:12px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted)}
+  td code,p code,li code{background:var(--surface-2);border:1px solid var(--line);border-radius:6px;
+    padding:1px 6px;font-family:ui-monospace,"Cascadia Code",Consolas,monospace;font-size:.92em}
+  /* code blocks via details */
+  details.code{margin:12px 0;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--code-bg)}
+  details.code summary{cursor:pointer;list-style:none;padding:11px 16px;font-weight:700;font-size:13.5px;
+    color:#dbe7f6;background:#13243b;display:flex;align-items:center;gap:9px}
+  details.code summary::-webkit-details-marker{display:none}
+  details.code summary::before{content:"▸";color:var(--code-key);font-size:13px}
+  details.code[open] summary::before{content:"▾"}
+  details.code summary .tag{margin-inline-start:auto;font-weight:600;color:#8aa6c6;font-size:12px}
+  pre{margin:0;padding:16px 18px;overflow:auto;color:var(--code-ink);
+    font-family:ui-monospace,"Cascadia Code",Consolas,monospace;font-size:13px;line-height:1.6}
+  pre .c{color:var(--code-com)} pre .k{color:var(--code-key)}
+  .note{background:var(--amber-soft);border:1px solid var(--amber);border-radius:12px;padding:14px 16px;margin:14px 0}
+  .note b{color:var(--amber)}
+  .good{background:var(--teal-soft);border:1px solid var(--teal);border-radius:12px;padding:14px 16px;margin:14px 0}
+  ul.clean{padding-inline-start:20px;margin:.4em 0}
+  ul.clean li{margin:.32em 0}
+  .kv{display:flex;gap:10px;align-items:baseline;margin:.3em 0}
+  .kv b{color:var(--azure);min-width:128px;display:inline-block}
+  .statline{display:flex;gap:18px;flex-wrap:wrap;margin:10px 0}
+  .stat{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 18px;box-shadow:var(--shadow)}
+  .stat .v{font-size:26px;font-weight:800;color:var(--teal)}
+  .stat .l{font-size:12px;color:var(--muted)}
+  footer{color:var(--muted);font-size:13px;text-align:center;padding:34px 16px 50px}
+  .badge{display:inline-block;background:var(--teal);color:#06201c;font-weight:800;border-radius:8px;
+    padding:2px 9px;font-size:12px}
+  @media (prefers-color-scheme: dark){.badge{color:#06201c}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap topbar">
+    <a class="themebtn" href="index.html" style="text-decoration:none">← All use cases</a>
+    <span class="brand"><span class="dot">MO</span><span>Agentic Multi-Omics Lab<small>BIOINFORMATICS · LAB 04</small></span></span>
+    <span class="spacer"></span>
+    <button class="themebtn" id="themeToggle" type="button">◐ Theme</button>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="wrap">
+    <p class="kicker">AGENTIC ENGINEERING IN GENOMICS</p>
+    <h1>How an AI agent turned multi-omics<br>factors into ranked hypotheses</h1>
+    <p class="lede">A walkthrough of Lab 4: the data, the multi-omics integration pipeline, the code that runs it,
+      the latent factors it produces and how to read them scientifically — and the AI agent that interprets factors,
+      retrieves evidence, and ranks candidate-driver hypotheses without ever claiming mechanism from correlation.</p>
+    <div class="chips">
+      <span class="chip">Stack: <b>Azure · GitHub · VS Code</b></span>
+      <span class="chip">Data: <b>MOFA+ CLL (synthetic fallback)</b></span>
+      <span class="chip">Method: <b>MOFA+ factor analysis</b></span>
+      <span class="chip">Views: <b>mRNA · methylation · drugs · mutations</b></span>
+      <span class="chip">Model: <b>Azure OpenAI</b></span>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <nav class="tabs" id="tabs">
+    <button class="tab active" data-target="v1" type="button">1 · The Pipeline</button>
+    <button class="tab" data-target="v2" type="button">2 · The Agent</button>
+    <button class="tab" data-target="v3" type="button">3 · Beyond — scaling it up</button>
+  </nav>
+</div>
+
+<!-- =================== VIEW 1: PIPELINE =================== -->
+<section class="view active" id="v1"><div class="wrap">
+  <h2 class="section">Part 1</h2>
+  <h3 class="big">The integration pipeline — data, tools, steps & factors</h3>
+  <p class="intro">Before any AI, the lab is a standard multi-omics integration workflow: several measurement
+    "views" of the same samples, collapsed into a handful of shared latent factors. Understanding it is the key
+    to understanding what the agent reasons over.</p>
+
+  <div class="card accent-amber">
+    <h4>① What data is used — and what is "multi-omics"?</h4>
+    <p>The lab is built around the <b>MOFA+ CLL</b> dataset — a classic multi-omics tutorial cohort of
+      <b>chronic lymphocytic leukaemia</b> patients. The same samples are measured four different ways:
+      <span class="pill m">mRNA expression</span> <span class="pill m">DNA methylation</span>
+      <span class="pill m">drug response</span> <span class="pill m">mutations</span>.
+      Each is a <b>view</b> — a distinct molecular layer on one shared set of patients. That is what "multi-omics"
+      means: not one assay, but several complementary windows onto the same biology.</p>
+    <p>The downloader tries to fetch the real CLL bundle first. In this offline container the network is unavailable,
+      so the script automatically falls back to a <b>synthetic</b> multi-omics matrix built from a shared latent
+      structure — the same four view names, the same long-format shape.</p>
+    <div class="note"><b>Why this matters scientifically.</b> The synthetic generator builds every view from a
+      <b>shared low-rank latent structure</b> (a few hidden factors), so by construction the four omics layers
+      <i>co-vary</i> through those factors — exactly the cross-view signal MOFA+ is designed to recover. The biology
+      isn't real, but the covariation structure is genuine, making it a self-checking teaching dataset: drop in a real
+      <code>data/cll_long.csv</code> and the identical run yields interpretable factors.</div>
+
+    <details class="code"><summary>Code — try the real CLL download, else synthesise <span class="tag">scripts/download_data.py</span></summary>
+<pre><span class="k">def</span> main():
+    <span class="k">if</span> args.synthetic:
+        write_synthetic(seed=args.seed)
+        <span class="k">return</span>
+    ok = download_real()                  <span class="c"># real MOFA+ CLL bundle (best-effort)</span>
+    <span class="k">if</span> <span class="k">not</span> ok <span class="k">and</span> <span class="k">not</span> args.real:
+        write_synthetic(seed=args.seed)   <span class="c"># offline / 404 -&gt; synthetic fallback</span></pre></details>
+
+    <details class="code"><summary>Code — the synthetic 4-view generator (shared latent structure) <span class="tag">generate_synthetic()</span></summary>
+<pre>n_features = {"mRNA": 120, "Methylation": 100, "Drugs": 40, "Mutations": 30}
+Z = rng.normal(size=(n_samples, n_factors))      <span class="c"># shared factors: samples x factors</span>
+
+<span class="k">for</span> view, n_feat <span class="k">in</span> n_features.items():
+    W = rng.normal(size=(n_factors, n_feat))     <span class="c"># per-view loadings</span>
+    mask = rng.random(size=W.shape) &lt; 0.4         <span class="c"># ~60% zeroed for sparsity</span>
+    X = (Z @ (W * mask)) + rng.normal(scale=0.5, size=(n_samples, n_feat))
+    <span class="k">if</span> view == "Mutations":  X = (X &gt; 0.7).astype(float)   <span class="c"># binary calls</span>
+    <span class="k">elif</span> view == "Methylation": X = np.tanh(X)            <span class="c"># M-value-like range</span></pre></details>
+    <p style="margin:.6em 0 0;color:var(--muted);font-size:14px">Output: <code>data/cll_long.csv</code> in long format
+      with columns <code>[sample, feature, view, value]</code> — exactly the shape MOFA+ accepts.</p>
+  </div>
+
+  <div class="card accent-azure">
+    <h4>② The pipeline at a glance</h4>
+    <p>Four stages turn separate omics tables into a small set of interpretable, cross-view factors:</p>
+    <div class="flow">
+      <div class="stage"><div class="n">1</div><h5>Load &amp; align views</h5><p>Read the long-format multi-omics table; one row per sample × feature × view.</p></div>
+      <div class="arrow">&rarr;</div>
+      <div class="stage"><div class="n">2</div><h5>Train MOFA+</h5><p>Multi-omics factor analysis across all four views jointly.</p></div>
+      <div class="arrow">&rarr;</div>
+      <div class="stage"><div class="n">3</div><h5>Extract factors + weights</h5><p>Latent factors (samples × factors) and top feature weights per view.</p></div>
+      <div class="arrow">&rarr;</div>
+      <div class="stage"><div class="n">4</div><h5>Rank hypotheses</h5><p>Agent turns top-weighted features into evidence-scored candidate drivers.</p></div>
+    </div>
+  </div>
+
+  <div class="card accent-azure">
+    <h4>③ The tools — and what each one does</h4>
+    <table>
+      <thead><tr><th>Tool</th><th>Role in the pipeline</th><th>Type</th></tr></thead>
+      <tbody>
+        <tr><td><b>MOFA+ / mofapy2</b></td><td>Multi-Omics Factor Analysis — learns latent factors and per-view feature weights jointly across views</td><td>Open-source</td></tr>
+        <tr><td><b>scikit-learn</b></td><td>SVD / StandardScaler fallback when mofapy2 is unavailable — produces the same factor/weight artefacts</td><td>Open-source</td></tr>
+        <tr><td><b>PubMed E-utilities</b></td><td>Public NCBI API — best-effort literature evidence for/against each hypothesis</td><td>Open API</td></tr>
+        <tr><td><b>pandas / numpy</b></td><td>Long-format data handling, the omics matrices, and the synthetic generator</td><td>Open-source</td></tr>
+        <tr><td><b>Azure OpenAI</b></td><td>The hypothesis agent's "brain" (Part 2) — interprets factors and ranks hypotheses</td><td>Azure</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card accent-azure">
+    <h4>④ The steps, in code</h4>
+    <p class="intro" style="margin-bottom:6px">Each stage is a small, readable Python function. Toggle any snippet open.</p>
+
+    <details class="code"><summary>Step 2 — Train MOFA+ across the views <span class="tag">train_mofa()</span></summary>
+<pre><span class="k">from</span> mofapy2.run.entry_point <span class="k">import</span> entry_point
+
+ent = entry_point()
+<span class="c"># MOFA+ accepts the long data frame directly (sample, feature, view, value).</span>
+ent.set_data_options(scale_views=True)
+ent.set_data_df(long_df, likelihoods=None)        <span class="c"># likelihoods auto-inferred per view</span>
+ent.set_model_options(factors=n_factors, spikeslab_weights=True, ard_weights=True)
+ent.set_train_options(iter=200, convergence_mode="fast", seed=1)
+ent.build()
+ent.run()</pre></details>
+
+    <details class="code"><summary>Step 3 — Extract latent factors (samples × factors) <span class="tag">_factors_from_model()</span></summary>
+<pre><span class="c"># expectations["Z"] is the latent factor matrix; concatenate across groups.</span>
+Z = ent.model.getExpectations()["Z"]["E"]
+samples = ent.data_opts["samples_names"][0]
+cols = [f"Factor{i + 1}" <span class="k">for</span> i <span class="k">in</span> range(Z.shape[1])]
+<span class="k">return</span> pd.DataFrame(Z, index=samples, columns=cols)</pre></details>
+
+    <details class="code"><summary>Step 3 — Per-view weights, then top features per factor <span class="tag">_weights_from_model() · top_features_per_factor()</span></summary>
+<pre>W = ent.model.getExpectations()["W"]   <span class="c"># list, one matrix per view</span>
+<span class="k">for</span> vi, view <span class="k">in</span> enumerate(views):       <span class="c"># features x factors per view</span>
+    out[view] = pd.DataFrame(W[vi]["E"], index=feature_names[vi], columns=cols)
+
+<span class="c"># For each factor, keep the top-|weight| features ACROSS all views,</span>
+<span class="c"># preserving signed weight + view so every hypothesis can cite them.</span>
+<span class="k">for</span> view, W <span class="k">in</span> weights.items():
+    <span class="k">for</span> feature, w <span class="k">in</span> W[factor].items():
+        rows.append({"feature": feature, "view": view, "weight": float(w)})
+rows.sort(key=<span class="k">lambda</span> r: abs(r["weight"]), reverse=True)   <span class="c"># rank by |weight|</span>
+result[factor] = rows[:top_k]</pre></details>
+
+    <details class="code"><summary>Step 2 (fallback) — SVD when mofapy2 is unavailable <span class="tag">train_fallback()</span></summary>
+<pre><span class="k">from</span> sklearn.decomposition <span class="k">import</span> TruncatedSVD
+<span class="k">from</span> sklearn.preprocessing <span class="k">import</span> StandardScaler
+
+<span class="c"># Pivot each view to samples x features, scale, then concatenate.</span>
+blocks = [StandardScaler().fit_transform(wide.values) <span class="k">for</span> wide <span class="k">in</span> per_view]
+X = np.hstack(blocks)
+svd = TruncatedSVD(n_components=n_factors, random_state=1)
+Z  = svd.fit_transform(X)     <span class="c"># samples x factors (NOT true MOFA+, same artefacts)</span>
+Wt = svd.components_.T         <span class="c"># features x factors</span></pre></details>
+    <p style="margin:.6em 0 0;color:var(--muted);font-size:14px">Outputs: <code>data/factors.csv</code>,
+      <code>data/weights/&lt;view&gt;.csv</code>, and <code>data/top_features_per_factor.json</code> — the tidy structure
+      the agent consumes.</p>
+  </div>
+
+  <div class="card accent-teal">
+    <h4>⑤ The output — and how to read it scientifically</h4>
+    <p>MOFA+ produces three linked artefacts. These are what matter:</p>
+    <table>
+      <thead><tr><th>Artefact</th><th>What it means</th><th>How to use it</th></tr></thead>
+      <tbody>
+        <tr><td><code>factors.csv</code></td><td>Latent factors — shared axes of variation across all omics views (samples × factors)</td><td>A factor groups correlated signals spanning DNA, RNA, methylation and drug response</td></tr>
+        <tr><td><code>weights/&lt;view&gt;.csv</code></td><td>Per-view feature weights (features × factors); the signed loading of each feature on each factor</td><td><b>Direction &amp; size</b> of a feature's contribution to a factor</td></tr>
+        <tr><td><code>top_features_per_factor.json</code></td><td>The top-|weight| features per factor, across all views, with signed weight and view of origin</td><td>The agent's input — what drives each factor, and where the signal lives</td></tr>
+        <tr><td><b>ranked hypotheses</b></td><td>Candidate-driver statements with evidence-strength scores</td><td>Each one traceable to a factor + feature weight; the actionable output</td></tr>
+      </tbody>
+    </table>
+    <div class="statline">
+      <div class="stat"><div class="v">4</div><div class="l">omics views integrated jointly</div></div>
+      <div class="stat"><div class="v">10</div><div class="l">latent factors (default <code>--n-factors</code>)</div></div>
+      <div class="stat"><div class="v">15</div><div class="l">top features kept per factor</div></div>
+    </div>
+    <p style="margin-top:6px"><b>Reading it like a scientist:</b></p>
+    <ul class="clean">
+      <li><b>A factor is a shared axis of variation:</b> it groups features that move together across DNA, RNA and
+        methylation. A high-weight gene that appears across <i>several</i> views on the same factor is a
+        <b>candidate driver</b> worth a closer look.</li>
+      <li><b>Sign and magnitude both matter:</b> the signed weight tells you direction; a large absolute weight tells
+        you how strongly that feature defines the factor.</li>
+      <li><b>Correlation across layers is NOT mechanism:</b> a factor only says these signals co-vary — it does not say
+        one causes another, or that the gene drives the disease. That gap is exactly what the agent is built to respect.</li>
+      <li><b>Every hypothesis is traceable:</b> each candidate-driver statement points back to a specific factor and the
+        feature weights it rests on, so a scientist can audit it against the source matrices.</li>
+    </ul>
+    <div class="note"><b>Honesty note.</b> The hypotheses this pipeline generates are <b>exploratory</b>. A MOFA+ factor
+      surfaces covariation, not causation; any candidate driver requires <b>independent statistical and experimental
+      validation</b> before it can be treated as biology.</div>
+  </div>
+</div></section>
+
+<!-- =================== VIEW 2: AGENT =================== -->
+<section class="view" id="v2"><div class="wrap">
+  <h2 class="section">Part 2</h2>
+  <h3 class="big">The agent — what it adds, how it’s built, how to read its reasoning</h3>
+  <p class="intro">The pipeline above produces factors and weights — but not interpretation. The agent wraps those
+    artefacts in an Azure OpenAI model that <b>interprets each factor, connects its top features to biology, retrieves
+    literature evidence, and ranks candidate-driver hypotheses</b> — while being forbidden from claiming mechanism
+    from correlation.</p>
+
+  <div class="grid g3">
+    <div class="card accent-teal"><h4>Interprets factors</h4><p style="color:var(--muted);font-size:14px">Reads the top-weighted features of each latent factor and proposes what covariation pattern they might represent.</p></div>
+    <div class="card accent-teal"><h4>Connects to biology</h4><p style="color:var(--muted);font-size:14px">Pulls supporting / contradicting literature from PubMed (or Azure AI Search) to ground each candidate driver.</p></div>
+    <div class="card accent-teal"><h4>Ranks &amp; scores</h4><p style="color:var(--muted);font-size:14px">Orders hypotheses and assigns an evidence-strength score from data support plus literature — never inventing either.</p></div>
+    <div class="card accent-teal"><h4>Refuses to claim mechanism</h4><p style="color:var(--muted);font-size:14px">A hard rule: factors capture covariation, not causation — every item stays a tentatively-phrased hypothesis.</p></div>
+  </div>
+
+  <div class="card accent-azure">
+    <h4>① The “skills” the agent possesses</h4>
+    <p>This agent's skills are three reasoning steps applied to each factor: <b>factor interpretation</b>,
+      <b>evidence retrieval</b>, and <b>ranking</b>. The first and third are granted by its system prompt; the
+      middle one is a real tool call to a literature index.</p>
+    <table>
+      <thead><tr><th>Skill</th><th>What invoking it does</th></tr></thead>
+      <tbody>
+        <tr><td><span class="pill t">factor interpretation</span></td><td>Read the top features + signed weights of a factor and propose what it may represent</td></tr>
+        <tr><td><span class="pill a">evidence retrieval</span></td><td>Query PubMed E-utilities (or Azure AI Search) for literature supporting or contradicting each candidate</td></tr>
+        <tr><td><span class="pill t">ranking</span></td><td>Order hypotheses and assign an evidence-strength score in [0,1] from data + literature</td></tr>
+      </tbody>
+    </table>
+
+    <details class="code"><summary>Code — how factors &amp; weights are passed in <span class="tag">reason_over_factor()</span></summary>
+<pre>user_payload = {
+    "factor": factor,
+    "top_features": features,        <span class="c"># [{feature, view, signed weight}, ...]</span>
+    "literature_evidence": evidence, <span class="c"># PubMed / Azure AI Search hits</span>
+}
+resp = client.chat.completions.create(
+    model=deployment,
+    temperature=0.2,
+    response_format={"type": "json_object"},   <span class="c"># strict JSON out</span>
+    messages=[{"role": "system", "content": SYSTEM_PROMPT},
+              {"role": "user", "content": json.dumps(user_payload, indent=2)}])</pre></details>
+
+    <details class="code"><summary>Code — the evidence / grounding step <span class="tag">gather_evidence() · search_pubmed()</span></summary>
+<pre><span class="c"># Build a query from the top-3 feature stems of the factor.</span>
+keywords = [f["feature"].split("_", 1)[-1] <span class="k">for</span> f <span class="k">in</span> features[:3]]
+query = " ".join(keywords) + " chronic lymphocytic leukemia"
+
+evidence = search_azure_ai_search(query)   <span class="c"># in-tenant index, if configured</span>
+<span class="k">if</span> <span class="k">not</span> evidence:
+    evidence = search_pubmed(query)        <span class="c"># public NCBI E-utilities fallback</span>
+<span class="c"># Returns [] on any failure or when OFFLINE=1 — never fabricated.</span></pre></details>
+
+    <details class="code"><summary>Code — the correlation ≠ causation guardrail <span class="tag">SYSTEM_PROMPT</span></summary>
+<pre>You are a cautious computational-biology research assistant.
+You are given the top-weighted features of latent factors learned by
+MOFA+ across several omics views (mRNA, methylation, drug response,
+mutations) for a chronic lymphocytic leukaemia cohort.
+
+HARD RULES — follow exactly:
+1. MOFA+ factors capture COVARIATION, not causation. NEVER assert
+   mechanism or causality from correlation. Every item is a HYPOTHESIS,
+   phrased tentatively ("may", "could", "is consistent with").
+2. Every hypothesis MUST cite its data basis: the factor name, the
+   specific feature(s), their signed weight(s), and the view(s).
+   Do not invent features or weights — use only those provided.
+3. Assign an evidence_strength score in [0,1] from weight magnitude /
+   how many views co-vary, AND whether literature supports it.
+4. If literature is absent, say so; do not fabricate citations or PMIDs.</pre></details>
+
+    <details class="code"><summary>Code — the Azure OpenAI client (key or keyless Entra ID) <span class="tag">get_client()</span></summary>
+<pre><span class="k">from</span> openai <span class="k">import</span> AzureOpenAI
+
+endpoint = os.environ["AZURE_OPENAI_ENDPOINT"]
+api_key  = os.getenv("AZURE_OPENAI_API_KEY")
+<span class="k">if</span> api_key:
+    <span class="k">return</span> AzureOpenAI(azure_endpoint=endpoint, api_key=api_key, api_version=api_version)
+
+<span class="c"># Keyless auth via Entra ID (Managed Identity / az login).</span>
+<span class="k">from</span> azure.identity <span class="k">import</span> DefaultAzureCredential, get_bearer_token_provider
+token_provider = get_bearer_token_provider(
+    DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default")
+<span class="k">return</span> AzureOpenAI(azure_endpoint=endpoint,
+                   azure_ad_token_provider=token_provider, api_version=api_version)</pre></details>
+  </div>
+
+  <div class="card accent-teal">
+    <h4>② How to read the agent’s ranked output</h4>
+    <p>For each factor the agent returns strict JSON: a ranked list of hypotheses, each with caveats, data citations,
+      an evidence score, and any supporting / contradicting literature. A human-readable <code>hypotheses.md</code> is
+      written alongside it.</p>
+<pre style="background:var(--code-bg);border-radius:12px"><span class="c"># Candidate-driver hypotheses (MOFA+ + Azure OpenAI)</span>
+## Factor1
+### #1 (evidence 0.62)
+Elevated expression of <span class="k">mRNA_017</span> may be consistent with the
+methylation shift seen on this factor.
+*Caveats:* correlational; could be confounded by cohort batch.
+Data citations:
+- `Factor1` / `mRNA_017` (mRNA) weight=1.84
+- `Factor1` / `Methylation_044` (Methylation) weight=-1.21</pre>
+    <ul class="clean">
+      <li><b><code>rank</code> + <code>statement</code></b> — the tentatively-phrased candidate driver, ordered most to
+        least supported.</li>
+      <li><b><code>data_citations</code></b> — the exact <code>(factor, feature, view, weight)</code> the claim rests
+        on; this is the audit trail back into the MOFA+ output.</li>
+      <li><b><code>evidence_strength</code> + <code>evidence_rationale</code></b> — a [0,1] score and a one-line
+        explanation of how data support and literature combined to produce it.</li>
+    </ul>
+    <div class="good"><b>Scientific interpretation — the key habit:</b> read every hypothesis as a question, not an
+      answer. Confirm each <code>data_citation</code> matches the weight in <code>factors.csv</code> /
+      <code>weights/&lt;view&gt;.csv</code>, check the cited PMIDs are real, and treat a high score as
+      "worth validating", never "proven". The hard rules in the system prompt — <i>covariation not causation</i>,
+      <i>cite the data</i>, <i>don't fabricate citations</i> — are what make the output trustworthy enough for a
+      scientist to act on.</div>
+  </div>
+</div></section>
+
+<!-- =================== VIEW 3: BEYOND =================== -->
+<section class="view" id="v3"><div class="wrap">
+  <h2 class="section">Part 3</h2>
+  <h3 class="big">From a toy lab to real-world multimodal integration</h3>
+  <p class="intro">This lab integrates four tidy views into ten factors. Real translational genomics fuses far more
+    modalities — and that complexity is exactly where agentic AI earns its keep.</p>
+
+  <div class="grid g2">
+    <div class="card accent-amber">
+      <h4>What true multimodal integration looks like</h4>
+      <ul class="clean">
+        <li><b>More modalities:</b> DNA (WGS/WES), RNA, methylation, proteomics, single-cell, plus <b>imaging</b> (histopathology, radiology) and structured <b>clinical</b> data</li>
+        <li><b>Heterogeneous scales &amp; likelihoods:</b> continuous, count, binary and image-embedding views that must be modelled together</li>
+        <li><b>Missing data everywhere:</b> not every assay is run on every patient — integration must tolerate gaps</li>
+        <li><b>Branching scientific decisions:</b> batch correction, normalisation, factor count, which views to trust</li>
+        <li><b>Strict provenance:</b> regulators and journals demand every parameter, version and input be reproducible</li>
+      </ul>
+    </div>
+    <div class="card accent-teal">
+      <h4>Where the agent pattern scales</h4>
+      <ul class="clean">
+        <li><b>Orchestration</b> — the same interpret→retrieve→rank loop over dozens of views and thousands of features</li>
+        <li><b>Hypothesis triage</b> — surface the handful of cross-modal signals worth a wet-lab follow-up</li>
+        <li><b>Evidence grounding</b> — connect each candidate to the literature with real, checkable citations</li>
+        <li><b>Provenance &amp; lineage</b> — record which factor, weight and source backs every statement</li>
+        <li><b>Natural-language access</b> — ask "what co-varies with drug resistance?" instead of writing integration code</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card accent-azure">
+    <h4>This is already a commercial frontier</h4>
+    <p>Agentic, multimodal interpretation platforms are being built in industry today:</p>
+    <table>
+      <thead><tr><th>Platform</th><th>What it does in this space</th></tr></thead>
+      <tbody>
+        <tr><td><b>Tempus (Lens / One)</b></td><td>Multimodal oncology data (genomic + clinical + imaging) with an agentic analytics layer over it</td></tr>
+        <tr><td><b>Caris Life Sciences</b></td><td>Whole-exome + whole-transcriptome molecular profiling at scale, with AI-driven signature discovery</td></tr>
+        <tr><td><b>Foundation Medicine</b></td><td>Comprehensive genomic profiling feeding biomarker and therapy-matching insight</td></tr>
+        <tr><td><b>BenevolentAI</b></td><td>Knowledge-graph + ML target identification — connecting omics signals to druggable hypotheses</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card accent-azure">
+    <h4>Value by stakeholder</h4>
+    <div class="grid g3" style="margin-top:6px">
+      <div>
+        <span class="pill a">Researchers</span>
+        <p style="color:var(--muted);font-size:14px;margin-top:8px">A ranked, cited shortlist of cross-modal candidate drivers — turning a wall of factor matrices into testable hypotheses in plain language.</p>
+      </div>
+      <div>
+        <span class="pill t">Pharma / R&amp;D</span>
+        <p style="color:var(--muted);font-size:14px;margin-top:8px">Faster target identification and biomarker discovery, with every hypothesis traceable to data and literature for go/no-go decisions.</p>
+      </div>
+      <div>
+        <span class="pill m">Clinical</span>
+        <p style="color:var(--muted);font-size:14px;margin-top:8px">Interpretable, governed molecular summaries — provided humans stay in the loop and nothing is used for diagnosis unvalidated.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card accent-amber">
+    <h4>The non-negotiable: guardrails</h4>
+    <p>Scaling agentic multi-omics safely depends on the same principles this small lab already demonstrates:</p>
+    <ul class="clean">
+      <li><b>Validation before belief</b> — every hypothesis is exploratory until independent statistical and experimental work confirms it.</li>
+      <li><b>Correlation ≠ causation</b> — factors capture covariation; the agent must never upgrade that to mechanism.</li>
+      <li><b>Full lineage</b> — each claim cites its factor, feature, signed weight and view, plus real literature PMIDs.</li>
+      <li><b>Human review</b> — the agent proposes and ranks; a qualified scientist reviews, decides, and owns the call.</li>
+    </ul>
+    <div class="good" style="margin-top:14px"><b>The big idea:</b> in multi-omics the bottleneck is <i>interpretation</i> — turning shared axes of variation into
+      hypotheses a scientist can test — not the sequencing itself. A scientist-supervised agent that interprets factors,
+      grounds them in evidence, and ranks them honestly — exactly what you saw in Lab 4 — is how that bottleneck starts to open,
+      from a 4-view demo to true multimodal integration.</div>
+  </div>
+</div></section>
+
+<footer>
+  Built from Lab 4 of the “Agentic Engineering in Bioinformatics &amp; Genomics” series ·
+  Synthetic demo data · For education &amp; research only — not for clinical use without validation.
+</footer>
+
+<script>
+  (function(){
+    var tabs = document.querySelectorAll('.tab');
+    var views = document.querySelectorAll('.view');
+    tabs.forEach(function(t){
+      t.addEventListener('click', function(){
+        tabs.forEach(function(x){x.classList.remove('active');});
+        views.forEach(function(x){x.classList.remove('active');});
+        t.classList.add('active');
+        document.getElementById(t.getAttribute('data-target')).classList.add('active');
+        window.scrollTo({top:0, behavior:'smooth'});
+      });
+    });
+    var root = document.documentElement;
+    var btn = document.getElementById('themeToggle');
+    btn.addEventListener('click', function(){
+      var dark = root.classList.contains('dark');
+      var light = root.classList.contains('light');
+      var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      var currentlyDark = dark || (!light && prefersDark);
+      root.classList.remove('dark','light');
+      root.classList.add(currentlyDark ? 'light' : 'dark');
+    });
+  })();
+</script>
+</body>
+</html>

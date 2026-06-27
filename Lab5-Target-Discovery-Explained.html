@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" class="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Lab 5 — Agentic Drug-Target Discovery from Human Genetics</title>
+<style>
+  :root{
+    --bg:#eef3f9; --surface:#ffffff; --surface-2:#f5f8fc; --ink:#16202c; --muted:#5d6b7a;
+    --line:#dce4ee; --navy:#0e2a47; --azure:#0e8aa0; --azure-soft:#e8f1f8;
+    --teal:#3a6ad0; --teal-soft:#e3f4f1; --amber:#e08a1e; --amber-soft:#fcefdb;
+    --code-bg:#0f1f33; --code-ink:#e7eefb; --code-key:#6fc7ff; --code-com:#7d93ad;
+    --shadow:0 6px 22px rgba(20,40,70,.08); --radius:16px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#06202a; --surface:#0c2a36; --surface-2:#0a2530; --ink:#e8eef6; --muted:#9fb0c4;
+      --line:#22324a; --azure:#3fc6d8; --azure-soft:#0d3a48; --teal:#5a9af0; --teal-soft:#10303f;
+      --amber:#f0a946; --amber-soft:#33260f; --navy:#08222c; --shadow:0 6px 22px rgba(0,0,0,.4);}
+  }
+  :root.dark{ --bg:#06202a; --surface:#0c2a36; --surface-2:#0a2530; --ink:#e8eef6; --muted:#9fb0c4;
+    --line:#22324a; --azure:#3fc6d8; --azure-soft:#0d3a48; --teal:#5a9af0; --teal-soft:#10303f;
+    --amber:#f0a946; --amber-soft:#33260f; --navy:#08222c; --shadow:0 6px 22px rgba(0,0,0,.4);}
+  :root.light{ --bg:#eef3f9; --surface:#ffffff; --surface-2:#f5f8fc; --ink:#16202c; --muted:#5d6b7a;
+    --line:#dce4ee; --azure:#0e8aa0; --azure-soft:#e8f1f8; --teal:#3a6ad0; --teal-soft:#e3f4f1;
+    --amber:#e08a1e; --amber-soft:#fcefdb; --navy:#0e2a47; --shadow:0 6px 22px rgba(20,40,70,.08);}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.55;-webkit-font-smoothing:antialiased;}
+  a{color:var(--azure)}
+  .wrap{max-width:1060px;margin-inline:auto;padding-inline:20px}
+  /* header */
+  header.top{position:sticky;top:0;z-index:50;background:color-mix(in srgb,var(--surface) 88%,transparent);
+    backdrop-filter:saturate(1.4) blur(8px);border-block-end:1px solid var(--line)}
+  .topbar{display:flex;align-items:center;gap:14px;padding-block:12px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.2px}
+  .dot{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,var(--teal),var(--azure));
+    display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:800}
+  .brand small{display:block;font-weight:600;color:var(--muted);font-size:11px;letter-spacing:.4px}
+  .spacer{flex:1}
+  .themebtn{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;
+    padding:7px 13px;font-size:13px;font-weight:600;cursor:pointer}
+  /* tabs */
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;padding-block:10px 14px}
+  .tab{border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:999px;
+    padding:9px 16px;font-size:14px;font-weight:700;cursor:pointer;transition:.15s}
+  .tab:hover{color:var(--ink)}
+  .tab.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+  @media (prefers-color-scheme: dark){.tab.active{background:var(--azure);border-color:var(--azure);color:#06121f}}
+  :root.dark .tab.active{background:var(--azure);border-color:var(--azure);color:#06121f}
+  /* hero */
+  .hero{background:linear-gradient(135deg,#08303f,#0d4a5e 55%,#106b6e);color:#eaf2fb;border-radius:0 0 28px 28px}
+  .hero .wrap{padding-block:46px 40px}
+  .kicker{color:#8fe3d6;font-weight:800;letter-spacing:3px;font-size:12px;margin:0 0 10px}
+  .hero h1{margin:.1em 0;font-size:clamp(26px,4.4vw,42px);line-height:1.08;letter-spacing:-.5px}
+  .hero p.lede{color:#b9cbe0;font-size:17px;max-width:74ch;margin:.6em 0 0}
+  .chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+  .chip{background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.16);border-radius:999px;
+    padding:7px 14px;font-size:13px;font-weight:600;color:#dfeaf6}
+  .chip b{color:#fff}
+  /* layout */
+  section.view{display:none;padding-block:30px 10px}
+  section.view.active{display:block;animation:fade .25s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  h2.section{font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--teal);margin:6px 0 2px;font-weight:800}
+  h3.big{font-size:clamp(22px,3vw,30px);margin:.1em 0 .5em;letter-spacing:-.3px}
+  p.intro{color:var(--muted);font-size:16px;max-width:78ch}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+    box-shadow:var(--shadow);padding:22px 22px;margin:16px 0}
+  .card h4{margin:.1em 0 .5em;font-size:18px}
+  .grid{display:grid;gap:16px}
+  .g2{grid-template-columns:1fr 1fr}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  @media(max-width:780px){.g2,.g3{grid-template-columns:1fr}}
+  .accent-teal{border-inline-start:5px solid var(--teal)}
+  .accent-azure{border-inline-start:5px solid var(--azure)}
+  .accent-amber{border-inline-start:5px solid var(--amber)}
+  .pill{display:inline-block;font-size:12px;font-weight:700;border-radius:999px;padding:3px 10px}
+  .pill.t{background:var(--teal-soft);color:var(--teal)}
+  .pill.a{background:var(--azure-soft);color:var(--azure)}
+  .pill.m{background:var(--amber-soft);color:var(--amber)}
+  /* flow */
+  .flow{display:flex;align-items:stretch;gap:0;flex-wrap:wrap;margin:18px 0}
+  .stage{flex:1;min-width:150px;background:var(--surface);border:1px solid var(--line);border-radius:14px;
+    padding:16px;box-shadow:var(--shadow);position:relative}
+  .stage .n{width:30px;height:30px;border-radius:9px;background:var(--azure);color:#fff;font-weight:800;
+    display:flex;align-items:center;justify-content:center;margin-bottom:8px}
+  .stage h5{margin:.2em 0;font-size:15px}
+  .stage p{margin:.2em 0 0;color:var(--muted);font-size:13px}
+  .arrow{display:flex;align-items:center;justify-content:center;color:var(--azure);font-size:24px;
+    font-weight:800;padding-inline:6px}
+  @media(max-width:780px){.arrow{transform:rotate(90deg);padding-block:4px}}
+  /* tables */
+  table{border-collapse:collapse;width:100%;font-size:14px;margin-top:6px}
+  th,td{text-align:start;padding:10px 12px;border-block-end:1px solid var(--line);vertical-align:top}
+  thead th{background:var(--surface-2);font-size:12px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted)}
+  td code,p code,li code{background:var(--surface-2);border:1px solid var(--line);border-radius:6px;
+    padding:1px 6px;font-family:ui-monospace,"Cascadia Code",Consolas,monospace;font-size:.92em}
+  /* code blocks via details */
+  details.code{margin:12px 0;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--code-bg)}
+  details.code summary{cursor:pointer;list-style:none;padding:11px 16px;font-weight:700;font-size:13.5px;
+    color:#dbe7f6;background:#13243b;display:flex;align-items:center;gap:9px}
+  details.code summary::-webkit-details-marker{display:none}
+  details.code summary::before{content:"▸";color:var(--code-key);font-size:13px}
+  details.code[open] summary::before{content:"▾"}
+  details.code summary .tag{margin-inline-start:auto;font-weight:600;color:#8aa6c6;font-size:12px}
+  pre{margin:0;padding:16px 18px;overflow:auto;color:var(--code-ink);
+    font-family:ui-monospace,"Cascadia Code",Consolas,monospace;font-size:13px;line-height:1.6}
+  pre .c{color:var(--code-com)} pre .k{color:var(--code-key)}
+  .note{background:var(--amber-soft);border:1px solid var(--amber);border-radius:12px;padding:14px 16px;margin:14px 0}
+  .note b{color:var(--amber)}
+  .good{background:var(--teal-soft);border:1px solid var(--teal);border-radius:12px;padding:14px 16px;margin:14px 0}
+  ul.clean{padding-inline-start:20px;margin:.4em 0}
+  ul.clean li{margin:.32em 0}
+  .kv{display:flex;gap:10px;align-items:baseline;margin:.3em 0}
+  .kv b{color:var(--azure);min-width:128px;display:inline-block}
+  .statline{display:flex;gap:18px;flex-wrap:wrap;margin:10px 0}
+  .stat{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 18px;box-shadow:var(--shadow)}
+  .stat .v{font-size:26px;font-weight:800;color:var(--teal)}
+  .stat .l{font-size:12px;color:var(--muted)}
+  footer{color:var(--muted);font-size:13px;text-align:center;padding:34px 16px 50px}
+  .badge{display:inline-block;background:var(--teal);color:#06201c;font-weight:800;border-radius:8px;
+    padding:2px 9px;font-size:12px}
+  @media (prefers-color-scheme: dark){.badge{color:#06201c}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap topbar">
+    <a class="themebtn" href="index.html" style="text-decoration:none">← All use cases</a>
+    <span class="brand"><span class="dot">TD</span><span>Agentic Target-ID Lab<small>BIOINFORMATICS · LAB 05</small></span></span>
+    <span class="spacer"></span>
+    <button class="themebtn" id="themeToggle" type="button">◐ Theme</button>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="wrap">
+    <p class="kicker">AGENTIC ENGINEERING IN GENOMICS</p>
+    <h1>How an AI agent prioritizes drug targets<br>from human genetics</h1>
+    <p class="lede">A walkthrough of Lab 5: the public genetics data, the target-discovery pipeline, the code that
+      queries it, the ranked output and how to read it scientifically — and the AI agent that assembles fragmented
+      evidence, ranks targets transparently, and writes the prioritization memo on the Azure + GitHub + VS Code stack.</p>
+    <div class="chips">
+      <span class="chip">Stack: <b>Azure · GitHub · VS Code</b></span>
+      <span class="chip">Data: <b>Open Targets Platform</b></span>
+      <span class="chip">Worked example: <b>type 2 diabetes</b></span>
+      <span class="chip">Disease ID: <b>EFO_0001360</b></span>
+      <span class="chip">Model: <b>Azure OpenAI</b></span>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <nav class="tabs" id="tabs">
+    <button class="tab active" data-target="v1" type="button">1 · The Pipeline</button>
+    <button class="tab" data-target="v2" type="button">2 · The Agent</button>
+    <button class="tab" data-target="v3" type="button">3 · Beyond — scaling it up</button>
+  </nav>
+</div>
+
+<!-- =================== VIEW 1: PIPELINE =================== -->
+<section class="view active" id="v1"><div class="wrap">
+  <h2 class="section">Part 1</h2>
+  <h3 class="big">The pipeline — data, tools, steps &amp; ranked output</h3>
+  <p class="intro">Before any AI, the lab is a standard target-discovery workflow: pull disease-associated genes from
+    human genetics, layer on druggability and safety, then rank. Understanding it is the key to understanding what the
+    agent automates.</p>
+
+  <div class="card accent-amber">
+    <h4>① What data is used — and is it real?</h4>
+    <p>The lab is built on the <b>Open Targets Platform GraphQL API</b> — a public resource (<span class="pill m">no API key</span>)
+      that integrates human genetics with target–disease evidence. The worked example is <b>type 2 diabetes mellitus</b>
+      (<code>EFO_0001360</code>). The downloader queries the live API first, and a cached JSON snapshot is bundled so the
+      lab still runs fully offline.</p>
+    <p>Open Targets is valuable because it <b>aggregates many independent lines of evidence</b> into one per-target score
+      breakdown:</p>
+    <ul class="clean">
+      <li><b>Genetic association</b> — GWAS and curated disease-gene links (the human-genetics signal)</li>
+      <li><b>eQTL / colocalization</b> — surfaced via RNA-expression &amp; affected-pathway evidence (which tissue, which mechanism)</li>
+      <li><b>Known drugs</b> — targets already drugged for this or related indications</li>
+      <li><b>Tractability</b> — is the target druggable, and by what modality (antibody / small molecule / PROTAC)?</li>
+      <li><b>Safety</b> — curated liabilities and adverse-event signals</li>
+    </ul>
+    <div class="note"><b>Why this matters scientifically.</b> A target backed by <b>human genetic evidence</b> — a variant
+      that alters the gene and tracks with disease — is more likely to be causal than one nominated by expression or
+      animal models alone. That is the de-risking premise of the whole pipeline. But the cached snapshot ships
+      <b>illustrative, representative scores</b>, not authoritative ones: re-run online for current numbers.</div>
+
+    <details class="code"><summary>Code — snapshot Open Targets with automatic offline fallback <span class="tag">scripts/download_data.py</span></summary>
+<pre><span class="k">def</span> snapshot(efo_id, size):
+    <span class="c"># Try the live API; on any failure return the bundled fallback if available.</span>
+    <span class="k">try</span>:
+        print(f<span class="k">"Fetching live associations for {efo_id} (size={size}) ..."</span>)
+        result = associated_targets(efo_id, size=size)   <span class="c"># live GraphQL call</span>
+        result[<span class="k">"_source"</span>] = <span class="k">"live"</span>
+        <span class="k">return</span> result
+    <span class="k">except</span> Exception <span class="k">as</span> exc:                    <span class="c"># network down / DNS blocked / API change</span>
+        print(f<span class="k">"Live fetch failed ({type(exc).__name__}: {exc})."</span>, file=sys.stderr)
+        <span class="k">if</span> efo_id <span class="k">in</span> FALLBACK:                  <span class="c"># bundled T2D snapshot keeps the lab runnable</span>
+            print(<span class="k">"Using bundled fallback snapshot."</span>, file=sys.stderr)
+            data = dict(FALLBACK[efo_id]); data[<span class="k">"_source"</span>] = <span class="k">"fallback"</span>
+            <span class="k">return</span> data
+        <span class="k">raise</span></pre></details>
+    <p style="margin:.6em 0 0;color:var(--muted);font-size:14px">Output: <code>data/associations_EFO_0001360.json</code>
+      (disease + ranked targets with per-datatype scores), consumed by the ranking agent.</p>
+  </div>
+
+  <div class="card accent-azure">
+    <h4>② The pipeline at a glance</h4>
+    <p>Four stages turn a disease ID into a prioritized, explained target list:</p>
+    <div class="flow">
+      <div class="stage"><div class="n">1</div><h5>Query targets</h5><p>Ask Open Targets for the disease's associated targets and overall scores.</p></div>
+      <div class="arrow">&rarr;</div>
+      <div class="stage"><div class="n">2</div><h5>Collect evidence</h5><p>Pull per-datatype scores (genetic, eQTL/pathway, known-drug, literature).</p></div>
+      <div class="arrow">&rarr;</div>
+      <div class="stage"><div class="n">3</div><h5>Add tractability + safety</h5><p>Enrich each target with druggability buckets and curated safety liabilities.</p></div>
+      <div class="arrow">&rarr;</div>
+      <div class="stage"><div class="n">4</div><h5>Rank + explain</h5><p>Score across four axes and write a transparent prioritization memo.</p></div>
+    </div>
+  </div>
+
+  <div class="card accent-azure">
+    <h4>③ The tools — and what each one does</h4>
+    <table>
+      <thead><tr><th>Tool</th><th>Role in the pipeline</th><th>Type</th></tr></thead>
+      <tbody>
+        <tr><td><b>Open Targets GraphQL API</b></td><td>Public, key-free source of target–disease association, tractability and safety evidence</td><td>Open / public</td></tr>
+        <tr><td><b>requests / pandas</b></td><td>HTTP transport for GraphQL and tabular handling of the target/score data</td><td>Open-source</td></tr>
+        <tr><td><b>Azure OpenAI</b></td><td>The rank agent's "brain" (Part 2) — assembles evidence, ranks, and writes the memo</td><td>Azure</td></tr>
+        <tr><td><b>Azure AI Search</b></td><td><i>Optional</i> — literature retrieval to ground rationales in published evidence</td><td>Azure</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card accent-azure">
+    <h4>④ The steps, in code</h4>
+    <p class="intro" style="margin-bottom:6px">Each query is a small, readable GraphQL string against the v4 schema. Toggle any snippet open.</p>
+
+    <details class="code"><summary>Step 1+2 — disease → associated targets with per-datatype scores <span class="tag">src/opentargets.py</span></summary>
+<pre>ASSOCIATED_TARGETS_QUERY = <span class="k">"""</span>
+query AssociatedTargets($efoId: String!, $size: Int!, $index: Int!) {
+  disease(efoId: $efoId) {
+    id
+    name
+    associatedTargets(page: { size: $size, index: $index }) {
+      count
+      rows {
+        score                       <span class="c"># overall association score</span>
+        datatypeScores {            <span class="c"># genetic_association, known_drug,</span>
+          id                        <span class="c">#   rna_expression, affected_pathway, ...</span>
+          score
+        }
+        target { id approvedSymbol approvedName biotype }
+      }
+    }
+  }
+}
+<span class="k">"""</span></pre></details>
+
+    <details class="code"><summary>Step 3a — tractability (is it druggable, by what modality?) <span class="tag">TRACTABILITY_QUERY</span></summary>
+<pre>TRACTABILITY_QUERY = <span class="k">"""</span>
+query Tractability($ensemblId: String!) {
+  target(ensemblId: $ensemblId) {
+    id
+    approvedSymbol
+    tractability {            <span class="c"># per-modality druggability buckets</span>
+      label                  <span class="c">#   Antibody / Small molecule / PROTAC / Other</span>
+      modality
+      value
+    }
+  }
+}
+<span class="k">"""</span></pre></details>
+
+    <details class="code"><summary>Step 3b — curated safety liabilities <span class="tag">SAFETY_QUERY</span></summary>
+<pre>SAFETY_QUERY = <span class="k">"""</span>
+query Safety($ensemblId: String!) {
+  target(ensemblId: $ensemblId) {
+    id
+    approvedSymbol
+    safetyLiabilities {      <span class="c"># known adverse events / organ-system toxicity</span>
+      event
+      eventId
+      datasource
+      effects { direction dosing }
+      biosamples { tissueLabel }
+    }
+  }
+}
+<span class="k">"""</span></pre></details>
+
+    <details class="code"><summary>Flatten datatype scores for easy ranking <span class="tag">associated_targets()</span></summary>
+<pre>targets.append({
+    <span class="k">"ensemblId"</span>: t[<span class="k">"id"</span>],
+    <span class="k">"symbol"</span>: t[<span class="k">"approvedSymbol"</span>],
+    <span class="k">"name"</span>: t.get(<span class="k">"approvedName"</span>),
+    <span class="k">"biotype"</span>: t.get(<span class="k">"biotype"</span>),
+    <span class="k">"overallScore"</span>: row[<span class="k">"score"</span>],
+    <span class="c"># Flatten the datatype list into {id: score} for easy ranking.</span>
+    <span class="k">"datatypeScores"</span>: {d[<span class="k">"id"</span>]: d[<span class="k">"score"</span>] <span class="k">for</span> d <span class="k">in</span> row[<span class="k">"datatypeScores"</span>]},
+})</pre></details>
+  </div>
+
+  <div class="card accent-teal">
+    <h4>⑤ The output — and how to read it scientifically</h4>
+    <p>The pipeline produces one row per candidate target, plus a written memo. These are the signals that matter:</p>
+    <table>
+      <thead><tr><th>Signal</th><th>What it means</th><th>How to use it</th></tr></thead>
+      <tbody>
+        <tr><td><code>genetic_association</code></td><td>Strength of human-genetic support (GWAS / curated disease-gene links)</td><td><b>The de-risking axis</b> — higher = stronger prior that the gene is causal</td></tr>
+        <tr><td>tissue specificity</td><td><code>rna_expression</code> + <code>affected_pathway</code> (eQTL / colocalization-derived)</td><td>Where and by what mechanism the target acts</td></tr>
+        <tr><td>tractability</td><td>Per-modality druggability buckets</td><td><b>Can we drug it?</b> antibody vs small molecule vs PROTAC</td></tr>
+        <tr><td>safety signals</td><td>Curated <code>safetyLiabilities</code></td><td>More / severe liabilities lower the priority</td></tr>
+        <tr><td><code>overallScore</code></td><td>Open Targets' combined association score</td><td>A quick first-pass ordering across all evidence</td></tr>
+      </tbody>
+    </table>
+    <div class="statline">
+      <div class="stat"><div class="v">5</div><div class="l">datatypes combined per target</div></div>
+      <div class="stat"><div class="v">4</div><div class="l">scoring axes in the memo</div></div>
+      <div class="stat"><div class="v">EFO_0001360</div><div class="l">worked example (type 2 diabetes)</div></div>
+    </div>
+    <p style="margin-top:6px"><b>Reading it like a scientist:</b></p>
+    <ul class="clean">
+      <li><b>Genetic support is the headline:</b> targets whose disease link is backed by human genetics are
+        <i>more likely to succeed in the clinic</i> — historically, genetically supported programs progress at
+        roughly twice the rate of those without.</li>
+      <li><b>But genetics is not destiny:</b> a strong <code>genetic_association</code> raises the prior that
+        modulating the target affects disease — it does <b>not</b> guarantee efficacy <i>or</i> safety. Tractability,
+        biology, dosing window and trial execution all still gate success.</li>
+      <li><b>Druggability gates the shortlist:</b> a perfectly genetically-validated target with no tractable modality
+        is a research problem, not a near-term drug program.</li>
+      <li><b>Safety flags re-order the ranking:</b> curated liabilities can demote an otherwise attractive target.</li>
+    </ul>
+    <div class="note"><b>Honesty note.</b> This is a <b>prioritization aid that sits alongside experimental validation</b> —
+      not a standalone go/no-go. The output triages hypotheses for literature and wet-lab follow-up; it does not
+      decide which targets advance.</div>
+  </div>
+</div></section>
+
+<!-- =================== VIEW 2: AGENT =================== -->
+<section class="view" id="v2"><div class="wrap">
+  <h2 class="section">Part 2</h2>
+  <h3 class="big">The agent — what it adds, how it's built, how to read its memo</h3>
+  <p class="intro">The queries above return raw, fragmented evidence. The agent wraps them in an Azure OpenAI model that
+    <b>assembles the evidence, scores each target across four axes, explains the rationale, and writes a transparent
+    prioritization memo</b> — while being forbidden from inventing evidence and required to flag the genetics≠efficacy caveat.</p>
+
+  <div class="grid g3">
+    <div class="card accent-teal"><h4>Assembles fragmented evidence</h4><p style="color:var(--muted);font-size:14px">One tool call pulls association scores, tractability and safety into a single bundle the model can reason over.</p></div>
+    <div class="card accent-teal"><h4>Ranks transparently</h4><p style="color:var(--muted);font-size:14px">Scores every target on four named axes, each cited to its evidence type — no opaque black-box ordering.</p></div>
+    <div class="card accent-teal"><h4>Explains the rationale</h4><p style="color:var(--muted);font-size:14px">Writes a per-target rationale paragraph naming the specific scores that drove the ranking.</p></div>
+    <div class="card accent-amber"><h4>Flags the caveat</h4><p style="color:var(--muted);font-size:14px">Required to state explicitly that genetic support is supporting evidence, not a guarantee of efficacy or safety.</p></div>
+  </div>
+
+  <div class="card accent-azure">
+    <h4>① The "skills" the agent possesses</h4>
+    <p>An agent's skills are the <b>tools it's allowed to call</b>. This agent has exactly one evidence tool — wrapping
+      the Open Targets queries — plus the built-in ability to rank and write the memo, granted by its system prompt.</p>
+    <table>
+      <thead><tr><th>Skill (tool)</th><th>What invoking it does</th></tr></thead>
+      <tbody>
+        <tr><td><span class="pill a">get_target_evidence</span></td><td>Pull the disease's top targets with association scores, tractability buckets and safety liabilities</td></tr>
+        <tr><td><span class="pill t">rank</span> + <span class="pill t">memo</span></td><td>Built-in: score each target across four axes, then write the markdown prioritization memo</td></tr>
+      </tbody>
+    </table>
+
+    <details class="code"><summary>Code — the tool body (assemble an evidence bundle) <span class="tag">src/rank_agent.py</span></summary>
+<pre><span class="k">def</span> get_target_evidence(efo_id, top=10):
+    base = _load_cached(efo_id); source = <span class="k">"cache"</span>   <span class="c"># prefer offline-safe snapshot</span>
+    <span class="k">if</span> base <span class="k">is</span> <span class="k">None</span>:
+        base = associated_targets(efo_id, size=max(top, 25)); source = <span class="k">"live"</span>
+
+    enriched = []
+    <span class="k">for</span> t <span class="k">in</span> base[<span class="k">"targets"</span>][:top]:
+        ens = t[<span class="k">"ensemblId"</span>]
+        tract, safety = t.get(<span class="k">"tractability"</span>, []), t.get(<span class="k">"safety"</span>, [])
+        <span class="k">if</span> <span class="k">not</span> tract <span class="k">or</span> <span class="k">not</span> safety:        <span class="c"># enrich live when possible, tolerate failure</span>
+            <span class="k">try</span>:
+                tract = tract <span class="k">or</span> target_tractability(ens)
+                safety = safety <span class="k">or</span> target_safety(ens)
+            <span class="k">except</span> Exception: <span class="k">pass</span>
+        enriched.append({<span class="k">"symbol"</span>: t[<span class="k">"symbol"</span>], <span class="k">"datatypeScores"</span>: t[<span class="k">"datatypeScores"</span>],
+                         <span class="k">"tractability"</span>: tract, <span class="k">"safetyLiabilities"</span>: safety, ...})
+    <span class="k">return</span> {<span class="k">"disease"</span>: base[<span class="k">"disease"</span>], <span class="k">"source"</span>: source, <span class="k">"targets"</span>: enriched}</pre></details>
+
+    <details class="code"><summary>Code — how the skill is described <i>to the model</i> (a JSON schema) <span class="tag">TOOLS[]</span></summary>
+<pre>{
+  <span class="k">"type"</span>: <span class="k">"function"</span>,
+  <span class="k">"function"</span>: {
+    <span class="k">"name"</span>: <span class="k">"get_target_evidence"</span>,
+    <span class="k">"description"</span>: (
+        <span class="k">"Fetch Open Targets evidence for a disease's top associated drug "</span>
+        <span class="k">"targets: overall association score, per-datatype scores "</span>
+        <span class="k">"(genetic_association, known_drug, affected_pathway, rna_expression, "</span>
+        <span class="k">"literature, animal_model, somatic_mutation), tractability buckets, "</span>
+        <span class="k">"and curated safety liabilities."</span>),
+    <span class="k">"parameters"</span>: {<span class="k">"type"</span>: <span class="k">"object"</span>, <span class="k">"properties"</span>: {
+        <span class="k">"efo_id"</span>: {<span class="k">"type"</span>: <span class="k">"string"</span>, <span class="k">"description"</span>: <span class="k">"EFO disease identifier, e.g. EFO_0001360."</span>},
+        <span class="k">"top"</span>:    {<span class="k">"type"</span>: <span class="k">"integer"</span>, <span class="k">"description"</span>: <span class="k">"How many top targets to retrieve."</span>, <span class="k">"default"</span>: 10}},
+        <span class="k">"required"</span>: [<span class="k">"efo_id"</span>]}
+  }
+}</pre></details>
+    <p style="color:var(--muted);font-size:14px;margin:.4em 0 0">The <i>description</i> is crucial — it's how the model
+      "knows" what evidence the tool returns and how to reason over it. Good tool descriptions are the prompt
+      engineering of agents.</p>
+  </div>
+
+  <div class="card accent-azure">
+    <h4>② The code that defines the agent's behavior</h4>
+
+    <details class="code"><summary>Its scoring rationale — the system prompt <span class="tag">SYSTEM_PROMPT</span></summary>
+<pre>You are a computational drug-discovery analyst. You prioritize drug targets for a
+disease using ONLY the evidence returned by the get_target_evidence tool (Open Targets
+Platform). You must:
+
+1. Call get_target_evidence exactly once for the requested disease.
+2. Score every returned target across four axes, each cited to its evidence type:
+   - Human genetic support  -&gt; datatypeScores.genetic_association
+   - Tissue / mechanism specificity -&gt; rna_expression and affected_pathway
+     (eQTL/colocalization-derived); note tissue if present.
+   - Tractability -&gt; the tractability buckets (which modality is druggable?).
+   - Safety -&gt; safetyLiabilities (more/severe liabilities =&gt; lower score).
+3. Produce a ranked, transparent target-prioritization memo in MARKDOWN with a
+   summary, a ranked table, top-3 rationale paragraphs, and a "Caveats" section.
+4. CRITICAL caveat you must state explicitly: human genetic association is SUPPORTING
+   evidence and does NOT guarantee clinical efficacy. ... Recommend the memo be used to
+   triage hypotheses for literature/wet-lab follow-up, not for go/no-go decisions.
+
+Be concrete and quantitative. Never invent evidence not present in the tool output.</pre></details>
+
+    <details class="code"><summary>Its engine — the tool-calling loop <span class="tag">run_agent()</span></summary>
+<pre><span class="c"># First turn: the model decides to call the tool.</span>
+first = client.chat.completions.create(
+    model=deployment, messages=messages,
+    tools=TOOLS, tool_choice=<span class="k">"auto"</span>, temperature=0.2)
+msg = first.choices[0].message
+messages.append(msg.model_dump(exclude_none=<span class="k">True</span>))
+
+<span class="c"># Execute any tool calls the model requested.</span>
+<span class="k">if</span> msg.tool_calls:
+    <span class="k">for</span> call <span class="k">in</span> msg.tool_calls:
+        args = json.loads(call.function.arguments <span class="k">or</span> <span class="k">"{}"</span>)
+        result = get_target_evidence(efo_id=args.get(<span class="k">"efo_id"</span>, efo_id),
+                                     top=int(args.get(<span class="k">"top"</span>, top)))
+        messages.append({<span class="k">"role"</span>: <span class="k">"tool"</span>, <span class="k">"tool_call_id"</span>: call.id,
+                         <span class="k">"name"</span>: call.function.name, <span class="k">"content"</span>: json.dumps(result)})
+
+<span class="c"># Second turn: the model writes the memo from the tool output.</span>
+final = client.chat.completions.create(model=deployment, messages=messages, temperature=0.2)
+<span class="k">return</span> final.choices[0].message.content <span class="k">or</span> <span class="k">""</span></pre></details>
+
+    <details class="code"><summary>Its Azure OpenAI client <span class="tag">build_client()</span></summary>
+<pre><span class="k">def</span> build_client():
+    <span class="k">from</span> openai <span class="k">import</span> AzureOpenAI   <span class="c"># imported lazily so tests can import this module</span>
+
+    endpoint = os.environ[<span class="k">"AZURE_OPENAI_ENDPOINT"</span>]
+    api_key = os.environ[<span class="k">"AZURE_OPENAI_API_KEY"</span>]
+    api_version = os.environ.get(<span class="k">"AZURE_OPENAI_API_VERSION"</span>, <span class="k">"2024-08-01-preview"</span>)
+    <span class="k">return</span> AzureOpenAI(azure_endpoint=endpoint, api_key=api_key, api_version=api_version)</pre></details>
+  </div>
+
+  <div class="card accent-teal">
+    <h4>③ How to read the prioritization memo scientifically</h4>
+    <p>The memo has a fixed, auditable shape. Learning to skim it is how you check what the agent did.</p>
+<pre style="background:var(--code-bg);border-radius:12px"><span class="c"># Target Prioritization Memo — type 2 diabetes mellitus (EFO_0001360)</span>
+One-paragraph summary of the genetics-first shortlist ...
+
+| Rank | Symbol | Overall | Genetic | Tractability | Safety flags |
+|------|--------|---------|---------|--------------|--------------|
+| 1    | PPARG  | 0.91    | 0.88    | small molecule | ...        |
+
+<span class="k">## Top-3 rationale</span>  — why each target ranks, citing genetic_association,
+                     rna_expression/affected_pathway, tractability, safety.
+<span class="k">## Caveats</span>  — genetic support is SUPPORTING evidence, not a guarantee.</pre>
+    <ul class="clean">
+      <li><b>The ranked table</b> — every target with its four-axis scores; the <code>Genetic</code> column is the de-risking signal.</li>
+      <li><b>The rationale paragraphs</b> — for the top targets, the specific evidence types and scores that drove the rank.</li>
+      <li><b>The Caveats section</b> — the mandatory, explicit statement that genetics ≠ efficacy or safety.</li>
+    </ul>
+    <div class="good"><b>Scientific interpretation — the key habit:</b> every score in the memo (e.g. a
+      <code>genetic_association</code> of 0.88) must trace back to the <code>get_target_evidence</code> tool result,
+      not to the model's imagination. The system prompt's rule <i>"never invent evidence"</i> plus tool-grounding is
+      what makes the memo trustworthy — and the Caveats section is what keeps a high genetic score from being misread
+      as a green light.</div>
+  </div>
+</div></section>
+
+<!-- =================== VIEW 3: BEYOND =================== -->
+<section class="view" id="v3"><div class="wrap">
+  <h2 class="section">Part 3</h2>
+  <h3 class="big">From one disease to genetics-driven drug discovery at scale</h3>
+  <p class="intro">This lab ranks targets for one disease from one evidence source. Real target discovery fuses many
+    genetic modalities across whole portfolios — and that complexity is exactly where agentic AI earns its keep.</p>
+
+  <div class="grid g2">
+    <div class="card accent-amber">
+      <h4>What "complex" looks like</h4>
+      <ul class="clean">
+        <li><b>Common-variant GWAS</b> across hundreds of traits and biobank cohorts</li>
+        <li><b>Rare-variant / burden tests</b> from exome and whole-genome sequencing (loss-of-function "human knockouts")</li>
+        <li><b>eQTL / pQTL colocalization</b> to link a variant to the gene and protein it actually changes</li>
+        <li><b>Mendelian randomization</b> to argue causality, not just correlation, and predict on-target effects</li>
+        <li>Reconciling tractability, safety, expression atlases, and competitive/IP landscape per target</li>
+      </ul>
+    </div>
+    <div class="card accent-teal">
+      <h4>Where the agent pattern scales</h4>
+      <ul class="clean">
+        <li><b>Evidence assembly</b> — the same fetch→score→explain loop, over dozens of genetic sources instead of one</li>
+        <li><b>Transparent triage</b> — rank thousands of target–disease pairs with cited, auditable rationales</li>
+        <li><b>Literature grounding</b> — connect each candidate to published evidence with citations</li>
+        <li><b>Portfolio views</b> — surface genetically-supported, druggable, low-liability targets across a pipeline</li>
+        <li><b>Natural-language access</b> — ask "best genetically-supported, tractable targets for T2D" in English</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card accent-azure">
+    <h4>The real-world landscape</h4>
+    <div class="grid g2" style="margin-top:6px">
+      <div>
+        <span class="pill a">Platforms &amp; agentic AI</span>
+        <p style="color:var(--muted);font-size:14px;margin-top:8px"><b>Open Targets</b> (the open evidence backbone used here),
+          <b>PandaOmics / Insilico Medicine</b>, <b>BenevolentAI</b>, <b>Recursion</b>, and <b>Variant Bio</b> build
+          genetics- and AI-driven target-discovery engines that automate exactly this kind of evidence integration.</p>
+      </div>
+      <div>
+        <span class="pill t">Genetics-driven pharma</span>
+        <p style="color:var(--muted);font-size:14px;margin-top:8px">The <b>Regeneron Genetics Center</b> and
+          <b>deCODE genetics</b> (with <b>Amgen</b>) pioneered the strategy of nominating and de-risking targets from
+          large-scale human-genetics cohorts before committing to programs.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card accent-azure">
+    <h4>Value by stakeholder</h4>
+    <div class="grid g3" style="margin-top:6px">
+      <div>
+        <span class="pill a">Pharma</span>
+        <p style="color:var(--muted);font-size:14px;margin-top:8px">De-risk the portfolio early: prioritize genetically-supported, tractable targets and kill weak hypotheses before expensive programs start.</p>
+      </div>
+      <div>
+        <span class="pill t">Biotech</span>
+        <p style="color:var(--muted);font-size:14px;margin-top:8px">A small team can scan the genetic evidence landscape, defend a target thesis with cited scores, and move faster on a focused pipeline.</p>
+      </div>
+      <div>
+        <span class="pill m">Researchers</span>
+        <p style="color:var(--muted);font-size:14px;margin-top:8px">Self-serve, plain-language target triage that turns fragmented public genetics into a ranked, explained hypothesis list.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card accent-amber">
+    <h4>The non-negotiable: guardrails</h4>
+    <p>Scaling genetics-driven, agentic target discovery safely depends on the same principles this lab already demonstrates:</p>
+    <ul class="clean">
+      <li><b>Evidence-grounded, never fabricated</b> — every score traces to a tool result, with the source recorded.</li>
+      <li><b>Genetics ≠ efficacy or safety</b> — genetic support raises the prior; it is not proof, and the memo must say so.</li>
+      <li><b>Validation, not autonomous go/no-go</b> — the agent triages hypotheses for literature and wet-lab follow-up; humans decide what advances.</li>
+      <li><b>Human-in-the-loop</b> — a qualified scientist reviews the ranking and the caveats before any commitment.</li>
+    </ul>
+    <div class="good" style="margin-top:14px"><b>The big idea:</b> the bottleneck in early drug discovery is <i>picking the right target</i>, and human
+      genetics is the best-validated way to improve that bet. A scientist-supervised agent that assembles the genetic
+      evidence, ranks transparently, explains its reasoning and flags the caveats — exactly what you saw in Lab 5 — is
+      how that bet gets made faster, without mistaking a strong genetic score for a guarantee.</div>
+  </div>
+</div></section>
+
+<footer>
+  Built from Lab 5 of the “Agentic Engineering in Bioinformatics &amp; Genomics” series ·
+  Open Targets Platform · Cached snapshot is illustrative — re-run online for current numbers ·
+  A prioritization aid alongside experimental validation, not a standalone go/no-go.
+</footer>
+
+<script>
+  (function(){
+    var tabs = document.querySelectorAll('.tab');
+    var views = document.querySelectorAll('.view');
+    tabs.forEach(function(t){
+      t.addEventListener('click', function(){
+        tabs.forEach(function(x){x.classList.remove('active');});
+        views.forEach(function(x){x.classList.remove('active');});
+        t.classList.add('active');
+        document.getElementById(t.getAttribute('data-target')).classList.add('active');
+        window.scrollTo({top:0, behavior:'smooth'});
+      });
+    });
+    var root = document.documentElement;
+    var btn = document.getElementById('themeToggle');
+    btn.addEventListener('click', function(){
+      var dark = root.classList.contains('dark');
+      var light = root.classList.contains('light');
+      var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      var currentlyDark = dark || (!light && prefersDark);
+      root.classList.remove('dark','light');
+      root.classList.add(currentlyDark ? 'light' : 'dark');
+    });
+  })();
+</script>
+</body>
+</html>

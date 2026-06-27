@@ -1,0 +1,49 @@
+name: CI
+
+# Lint + smoke-import on every push / PR. No network calls, no Azure secrets.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  lint-and-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Ruff lint
+        run: ruff check src scripts
+
+      - name: Smoke import (no network)
+        # Import the modules and exercise the pure-Python pieces that do NOT
+        # require network or Azure: VCF parsing + the ACMG rule engine.
+        run: |
+          python -c "
+          import sys; sys.path.insert(0, 'src')
+          import annotate, acmg
+          variants = annotate.parse_vcf('data/example.vcf')
+          assert len(variants) >= 5, 'expected the bundled example variants'
+          # Run the ACMG engine on a synthetic annotation (no network needed).
+          fake = {
+              'hgvs_id': variants[0].hgvs_id,
+              'gnomad_af': None,
+              'most_severe_consequence': 'stop_gained',
+              'clinvar_significance': 'Pathogenic',
+              'cadd_phred': 35.0,
+          }
+          result = acmg.evaluate(fake)
+          assert result.classification, 'classifier returned empty'
+          print('Smoke OK:', result.classification, [c.code for c in result.criteria])
+          "
