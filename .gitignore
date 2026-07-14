@@ -39,7 +39,8 @@ Thumbs.db
 # Logs / scratch
 *.log
 
-# Documentation exports — keep rendered .docx/.html out of the shared repo
+# Documentation exports — keep rendered .docx/.html/.pptx out of the shared repo
 # (source lives elsewhere; use `git add -f` to force-add an intended file)
 *.docx
 *.html
+*.pptx
