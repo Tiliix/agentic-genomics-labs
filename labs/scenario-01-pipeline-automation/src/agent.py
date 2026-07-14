@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import json
 import os
+import sys
 from pathlib import Path
 from typing import Any, Callable
 
@@ -136,8 +137,11 @@ TOOLS: list[dict[str, Any]] = [
         "function": {
             "name": "pathway_enrichment",
             "description": (
-                "Run Enrichr pathway enrichment (via gseapy) on the significant "
-                "DE genes. Requires internet; degrades gracefully if Enrichr is "
+                "Run Enrichr pathway enrichment via the Enrichr REST API. Splits "
+                "the significant genes into up- and down-regulated sets and tests "
+                "each against BOTH GO Biological Process and KEGG. Drosophila "
+                "(FlyBase FBgn) genes are auto-mapped to symbols and routed to "
+                "FlyEnrichr. Requires internet; degrades gracefully if Enrichr is "
                 "unreachable. Call last, after differential_expression."
             ),
             "parameters": {
@@ -168,7 +172,8 @@ You have four tools that each perform a real analysis step:
   1. run_qc                  — inspect the counts matrix
   2. quantify                — build the analysis-ready (filtered) matrix
   3. differential_expression — pydeseq2 DESeq2 analysis
-  4. pathway_enrichment      — gseapy/Enrichr over the significant genes
+  4. pathway_enrichment      — Enrichr (REST) on the up- and down-regulated genes,
+                               each tested against GO Biological Process AND KEGG
 
 Plan the run, then call the tools in a sensible order (normally 1 → 2 → 3 → 4).
 Before each tool call, briefly state your reasoning in one or two sentences.
@@ -179,7 +184,9 @@ When all steps are complete, produce a FINAL markdown report titled
 "# RNA-seq Differential Expression Report" with these sections:
   - Dataset & QC
   - Differential Expression (mention the count of significant genes and a few top genes)
-  - Pathway Enrichment (top terms, or note if skipped)
+  - Pathway Enrichment (report the up- and down-regulated results for BOTH
+    databases — GO Biological Process and KEGG — with the top terms and whether any
+    term passes FDR < 0.05; or note if skipped)
   - Interpretation & Recommended Next Steps
 Do not call any more tools once you start the final report.
 """
@@ -201,12 +208,18 @@ def _make_client():
             "AZURE_OPENAI_ENDPOINT (and AZURE_OPENAI_DEPLOYMENT)."
         )
 
+    # Two endpoint styles are supported and selected automatically:
+    #   * classic data plane -> https://<res>.openai.azure.com/  (azure_endpoint)
+    #   * OpenAI v1 surface   -> https://<res>.services.ai.azure.com/openai/v1/
+    #     (base_url) — required for the newest models such as gpt-5.1.
+    _endpoint = ENDPOINT.rstrip("/")
+    if _endpoint.endswith("/openai/v1"):
+        route_kwargs: dict[str, Any] = {"base_url": _endpoint + "/"}
+    else:
+        route_kwargs = {"azure_endpoint": _endpoint}
+
     if API_KEY:
-        return AzureOpenAI(
-            azure_endpoint=ENDPOINT,
-            api_key=API_KEY,
-            api_version=API_VERSION,
-        )
+        return AzureOpenAI(api_key=API_KEY, api_version=API_VERSION, **route_kwargs)
 
     # Keyless / Entra ID auth (no API key required).
     from azure.identity import DefaultAzureCredential, get_bearer_token_provider
@@ -216,9 +229,9 @@ def _make_client():
         "https://cognitiveservices.azure.com/.default",
     )
     return AzureOpenAI(
-        azure_endpoint=ENDPOINT,
         azure_ad_token_provider=token_provider,
         api_version=API_VERSION,
+        **route_kwargs,
     )
 
 
@@ -257,15 +270,24 @@ def run_agent(goal: str | None = None) -> str:
         {"role": "user", "content": user_goal},
     ]
 
+    # gpt-5 / o-series reasoning models only allow the default sampling
+    # temperature (1); sending temperature=0.2 returns a 400. Only pass it for
+    # models that accept a custom value.
+    supports_temperature = not any(
+        tag in DEPLOYMENT.lower() for tag in ("gpt-5", "o1", "o3", "o4")
+    )
+
     final_report = ""
     for turn in range(MAX_TURNS):
-        response = client.chat.completions.create(
-            model=DEPLOYMENT,  # Azure: this is the *deployment* name
-            messages=messages,
-            tools=TOOLS,
-            tool_choice="auto",
-            temperature=0.2,
-        )
+        create_kwargs: dict[str, Any] = {
+            "model": DEPLOYMENT,  # Azure: this is the *deployment* name
+            "messages": messages,
+            "tools": TOOLS,
+            "tool_choice": "auto",
+        }
+        if supports_temperature:
+            create_kwargs["temperature"] = 0.2
+        response = client.chat.completions.create(**create_kwargs)
         msg = response.choices[0].message
 
         # Print the model's reasoning / narration for this turn.
@@ -300,13 +322,20 @@ def run_agent(goal: str | None = None) -> str:
     if final_report:
         pipeline.RESULTS_DIR.mkdir(parents=True, exist_ok=True)
         report_path = pipeline.RESULTS_DIR / "report.md"
-        report_path.write_text(final_report)
+        report_path.write_text(final_report, encoding="utf-8")
         print(f"\nFinal report written to {report_path}")
 
     return final_report
 
 
 if __name__ == "__main__":
+    # On Windows, stdout/stderr default to cp1252 when redirected, which raises
+    # UnicodeEncodeError on unicode in the model's narration/report (e.g. α).
+    for _stream in (sys.stdout, sys.stderr):
+        try:
+            _stream.reconfigure(encoding="utf-8")  # type: ignore[attr-defined]
+        except (AttributeError, ValueError):
+            pass
     os.chdir(REPO_ROOT)
     report = run_agent()
     print("\n" + "=" * 70)

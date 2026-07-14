@@ -229,19 +229,124 @@ def differential_expression(
 
 
 # --------------------------------------------------------------------------- #
-# Stage 4: Pathway enrichment (gseapy / Enrichr)
+# Stage 4: Pathway enrichment (Enrichr REST)
 # --------------------------------------------------------------------------- #
+ENRICHR_HUMAN = "https://maayanlab.cloud/Enrichr"
+ENRICHR_FLY = "https://maayanlab.cloud/FlyEnrichr"  # modEnrichr, same REST API
+
+# Every run tests GO Biological Process AND KEGG (organism-appropriate).
+FLY_LIBRARIES = ["GO_Biological_Process_2018", "KEGG_2019"]
+HUMAN_LIBRARIES = ["GO_Biological_Process_2021", "KEGG_2021_Human"]
+
+
+def _fbgn_to_symbols(fbgn_ids: list[str]) -> list[str]:
+    """Map FlyBase ``FBgn`` gene IDs to Drosophila gene symbols via the
+    mygene.info batch REST API. Returns the symbols found (deduplicated); returns
+    an empty list on any error so the caller can degrade gracefully."""
+    import requests
+
+    try:
+        resp = requests.post(
+            "https://mygene.info/v3/query",
+            data={
+                "q": ",".join(fbgn_ids),
+                "scopes": "flybase,ensembl.gene",
+                "fields": "symbol",
+                "species": "7227",  # Drosophila melanogaster
+            },
+            timeout=30,
+        )
+        resp.raise_for_status()
+        symbols = [
+            hit["symbol"]
+            for hit in resp.json()
+            if isinstance(hit, dict) and hit.get("symbol")
+        ]
+        return list(dict.fromkeys(symbols))  # de-dupe, preserve order
+    except Exception:  # noqa: BLE001 — mapping is best-effort
+        return []
+
+
+def _enrichr_rest(genes: list[str], library: str, base: str) -> pd.DataFrame:
+    """Run Enrichr over ``genes`` against ``library`` via the REST API
+    (POST /addList then GET /enrich). Returns a DataFrame with columns
+    Term, P-value, Adjusted P-value, Combined Score, Overlap, Genes.
+    Raises on any network/HTTP error."""
+    import requests
+
+    add = requests.post(
+        f"{base}/addList",
+        files={
+            "list": (None, "\n".join(genes)),
+            "description": (None, "scenario-01 DE genes"),
+        },
+        timeout=30,
+    )
+    add.raise_for_status()
+    user_list_id = add.json()["userListId"]
+
+    enr = requests.get(
+        f"{base}/enrich",
+        params={"userListId": user_list_id, "backgroundType": library},
+        timeout=60,
+    )
+    enr.raise_for_status()
+
+    # Enrichr row layout:
+    # [rank, term, p_value, z_score, combined_score, [genes], adj_p_value, ...]
+    entries = enr.json().get(library, [])
+    cols = ["Term", "P-value", "Adjusted P-value", "Combined Score", "Overlap", "Genes"]
+    if not entries:
+        return pd.DataFrame(columns=cols)
+    rows = [
+        {
+            "Term": e[1],
+            "P-value": e[2],
+            "Adjusted P-value": e[6],
+            "Combined Score": e[4],
+            "Overlap": len(e[5]),
+            "Genes": ";".join(e[5]),
+        }
+        for e in entries
+    ]
+    return pd.DataFrame(rows).sort_values("Adjusted P-value").reset_index(drop=True)
+
+
+def _enrichment_summary(table: pd.DataFrame) -> dict[str, Any]:
+    """Compact summary of one Enrichr result table: total terms, count passing
+    FDR < 0.05, and the top 5 terms by adjusted p-value."""
+    if table.empty:
+        return {"n_terms": 0, "n_sig_fdr05": 0, "top_terms": []}
+    return {
+        "n_terms": int(table.shape[0]),
+        "n_sig_fdr05": int((table["Adjusted P-value"] < 0.05).sum()),
+        "top_terms": table[["Term", "Adjusted P-value", "Overlap", "Genes"]]
+        .head(5)
+        .to_dict(orient="records"),
+    }
+
+
 def pathway_enrichment(
     gene_set: str = "KEGG_2021_Human",
     alpha: float = 0.05,
     top_n: int = 200,
 ) -> dict[str, Any]:
     """
-    Run Enrichr pathway enrichment (via gseapy) on the significant DE genes.
+    Enrichr pathway enrichment on the significant DE genes via the Enrichr REST
+    API (POST /addList + GET /enrich) — no gseapy dependency.
 
-    Requires internet to reach the Enrichr service. If Enrichr is unreachable the
-    function degrades gracefully and reports that enrichment was skipped, so the
-    rest of the lab still completes offline.
+    The significant genes are split into **up-** and **down-regulated** sets (by
+    log2 fold change) and each set is tested against **two** libraries — GO
+    Biological Process **and** KEGG — so every run reports both databases for both
+    directions.
+
+    Drosophila datasets (FlyBase ``FBgn`` IDs) are auto-detected: IDs are mapped to
+    Drosophila symbols (mygene.info) and queried against FlyEnrichr with fly
+    libraries; other IDs use the standard (human) Enrichr. ``gene_set`` is retained
+    for backward compatibility but no longer selects the library (both GO-BP and
+    KEGG are always tested).
+
+    Requires internet. Degrades gracefully (status "skipped") on any network error.
     """
     _ensure_results_dir()
 
@@ -253,47 +358,88 @@ def pathway_enrichment(
     res = pd.read_csv(de_path, index_col=0)
 
     sig = res[res["padj"] < alpha].sort_values("padj")
-    gene_list = sig.head(top_n).index.astype(str).tolist()
-
-    if not gene_list:
+    if sig.empty:
         return {
             "status": "skipped",
             "reason": "No significant genes at the chosen alpha.",
-            "n_input_genes": 0,
+            "n_significant": 0,
         }
 
+    # Split significant genes by direction of change (top_n each, by padj).
+    up_ids = sig[sig["log2FoldChange"] > 0].head(top_n).index.astype(str).tolist()
+    down_ids = sig[sig["log2FoldChange"] < 0].head(top_n).index.astype(str).tolist()
+
+    # Organism detection over all significant IDs -> Enrichr instance + libraries.
+    all_ids = up_ids + down_ids
+    n_fbgn = sum(g.startswith("FBgn") for g in all_ids)
+    is_fly = n_fbgn > 0.5 * max(len(all_ids), 1)
+    base = ENRICHR_FLY if is_fly else ENRICHR_HUMAN
+    libraries = FLY_LIBRARIES if is_fly else HUMAN_LIBRARIES
+
+    # Map FlyBase IDs to symbols per direction (best effort).
+    note: str | None = None
+    genes_by_dir: dict[str, list[str]] = {"up": up_ids, "down": down_ids}
+    if is_fly:
+        genes_by_dir = {
+            d: (_fbgn_to_symbols(ids) if ids else []) for d, ids in genes_by_dir.items()
+        }
+        note = (
+            "Detected FlyBase IDs; mapped to Drosophila symbols (mygene.info) and "
+            "queried FlyEnrichr (GO-BP + KEGG)."
+        )
+
+    # Run every (direction x library) combination.
+    frames: list[pd.DataFrame] = []
+    results: dict[str, Any] = {}
     try:
-        import gseapy as gp
-
-        enr = gp.enrichr(
-            gene_list=gene_list,
-            gene_sets=[gene_set],
-            organism="human",
-            outdir=None,  # don't litter the filesystem
-        )
-        table: pd.DataFrame = enr.results.sort_values("Adjusted P-value")
-        out = RESULTS_DIR / "enrichment.csv"
-        table.to_csv(out, index=False)
-
-        top_terms = (
-            table[["Term", "Adjusted P-value", "Overlap", "Genes"]]
-            .head(10)
-            .to_dict(orient="records")
-        )
-        return {
-            "status": "ok",
-            "gene_set": gene_set,
-            "n_input_genes": len(gene_list),
-            "n_terms": int(table.shape[0]),
-            "top_terms": top_terms,
-            "_artifact": str(out),
-        }
-    except Exception as exc:  # noqa: BLE001 — surface any network/library error
+        for direction, genes in genes_by_dir.items():
+            results[direction] = {}
+            for lib in libraries:
+                table = (
+                    _enrichr_rest(genes, lib, base)
+                    if genes
+                    else pd.DataFrame(
+                        columns=["Term", "P-value", "Adjusted P-value", "Combined Score", "Overlap", "Genes"]
+                    )
+                )
+                if not table.empty:
+                    tagged = table.copy()
+                    tagged.insert(0, "Database", lib)
+                    tagged.insert(0, "Direction", direction)
+                    frames.append(tagged)
+                results[direction][lib] = _enrichment_summary(table)
+    except Exception as exc:  # noqa: BLE001 — surface any network error to the model
         return {
             "status": "skipped",
-            "reason": f"Enrichr unreachable or gseapy error: {exc}",
-            "n_input_genes": len(gene_list),
+            "reason": f"Enrichr REST error: {exc}",
+            "n_significant": int(sig.shape[0]),
         }
+
+    out = RESULTS_DIR / "enrichment.csv"
+    if frames:
+        pd.concat(frames, ignore_index=True).to_csv(out, index=False)
+    else:
+        pd.DataFrame(
+            columns=["Direction", "Database", "Term", "P-value", "Adjusted P-value", "Combined Score", "Overlap", "Genes"]
+        ).to_csv(out, index=False)
+
+    result: dict[str, Any] = {
+        "status": "ok",
+        "enrichr": "FlyEnrichr" if is_fly else "Enrichr",
+        "organism": "drosophila" if is_fly else "human/other",
+        "alpha": alpha,
+        "n_significant": int(sig.shape[0]),
+        "n_up": len(up_ids),
+        "n_down": len(down_ids),
+        "n_up_queried": len(genes_by_dir["up"]),
+        "n_down_queried": len(genes_by_dir["down"]),
+        "libraries": libraries,
+        "results": results,
+        "_artifact": str(out),
+    }
+    if note:
+        result["note"] = note
+    return result
 
 
 # --------------------------------------------------------------------------- #
