@@ -1,0 +1,40 @@
+# ---------------------------------------------------------------------------
+# Repo-wide ignores — keep secrets, environments, and generated files out of
+# the shared repository. Copy any `.env.example` to `.env` locally; NEVER
+# commit a real `.env` or any credential.
+# ---------------------------------------------------------------------------
+
+# Secrets / credentials — NEVER commit
+.env
+.env.*
+!.env.example
+!.env.*.example
+*.key
+*.pem
+*.pfx
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.ipynb_checkpoints/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.swp
+
+# Logs / scratch
+*.log
