@@ -36,5 +36,3 @@ scenario-XX-name/
 ├── scripts/download_data.py  # fetch public data (with offline fallback)
 └── src/                      # pipeline + agent code
 ```
-
-_Generated as a training companion to the "Agentic Engineering in Bioinformatics & Genomics" strategy deck._
