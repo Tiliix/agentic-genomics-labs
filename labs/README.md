@@ -1,8 +1,10 @@
 # Agentic Engineering for Bioinformatics & Genomics — Hands-on Labs
 
-Six self-contained training labs that let you test agentic-AI bioinformatics scenarios end-to-end on the **Azure + GitHub + VS Code** stack using **publicly available data**. Each lab pairs a classic bioinformatics workflow with an LLM agent (Azure OpenAI) that plans, runs tools, and explains its reasoning.
+A growing series of six self-contained training labs that let you test agentic-AI bioinformatics scenarios end-to-end on the **Azure + GitHub + VS Code** stack using **publicly available data**. Each lab pairs a classic bioinformatics workflow with an LLM agent (Azure OpenAI) that plans, runs tools, and explains its reasoning.
 
 > **How to use:** Push this folder to your own GitHub account (e.g. `github.com/<your-username>/agentic-genomics-labs`), then open any scenario folder in VS Code and "Reopen in Container". Each `README.md` has a numbered, step-by-step run guide. All labs run **offline with a synthetic fallback** and **at full scale once you add an Azure OpenAI resource + internet**.
+
+> **Availability:** Only **Challenge 01 — Pipeline automation** ships in this repo today. The rows below are the roadmap — each lab lands here as its newsletter issue goes live.
 
 | # | Scenario | Classic stack | Agent does | Public dataset |
 |---|----------|---------------|------------|----------------|

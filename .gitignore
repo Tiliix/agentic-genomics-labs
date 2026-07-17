@@ -44,3 +44,14 @@ Thumbs.db
 *.docx
 *.html
 *.pptx
+
+# ---------------------------------------------------------------------------
+# Unpublished labs — added to the repo as each newsletter issue ships.
+# To publish one: delete its line below, then `git add labs/<scenario>`.
+# ---------------------------------------------------------------------------
+labs/scenario-01b-multiomics-cancer/
+labs/scenario-02-variant-interpretation/
+labs/scenario-03-single-cell/
+labs/scenario-04-multiomics-hypothesis/
+labs/scenario-05-target-discovery/
+labs/scenario-06-perturbation-design/
