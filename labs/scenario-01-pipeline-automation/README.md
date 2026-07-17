@@ -83,6 +83,8 @@ scenario-01-pipeline-automation/
 ├── src/
 │   ├── agent.py          # Azure OpenAI tool-calling orchestrator (keyless-capable)
 │   └── pipeline.py       # QC + pydeseq2 DE + Enrichr-REST enrichment
+├── examples/
+│   └── report.md         # example agent report from a real pasilla run
 └── data/                 # created by scripts/download_data.py
 ```
 
@@ -170,6 +172,10 @@ scenario-01-pipeline-automation/
    - `enrichment.csv` — Enrichr pathway terms (columns `Direction`, `Database`) for
      up/down-regulated genes across GO Biological Process **and** KEGG.
    - `report.md` — the agent's final narrative report (UTF-8).
+
+   A committed example from a real **pasilla** run lives at
+   [`examples/report.md`](examples/report.md) — preview the exact output (QC, all
+   836 significant genes, up/down × GO-BP + KEGG) without running the pipeline.
 
 ---
 
