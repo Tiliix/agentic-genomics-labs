@@ -1,0 +1,11 @@
+##fileformat=VCFv4.2
+##source=variant-interpretation-lab-example
+##reference=GRCh38
+##INFO=<ID=GENE,Number=1,Type=String,Description="Gene symbol (annotation is derived live from the rsID)">
+##INFO=<ID=NOTE,Number=1,Type=String,Description="Why this variant is in the teaching set">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO
+13	32340300	rs80359550	GT	G	100	PASS	GENE=BRCA2;NOTE=pathogenic_frameshift_LoF
+1	155235252	rs421016	A	G	100	PASS	GENE=GBA;NOTE=N370S_pathogenic_missense_Gaucher
+11	5227002	rs334	T	A	100	PASS	GENE=HBB;NOTE=sickle_cell_HbS_missense
+1	11796321	rs1801133	G	A	100	PASS	GENE=MTHFR;NOTE=C677T_common_conflicting_clinvar
+6	26092913	rs1800562	G	A	100	PASS	GENE=HFE;NOTE=C282Y_hemochromatosis_pathogenic_but_common
