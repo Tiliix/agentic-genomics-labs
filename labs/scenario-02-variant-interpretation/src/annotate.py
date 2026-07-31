@@ -445,7 +445,7 @@ def batch_vep(variants: list[Variant]) -> list[dict[str, Any]]:
 
 
 def annotate_vcf(
-    path: str, use_vep: bool = True, assembly: str = ASSEMBLY
+    path: str, use_vep: bool = True, assembly: str = ASSEMBLY, limit: int = 0
 ) -> list[dict[str, Any]]:
     """Annotate every variant in a VCF using batched POST requests.
 
@@ -457,6 +457,8 @@ def annotate_vcf(
     tool.
     """
     variants = parse_vcf(path)
+    if limit:
+        variants = variants[:limit]
     if not variants:
         return []
 

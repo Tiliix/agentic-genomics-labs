@@ -117,8 +117,21 @@ flowchart TD
    ```bash
    python src/agent.py data/example.vcf --out-dir output/memos
    ```
-   One `*.md` memo is written per variant, each citing its data sources and
-   ending with the research-only disclaimer.
+   Default cohort mode batch-annotates + classifies **all** variants, then writes:
+   - `output/memos/cohort_annotations.json` (all annotated + ACMG-classified variants)
+   - `output/memos/<vcf_stem>_classification_distribution.png` (classification graph)
+   - `output/memos/<vcf_stem>_PathAndVUS.json` (only Pathogenic/Likely pathogenic/VUS)
+   - `output/memos/cohort_memo.md` (memo generated from `<vcf_stem>_PathAndVUS.json`)
+
+   Memo generation adapts to cohort size:
+   - small filtered cohorts: single-pass memo prompt
+   - large filtered cohorts: chunked map-reduce synthesis across **all** filtered
+     records (plus `output/memos/<vcf_stem>_PathAndVUS_chunk_analyses.json`)
+
+   Legacy per-variant mode is still available:
+   ```bash
+   python src/agent.py data/example.vcf --out-dir output/memos --per-variant
+   ```
 
 ---
 

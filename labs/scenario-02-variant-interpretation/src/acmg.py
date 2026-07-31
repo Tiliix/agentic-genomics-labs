@@ -38,8 +38,15 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from collections import Counter
 from dataclasses import dataclass, field
 from typing import Any
+
+try:
+    import matplotlib.pyplot as plt
+    MATPLOTLIB_AVAILABLE = True
+except ImportError:
+    MATPLOTLIB_AVAILABLE = False
 
 # Consequence terms (Sequence Ontology) treated as putative loss-of-function.
 LOF_TERMS = {
@@ -274,6 +281,111 @@ def classify_all(annotations: list[dict[str, Any]]) -> list[Classification]:
     return [evaluate(a) for a in annotations]
 
 
+def _generate_summary(classifications: list[Classification]) -> dict[str, Any]:
+    """Generate summary statistics from classifications."""
+    total = len(classifications)
+    counts = Counter(c.classification for c in classifications)
+    
+    summary = {
+        "total_variants": total,
+        "classification_counts": dict(counts),
+        "classification_percentages": {
+            cat: round((count / total * 100), 2) 
+            for cat, count in counts.items()
+        },
+    }
+    return summary
+
+
+def _print_summary_table(summary: dict[str, Any]) -> None:
+    """Print a formatted summary table."""
+    print("\n" + "=" * 70, file=sys.stderr)
+    print("CLASSIFICATION SUMMARY", file=sys.stderr)
+    print("=" * 70, file=sys.stderr)
+    print(f"Total variants analyzed: {summary['total_variants']}", file=sys.stderr)
+    print("-" * 70, file=sys.stderr)
+    print(f"{'Classification':<35} {'Count':>15} {'Percentage':>15}", file=sys.stderr)
+    print("-" * 70, file=sys.stderr)
+    
+    # Sort by count descending
+    sorted_items = sorted(
+        summary['classification_counts'].items(), 
+        key=lambda x: x[1], 
+        reverse=True
+    )
+    
+    for classification, count in sorted_items:
+        percentage = summary['classification_percentages'][classification]
+        print(
+            f"{classification:<35} {count:>15} {percentage:>14.2f}%",
+            file=sys.stderr
+        )
+    
+    print("=" * 70 + "\n", file=sys.stderr)
+
+
+def _generate_visualization(summary: dict[str, Any], output_path: str = "acmg_classification_distribution.png") -> None:
+    """Generate a bar chart visualization of classification distribution."""
+    if not MATPLOTLIB_AVAILABLE:
+        print(
+            "[WARNING] matplotlib not available. Skipping visualization.",
+            file=sys.stderr
+        )
+        return
+    
+    classifications = list(summary['classification_counts'].keys())
+    counts = list(summary['classification_counts'].values())
+    
+    # Define colors for different classification categories
+    color_map = {
+        "Pathogenic": "#d62728",  # red
+        "Likely pathogenic": "#ff7f0e",  # orange
+        "Uncertain significance (VUS)": "#ffdd57",  # yellow
+        "Likely benign": "#98df8a",  # light green
+        "Benign": "#2ca02c",  # green
+    }
+    
+    colors = [color_map.get(cat, "#1f77b4") for cat in classifications]
+    
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
+    
+    # Bar chart
+    ax1.bar(range(len(classifications)), counts, color=colors, edgecolor='black', linewidth=1.5)
+    ax1.set_xticks(range(len(classifications)))
+    ax1.set_xticklabels(classifications, rotation=45, ha='right')
+    ax1.set_ylabel('Count', fontsize=12, fontweight='bold')
+    ax1.set_title('Variant Classification Distribution (Count)', fontsize=13, fontweight='bold')
+    ax1.grid(axis='y', alpha=0.3, linestyle='--')
+    
+    # Add count labels on bars
+    for i, count in enumerate(counts):
+        ax1.text(i, count, str(count), ha='center', va='bottom', fontweight='bold')
+    
+    # Pie chart
+    percentages = [summary['classification_percentages'][cat] for cat in classifications]
+    ax2.pie(
+        counts, 
+        labels=classifications, 
+        autopct='%1.1f%%',
+        colors=colors,
+        startangle=90,
+        textprops={'fontsize': 10, 'fontweight': 'bold'}
+    )
+    ax2.set_title('Variant Classification Distribution (Percentage)', fontsize=13, fontweight='bold')
+    
+    plt.tight_layout()
+    plt.savefig(output_path, dpi=300, bbox_inches='tight')
+    print(
+        f"[INFO] Visualization saved to: {output_path}",
+        file=sys.stderr
+    )
+    
+    try:
+        plt.close()
+    except Exception:
+        pass
+
+
 # --------------------------------------------------------------------------- #
 # CLI
 # --------------------------------------------------------------------------- #
@@ -282,6 +394,21 @@ def _main(argv: list[str] | None = None) -> int:
     ap.add_argument(
         "annotations", help="JSON file produced by annotate.py (a list of dicts)"
     )
+    ap.add_argument(
+        "--output-json",
+        default=None,
+        help="Save detailed results to JSON file (default: output to stdout)"
+    )
+    ap.add_argument(
+        "--output-chart",
+        default="acmg_classification_distribution.png",
+        help="Save visualization to PNG file (default: acmg_classification_distribution.png)"
+    )
+    ap.add_argument(
+        "--no-chart",
+        action="store_true",
+        help="Skip chart generation"
+    )
     args = ap.parse_args(argv)
 
     with open(args.annotations, encoding="utf-8") as fh:
@@ -289,8 +416,31 @@ def _main(argv: list[str] | None = None) -> int:
     if isinstance(annotations, dict):
         annotations = [annotations]
 
-    results = [c.to_dict() for c in classify_all(annotations)]
-    print(json.dumps(results, indent=2))
+    # Run classifications
+    classifications = classify_all(annotations)
+    results = [c.to_dict() for c in classifications]
+    
+    # Generate summary
+    summary = _generate_summary(classifications)
+    
+    # Print summary table
+    _print_summary_table(summary)
+    
+    # Generate visualization
+    if not args.no_chart:
+        _generate_visualization(summary, args.output_chart)
+    
+    # Output detailed results
+    if args.output_json:
+        with open(args.output_json, 'w', encoding='utf-8') as fh:
+            json.dump(results, fh, indent=2)
+        print(
+            f"[INFO] Detailed results saved to: {args.output_json}",
+            file=sys.stderr
+        )
+    else:
+        print(json.dumps(results, indent=2))
+    
     print(
         "\n[NOTE] Simplified educational subset of ACMG/AMP -- NOT for clinical use.",
         file=sys.stderr,

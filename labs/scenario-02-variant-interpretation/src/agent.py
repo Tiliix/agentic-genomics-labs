@@ -27,6 +27,8 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import shutil
+import subprocess
 import sys
 from pathlib import Path
 from typing import Any
@@ -93,6 +95,12 @@ CLASS_ORDER = [
 # deterministic summary always covers ALL variants, so large cohorts stay
 # grounded even when the record list is truncated for token budget.
 MAX_RECORDS_IN_PROMPT = int(os.getenv("AGENT_MAX_RECORDS_IN_PROMPT", "300"))
+AGENT_CHUNK_RECORDS = int(os.getenv("AGENT_CHUNK_RECORDS", "250"))
+PATHOGENIC_AND_VUS_CLASSES = {
+    "Pathogenic",
+    "Likely pathogenic",
+    "Uncertain significance (VUS)",
+}
 
 COHORT_SYSTEM_PROMPT = (
     "You are a careful genomics teaching assistant writing a COHORT-level "
@@ -153,7 +161,62 @@ def build_client():
         return AzureOpenAI(api_key=API_KEY, api_version=API_VERSION, **route_kwargs)
 
     # Keyless / Entra ID auth (no API key required).
-    from azure.identity import DefaultAzureCredential, get_bearer_token_provider
+    try:
+        from azure.identity import DefaultAzureCredential, get_bearer_token_provider
+    except ModuleNotFoundError:
+        # Fallback for environments where azure-identity/cryptography wheels are
+        # unavailable: use an Azure CLI token from an existing `az login` session.
+        az_exe = shutil.which("az")
+        if not az_exe and os.name == "nt":
+            az_exe = shutil.which("az.cmd")
+        if not az_exe and os.name == "nt":
+            for candidate in (
+                r"C:\Program Files\Microsoft SDKs\Azure\CLI2\wbin\az.cmd",
+                r"C:\Program Files (x86)\Microsoft SDKs\Azure\CLI2\wbin\az.cmd",
+            ):
+                if os.path.exists(candidate):
+                    az_exe = candidate
+                    break
+        try:
+            cli = subprocess.run(
+                [
+                    az_exe or "az",
+                    "account",
+                    "get-access-token",
+                    "--resource",
+                    "https://cognitiveservices.azure.com/",
+                    "--output",
+                    "json",
+                ],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+        except FileNotFoundError as exc:
+            raise RuntimeError(
+                "Keyless auth requested but azure-identity is unavailable and "
+                "`az` was not found. Install Azure CLI and run `az login`, or set "
+                "AZURE_OPENAI_API_KEY for key auth."
+            ) from exc
+        except subprocess.CalledProcessError as exc:
+            detail = (exc.stderr or exc.stdout or "").strip()
+            raise RuntimeError(
+                "Failed to acquire Azure token via Azure CLI. Run `az login` and "
+                "ensure your account has access to this Azure OpenAI resource."
+                + (f" Details: {detail}" if detail else "")
+            ) from exc
+
+        payload = json.loads(cli.stdout)
+        token = payload.get("accessToken")
+        if not token:
+            raise RuntimeError(
+                "Azure CLI returned no accessToken. Re-run `az login` and retry."
+            )
+        return AzureOpenAI(
+            azure_ad_token=token,
+            api_version=API_VERSION,
+            **route_kwargs,
+        )
 
     token_provider = get_bearer_token_provider(
         DefaultAzureCredential(),
@@ -312,9 +375,7 @@ def annotate_and_classify(
     deterministic ACMG engine -- NO model calls. Each returned record is the
     annotation dict with an added ``classification`` key.
     """
-    records = annotate_mod.annotate_vcf(path, assembly=assembly)
-    if limit:
-        records = records[:limit]
+    records = annotate_mod.annotate_vcf(path, assembly=assembly, limit=limit)
     for rec in records:
         rec["classification"] = acmg.evaluate(rec).to_dict()
     return records
@@ -394,6 +455,59 @@ def _cohort_summary(records: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
+def _write_classification_distribution_graph(
+    summary: dict[str, Any], output_path: Path
+) -> None:
+    """Write a bar chart for classification distribution, if matplotlib exists."""
+    try:
+        import matplotlib.pyplot as plt
+    except ModuleNotFoundError:
+        print(
+            "[WARN] matplotlib is not installed; skipping distribution graph.",
+            file=sys.stderr,
+        )
+        return
+
+    counts = summary.get("classification_counts", {})
+    labels = [name for name in CLASS_ORDER if counts.get(name)]
+    if not labels:
+        print("[WARN] No classifications available for graph output.", file=sys.stderr)
+        return
+
+    values = [int(counts[name]) for name in labels]
+    colors = {
+        "Pathogenic": "#d62728",
+        "Likely pathogenic": "#ff7f0e",
+        "Uncertain significance (VUS)": "#ffdd57",
+        "Likely benign": "#98df8a",
+        "Benign": "#2ca02c",
+    }
+    bar_colors = [colors.get(label, "#1f77b4") for label in labels]
+
+    fig, ax = plt.subplots(figsize=(11, 6))
+    bars = ax.bar(labels, values, color=bar_colors, edgecolor="black", linewidth=1.0)
+    ax.set_title("Variant Classification Distribution", fontsize=14, fontweight="bold")
+    ax.set_ylabel("Count", fontsize=12)
+    ax.tick_params(axis="x", rotation=20)
+    ax.grid(axis="y", linestyle="--", alpha=0.3)
+    for bar, value in zip(bars, values, strict=False):
+        ax.text(
+            bar.get_x() + bar.get_width() / 2,
+            value,
+            str(value),
+            ha="center",
+            va="bottom",
+            fontweight="bold",
+        )
+    fig.tight_layout()
+    fig.savefig(output_path, dpi=300, bbox_inches="tight")
+    plt.close(fig)
+
+
+def _classification_name(record: dict[str, Any]) -> str:
+    return str((record.get("classification") or {}).get("classification") or "")
+
+
 def _slim_record(rec: dict[str, Any]) -> dict[str, Any]:
     """Trim an annotated + classified record to the memo-relevant fields."""
     var = rec.get("variant", {})
@@ -415,7 +529,82 @@ def _slim_record(rec: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def write_cohort_memo(
+def _supports_temperature(deployment: str) -> bool:
+    return not any(tag in deployment.lower() for tag in ("gpt-5", "o1", "o3", "o4"))
+
+
+def _json_from_text(text: str) -> dict[str, Any] | None:
+    stripped = text.strip()
+    if stripped.startswith("```"):
+        lines = stripped.splitlines()
+        if lines and lines[0].startswith("```"):
+            lines = lines[1:]
+        if lines and lines[-1].startswith("```"):
+            lines = lines[:-1]
+        stripped = "\n".join(lines).strip()
+    start = stripped.find("{")
+    end = stripped.rfind("}")
+    if start == -1 or end == -1 or end <= start:
+        return None
+    try:
+        parsed = json.loads(stripped[start : end + 1])
+    except (TypeError, ValueError):
+        return None
+    return parsed if isinstance(parsed, dict) else None
+
+
+def _chunk_records(records: list[dict[str, Any]], chunk_size: int) -> list[list[dict[str, Any]]]:
+    return [records[i : i + chunk_size] for i in range(0, len(records), chunk_size)]
+
+
+def _analyze_chunk_for_memo(
+    client,
+    deployment: str,
+    chunk: list[dict[str, Any]],
+    chunk_index: int,
+    chunk_count: int,
+    global_summary: dict[str, Any],
+) -> dict[str, Any]:
+    chunk_summary = _cohort_summary(chunk)
+    payload = {
+        "chunk_index": chunk_index,
+        "chunk_count": chunk_count,
+        "chunk_summary": chunk_summary,
+        "records": [_slim_record(r) for r in chunk],
+        "global_summary": global_summary,
+    }
+    user_msg = (
+        "Analyze this ONE chunk of precomputed Pathogenic/Likely pathogenic/VUS "
+        "records and return STRICT JSON only (no markdown, no prose outside JSON) "
+        "with exactly these keys: chunk_index, variants_in_chunk, key_signals, "
+        "notable_variants, caveats. Keep it concise: key_signals <= 8 strings, "
+        "notable_variants <= 12 objects "
+        "(hgvs_id,gene,classification,why_notable), caveats <= 6 strings.\n\n"
+        f"```json\n{json.dumps(payload, default=str, indent=2)}\n```"
+    )
+    messages: list[dict[str, Any]] = [
+        {"role": "system", "content": COHORT_SYSTEM_PROMPT},
+        {"role": "user", "content": user_msg},
+    ]
+    create_kwargs: dict[str, Any] = {"model": deployment, "messages": messages}
+    if _supports_temperature(deployment):
+        create_kwargs["temperature"] = 0.2
+    resp = client.chat.completions.create(**create_kwargs)
+    content = resp.choices[0].message.content or ""
+    parsed = _json_from_text(content) or {}
+    key_signals = parsed.get("key_signals")
+    notable = parsed.get("notable_variants")
+    caveats = parsed.get("caveats")
+    return {
+        "chunk_index": chunk_index,
+        "variants_in_chunk": len(chunk),
+        "key_signals": key_signals[:8] if isinstance(key_signals, list) else [],
+        "notable_variants": notable[:12] if isinstance(notable, list) else [],
+        "caveats": caveats[:6] if isinstance(caveats, list) else [],
+    }
+
+
+def _write_cohort_memo_single_pass(
     client,
     deployment: str,
     records: list[dict[str, Any]],
@@ -460,13 +649,77 @@ def write_cohort_memo(
         {"role": "user", "content": user_msg},
     ]
     create_kwargs: dict[str, Any] = {"model": deployment, "messages": messages}
-    if not any(tag in deployment.lower() for tag in ("gpt-5", "o1", "o3", "o4")):
+    if _supports_temperature(deployment):
         create_kwargs["temperature"] = 0.2
     resp = client.chat.completions.create(**create_kwargs)
     content = resp.choices[0].message.content or ""
     if "NOT FOR CLINICAL USE" not in content.upper():
         content = content.rstrip() + "\n\n" + DISCLAIMER
     return content
+
+
+def write_cohort_memo(
+    client,
+    deployment: str,
+    records: list[dict[str, Any]],
+    summary: dict[str, Any],
+) -> tuple[str, list[dict[str, Any]], str]:
+    """Write cohort memo with adaptive strategy based on input size.
+
+    Returns (memo_text, chunk_analyses, strategy_used).
+    """
+    if len(records) <= MAX_RECORDS_IN_PROMPT:
+        return _write_cohort_memo_single_pass(
+            client, deployment, records, summary
+        ), [], "single_pass"
+
+    chunk_size = max(1, AGENT_CHUNK_RECORDS)
+    chunks = _chunk_records(records, chunk_size)
+    print(
+        f"  [INFO] Using adaptive map-reduce memo generation for {len(records)} "
+        f"records ({len(chunks)} chunks of up to {chunk_size}).",
+        file=sys.stderr,
+    )
+    chunk_analyses: list[dict[str, Any]] = []
+    for i, chunk in enumerate(chunks, start=1):
+        print(f"    - analyzing chunk {i}/{len(chunks)}", file=sys.stderr)
+        chunk_analyses.append(
+            _analyze_chunk_for_memo(
+                client=client,
+                deployment=deployment,
+                chunk=chunk,
+                chunk_index=i,
+                chunk_count=len(chunks),
+                global_summary=summary,
+            )
+        )
+
+    synth_payload = {
+        "summary": summary,
+        "records_total": len(records),
+        "chunk_count": len(chunks),
+        "chunk_analyses": chunk_analyses,
+    }
+    user_msg = (
+        "Write a comprehensive cohort memo using ALL chunk analyses and the global "
+        "summary. Every numeric cohort claim must come from `summary`; use chunk "
+        "analyses for detailed evidence patterns and notable examples. "
+        "Do not invent counts.\n\n"
+        f"```json\n{json.dumps(synth_payload, default=str, indent=2)}\n```\n\n"
+        f"End the memo with EXACTLY this disclaimer line:\n{DISCLAIMER}"
+    )
+    messages: list[dict[str, Any]] = [
+        {"role": "system", "content": COHORT_SYSTEM_PROMPT},
+        {"role": "user", "content": user_msg},
+    ]
+    create_kwargs: dict[str, Any] = {"model": deployment, "messages": messages}
+    if _supports_temperature(deployment):
+        create_kwargs["temperature"] = 0.2
+    resp = client.chat.completions.create(**create_kwargs)
+    memo = resp.choices[0].message.content or ""
+    if "NOT FOR CLINICAL USE" not in memo.upper():
+        memo = memo.rstrip() + "\n\n" + DISCLAIMER
+    return memo, chunk_analyses, "map_reduce"
 
 
 def _slug(variant: annotate_mod.Variant) -> str:
@@ -482,7 +735,10 @@ def _main(argv: list[str] | None = None) -> int:
         "--out-dir", default="output/memos", help="directory for the .md memos"
     )
     ap.add_argument(
-        "--limit", type=int, default=0, help="only process the first N variants"
+        "--limit",
+        type=int,
+        default=0,
+        help="only process first N variants in --per-variant mode",
     )
     ap.add_argument(
         "--assembly",
@@ -517,25 +773,62 @@ def _main(argv: list[str] | None = None) -> int:
 
     # Default: batch-annotate + classify the whole VCF (no model calls), then
     # hand the annotated JSON + deterministic stats to the model for ONE memo.
+    if args.limit:
+        print(
+            "[INFO] --limit is ignored in cohort batch mode; processing ALL variants.",
+            file=sys.stderr,
+        )
     print("Batch-annotating + classifying the cohort ...", file=sys.stderr)
-    records = annotate_and_classify(args.vcf, assembly=args.assembly, limit=args.limit)
+    records = annotate_and_classify(args.vcf, assembly=args.assembly, limit=0)
     if not records:
         print("No variants found in the VCF.", file=sys.stderr)
         return 1
     summary = _cohort_summary(records)
+    vcf_stem = Path(args.vcf).stem
+    full_json_path = out_dir / "cohort_annotations.json"
+    full_json_path.write_text(json.dumps(records, default=str, indent=2), encoding="utf-8")
+
+    graph_path = out_dir / f"{vcf_stem}_classification_distribution.png"
+    _write_classification_distribution_graph(summary, graph_path)
+
+    path_and_vus_records = [
+        rec
+        for rec in records
+        if _classification_name(rec) in PATHOGENIC_AND_VUS_CLASSES
+    ]
+    path_and_vus_path = out_dir / f"{vcf_stem}_PathAndVUS.json"
+    path_and_vus_path.write_text(
+        json.dumps(path_and_vus_records, default=str, indent=2),
+        encoding="utf-8",
+    )
+
+    memo_summary = _cohort_summary(path_and_vus_records)
     print(
         f"  {summary['total_variants']} variants; "
-        f"{summary['notable_variant_count']} Pathogenic/Likely pathogenic. "
-        "Writing cohort memo ...",
+        f"{memo_summary['total_variants']} Pathogenic/Likely pathogenic/VUS. "
+        "Writing memo on filtered subset ...",
         file=sys.stderr,
     )
-    memo = write_cohort_memo(client, deployment, records, summary)
+    memo, chunk_analyses, strategy = write_cohort_memo(
+        client, deployment, path_and_vus_records, memo_summary
+    )
     memo_path = out_dir / "cohort_memo.md"
     memo_path.write_text(memo, encoding="utf-8")
-    json_path = out_dir / "cohort_annotations.json"
-    json_path.write_text(json.dumps(records, default=str, indent=2), encoding="utf-8")
+    chunk_analysis_path = out_dir / f"{vcf_stem}_PathAndVUS_chunk_analyses.json"
+    if chunk_analyses:
+        chunk_analysis_path.write_text(
+            json.dumps(chunk_analyses, default=str, indent=2),
+            encoding="utf-8",
+        )
     print(f"  -> {memo_path}")
-    print(f"  -> {json_path}  (annotated + classified provenance)")
+    print(f"  -> {full_json_path}  (all annotated + classified variants)")
+    print(f"  -> {path_and_vus_path}  (Pathogenic/Likely pathogenic/VUS only)")
+    print(f"  -> {graph_path}  (classification distribution graph)")
+    if chunk_analyses:
+        print(
+            f"  -> {chunk_analysis_path}  (intermediate chunk analyses for "
+            f"{strategy} memo synthesis)"
+        )
     return 0
 
 

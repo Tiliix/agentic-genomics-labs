@@ -20,3 +20,4 @@ azure-identity>=1.16     # AAD / DefaultAzureCredential for keyless auth
 azure-search-documents>=11.4   # optional literature-RAG citations
 pandas>=2.0              # tabular handling of annotation results
 ruff>=0.5               # linter (also used in CI)
+matplotlib>=3.7          # visualization and charts for ACMG classification distribution
