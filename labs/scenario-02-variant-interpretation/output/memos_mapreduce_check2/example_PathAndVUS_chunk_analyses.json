@@ -1,0 +1,68 @@
+[
+  {
+    "chunk_index": 1,
+    "variants_in_chunk": 2,
+    "key_signals": [
+      "Chunk contains 2 variants: 1 Pathogenic and 1 VUS by simplified ACMG.",
+      "Both variants have ClinVar significance reported as Pathogenic.",
+      "Consequences split evenly: one frameshift_variant and one missense_variant.",
+      "Allele frequencies are low but not ultra-rare (AF range ~2.9e-4 to 1.3e-3).",
+      "BRCA2 frameshift variant classified Pathogenic with strong PVS1 support.",
+      "GBA missense variant shows in silico support (SIFT D, PolyPhen P) but remains VUS.",
+      "No variants in this chunk are common (>5% AF) or extremely rare (<1e-4 AF).",
+      "Single notable variant in chunk: BRCA2 rs80359550 frameshift with robust ClinVar evidence."
+    ],
+    "notable_variants": [
+      {
+        "hgvs_id": "chr13:g.32340300GT>G",
+        "gene": "BRCA2",
+        "classification": "Pathogenic",
+        "why_notable": "Frameshift loss-of-function BRCA2 variant with strong ACMG PVS1 and supportive ClinVar (Pathogenic, multiple submitters, no conflicts) at low gnomAD AF."
+      },
+      {
+        "hgvs_id": "chr1:g.155235252A>G",
+        "gene": "GBA",
+        "classification": "Uncertain significance (VUS)",
+        "why_notable": "Missense GBA variant with ClinVar Pathogenic calls and damaging in silico predictions (SIFT D, PolyPhen P) but only PP3/PP5 criteria, leading to VUS classification."
+      }
+    ],
+    "caveats": [
+      "Classifications are simplified educational ACMG calls and may differ from full clinical interpretation.",
+      "ClinVar Pathogenic assertions do not automatically translate to Pathogenic in this simplified framework.",
+      "Allele frequencies are modestly low but not rare enough alone to strongly support pathogenicity.",
+      "Functional data, segregation, and detailed phenotype information are not captured in this chunk.",
+      "In silico predictions (SIFT, PolyPhen) are supportive but not definitive and can be inconsistent.",
+      "Interpretation should not be used for medical decision-making without comprehensive clinical review."
+    ]
+  },
+  {
+    "chunk_index": 2,
+    "variants_in_chunk": 1,
+    "key_signals": [
+      "Chunk contains a single variant classified as Uncertain significance (VUS)",
+      "ClinVar significance is 'not provided' with 'no assertion provided' review status",
+      "Variant is a missense change in HBB (rs334), a well-known locus",
+      "Allele frequency around 0.0035 in gnomAD, not extremely rare",
+      "In silico predictions are discordant: SIFT deleterious, PolyPhen benign",
+      "VUS classification driven by PP3 (computational evidence) without stronger criteria",
+      "No variants in this chunk meet precomputed 'notable' thresholds",
+      "Cohort-wide context shows this is 1 of 2 VUS among 3 total variants"
+    ],
+    "notable_variants": [
+      {
+        "hgvs_id": "chr11:g.5227002T>A",
+        "gene": "HBB",
+        "classification": "Uncertain significance (VUS)",
+        "why_notable": "Missense variant at rs334 in HBB with moderate gnomAD frequency and conflicting in silico predictions (SIFT deleterious, PolyPhen benign); ClinVar significance not provided leading to a PP3-based VUS call."
+      }
+    ],
+    "caveats": [
+      "Classification is simplified and based on limited criteria (primarily PP3) without full ACMG/AMP evidence review.",
+      "ClinVar annotation of 'not provided' and 'no assertion provided' indicates absence of curated clinical interpretation for this record.",
+      "Moderate allele frequency may reflect population-specific dynamics not captured in the summary and is insufficient alone to infer benignity.",
+      "In silico prediction tools (SIFT, PolyPhen) are inconsistent and cannot determine pathogenicity on their own.",
+      "No CADD score is available, reducing the depth of computational evidence considered.",
+      "This chunk omits the Pathogenic BRCA2 variant present in the global_summary, so signals here reflect only a subset of the cohort."
+    ]
+  }
+]

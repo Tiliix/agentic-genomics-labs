@@ -1,0 +1,44 @@
+[
+  {
+    "chunk_index": 1,
+    "variants_in_chunk": 3,
+    "key_signals": [
+      "1 Pathogenic and 2 VUS classifications in this chunk",
+      "ClinVar labels 2 variants as Pathogenic, 1 as not provided",
+      "Consequences: 2 missense_variants, 1 frameshift_variant",
+      "All variants have low but non-rare gnomAD AF (0.00029\u20130.00348)",
+      "BRCA2 frameshift variant classified Pathogenic with strong PVS1 evidence",
+      "GBA missense variant: ClinVar Pathogenic but engine calls VUS (PP3, PP5)",
+      "HBB missense variant: VUS with conflicting in silico predictions (SIFT D, PolyPhen B)",
+      "No variants reach very rare AF < 1e-4 or common AF > 5%"
+    ],
+    "notable_variants": [
+      {
+        "hgvs_id": "chr13:g.32340300GT>G",
+        "gene": "BRCA2",
+        "classification": "Pathogenic",
+        "why_notable": "Canonical BRCA2 frameshift with strong loss-of-function evidence (PVS1) and ClinVar Pathogenic, low gnomAD AF"
+      },
+      {
+        "hgvs_id": "chr1:g.155235252A>G",
+        "gene": "GBA",
+        "classification": "Uncertain significance (VUS)",
+        "why_notable": "ClinVar Pathogenic missense variant but classified as VUS here; supportive in silico (SIFT D, PolyPhen P) and PP3, PP5 criteria"
+      },
+      {
+        "hgvs_id": "chr11:g.5227002T>A",
+        "gene": "HBB",
+        "classification": "Uncertain significance (VUS)",
+        "why_notable": "Sickle-cell-associated HBB missense variant with moderate AF and mixed in silico predictions; ClinVar significance not provided and only PP3 applied"
+      }
+    ],
+    "caveats": [
+      "Classifications are from a simplified engine and may differ from full ACMG assessments or clinical reports",
+      "ClinVar Pathogenic labels (e.g., GBA) are not automatically adopted, leading to tension between databases and engine calls",
+      "Allele frequencies are modest and context-dependent; carrier status and disease prevalence are not evaluated here",
+      "In silico predictions (SIFT, PolyPhen) are supportive but not definitive and can disagree, especially for missense variants",
+      "No segregation, functional study, or phenotype data are incorporated into these classifications",
+      "Interpretations should not be used for clinical decision-making without comprehensive review"
+    ]
+  }
+]

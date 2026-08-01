@@ -1,0 +1,337 @@
+[
+  {
+    "variant": {
+      "chrom": "13",
+      "pos": 32340300,
+      "ref": "GT",
+      "alt": "G",
+      "rsid": "rs80359550",
+      "info": {
+        "GENE": "BRCA2",
+        "NOTE": "pathogenic_frameshift_LoF"
+      }
+    },
+    "hgvs_id": "chr13:g.32340300GT>G",
+    "sources": [
+      "MyVariant.info (ClinVar, gnomAD, dbNSFP)",
+      "Ensembl VEP REST"
+    ],
+    "found": true,
+    "myvariant_id": "chr13:g.32340301del",
+    "clinvar_significance": "Pathogenic",
+    "clinvar_review_status": "criteria provided, multiple submitters, no conflicts",
+    "gnomad_af": 0.000291185,
+    "cadd_phred": null,
+    "sift_pred": null,
+    "polyphen_pred": null,
+    "gene": "BRCA2",
+    "_raw_keys": [
+      "_id",
+      "_score",
+      "chrom",
+      "clingen",
+      "clinvar",
+      "dbsnp",
+      "emv",
+      "gnomad_exome",
+      "gnomad_genome",
+      "hg38",
+      "observed",
+      "query",
+      "snpeff",
+      "vcf"
+    ],
+    "most_severe_consequence": "frameshift_variant",
+    "vep_gene_symbol": "BRCA2",
+    "classification": {
+      "hgvs_id": "chr13:g.32340300GT>G",
+      "classification": "Pathogenic",
+      "criteria": [
+        {
+          "code": "PVS1",
+          "direction": "pathogenic",
+          "strength": "very_strong",
+          "rationale": "Predicted loss-of-function: most-severe consequence is 'frameshift_variant'."
+        },
+        {
+          "code": "PP5",
+          "direction": "pathogenic",
+          "strength": "supporting",
+          "rationale": "ClinVar reports 'Pathogenic' (PP5 is deprecated; teaching signal only)."
+        }
+      ],
+      "rationale": "Simplified combine: pathogenic weight=9, benign weight=0. Criteria fired: PVS1, PP5."
+    }
+  },
+  {
+    "variant": {
+      "chrom": "1",
+      "pos": 155235252,
+      "ref": "A",
+      "alt": "G",
+      "rsid": "rs421016",
+      "info": {
+        "GENE": "GBA",
+        "NOTE": "N370S_pathogenic_missense_Gaucher"
+      }
+    },
+    "hgvs_id": "chr1:g.155235252A>G",
+    "sources": [
+      "MyVariant.info (ClinVar, gnomAD, dbNSFP)",
+      "Ensembl VEP REST"
+    ],
+    "found": true,
+    "myvariant_id": "chr1:g.155235252A>G",
+    "clinvar_significance": "Pathogenic",
+    "clinvar_review_status": "criteria provided, multiple submitters, no conflicts",
+    "gnomad_af": 0.0012957,
+    "cadd_phred": null,
+    "sift_pred": "D",
+    "polyphen_pred": "P",
+    "gene": "GBA",
+    "_raw_keys": [
+      "_id",
+      "_score",
+      "chrom",
+      "clingen",
+      "clinvar",
+      "dbnsfp",
+      "dbsnp",
+      "emv",
+      "evs",
+      "gnomad_exome",
+      "gnomad_genome",
+      "hg38",
+      "observed",
+      "query",
+      "snpeff",
+      "uniprot",
+      "vcf"
+    ],
+    "most_severe_consequence": "missense_variant",
+    "vep_gene_symbol": "GBA1",
+    "classification": {
+      "hgvs_id": "chr1:g.155235252A>G",
+      "classification": "Uncertain significance (VUS)",
+      "criteria": [
+        {
+          "code": "PP3",
+          "direction": "pathogenic",
+          "strength": "supporting",
+          "rationale": "Multiple in-silico predictors suggest a deleterious effect (SIFT=D, PolyPhen=P)."
+        },
+        {
+          "code": "PP5",
+          "direction": "pathogenic",
+          "strength": "supporting",
+          "rationale": "ClinVar reports 'Pathogenic' (PP5 is deprecated; teaching signal only)."
+        }
+      ],
+      "rationale": "Simplified combine: pathogenic weight=2, benign weight=0. Criteria fired: PP3, PP5."
+    }
+  },
+  {
+    "variant": {
+      "chrom": "11",
+      "pos": 5227002,
+      "ref": "T",
+      "alt": "A",
+      "rsid": "rs334",
+      "info": {
+        "GENE": "HBB",
+        "NOTE": "sickle_cell_HbS_missense"
+      }
+    },
+    "hgvs_id": "chr11:g.5227002T>A",
+    "sources": [
+      "MyVariant.info (ClinVar, gnomAD, dbNSFP)",
+      "Ensembl VEP REST"
+    ],
+    "found": true,
+    "myvariant_id": "chr11:g.5227002T>A",
+    "clinvar_significance": "not provided",
+    "clinvar_review_status": "no assertion provided",
+    "gnomad_af": 0.00347958,
+    "cadd_phred": null,
+    "sift_pred": "D",
+    "polyphen_pred": "B",
+    "gene": "HBB",
+    "_raw_keys": [
+      "_id",
+      "_score",
+      "chrom",
+      "clingen",
+      "clinvar",
+      "dbnsfp",
+      "dbsnp",
+      "emv",
+      "evs",
+      "gnomad_exome",
+      "gnomad_genome",
+      "hg38",
+      "observed",
+      "query",
+      "snpeff",
+      "uniprot",
+      "vcf"
+    ],
+    "most_severe_consequence": "missense_variant",
+    "vep_gene_symbol": "HBB",
+    "classification": {
+      "hgvs_id": "chr11:g.5227002T>A",
+      "classification": "Uncertain significance (VUS)",
+      "criteria": [
+        {
+          "code": "PP3",
+          "direction": "pathogenic",
+          "strength": "supporting",
+          "rationale": "Multiple in-silico predictors suggest a deleterious effect (SIFT=D, PolyPhen=B)."
+        }
+      ],
+      "rationale": "Simplified combine: pathogenic weight=1, benign weight=0. Criteria fired: PP3."
+    }
+  },
+  {
+    "variant": {
+      "chrom": "1",
+      "pos": 11796321,
+      "ref": "G",
+      "alt": "A",
+      "rsid": "rs1801133",
+      "info": {
+        "GENE": "MTHFR",
+        "NOTE": "C677T_common_conflicting_clinvar"
+      }
+    },
+    "hgvs_id": "chr1:g.11796321G>A",
+    "sources": [
+      "MyVariant.info (ClinVar, gnomAD, dbNSFP)",
+      "Ensembl VEP REST"
+    ],
+    "found": true,
+    "myvariant_id": "chr1:g.11796321G>A",
+    "clinvar_significance": "Conflicting interpretations of pathogenicity",
+    "clinvar_review_status": "no assertion criteria provided",
+    "gnomad_af": 0.314859,
+    "cadd_phred": null,
+    "sift_pred": "D",
+    "polyphen_pred": "D",
+    "gene": "MTHFR",
+    "_raw_keys": [
+      "_id",
+      "_score",
+      "chrom",
+      "clingen",
+      "clinvar",
+      "dbnsfp",
+      "dbsnp",
+      "emv",
+      "evs",
+      "gnomad_exome",
+      "gnomad_genome",
+      "hg38",
+      "observed",
+      "query",
+      "snpeff",
+      "uniprot",
+      "vcf"
+    ],
+    "most_severe_consequence": "missense_variant",
+    "vep_gene_symbol": "MTHFR",
+    "classification": {
+      "hgvs_id": "chr1:g.11796321G>A",
+      "classification": "Benign",
+      "criteria": [
+        {
+          "code": "PP3",
+          "direction": "pathogenic",
+          "strength": "supporting",
+          "rationale": "Multiple in-silico predictors suggest a deleterious effect (SIFT=D, PolyPhen=D)."
+        },
+        {
+          "code": "BA1",
+          "direction": "benign",
+          "strength": "stand_alone",
+          "rationale": "Common in gnomAD (AF=0.315 > 0.05); stand-alone benign evidence."
+        }
+      ],
+      "rationale": "BA1 stand-alone benign evidence present. Criteria: PP3, BA1."
+    }
+  },
+  {
+    "variant": {
+      "chrom": "6",
+      "pos": 26092913,
+      "ref": "G",
+      "alt": "A",
+      "rsid": "rs1800562",
+      "info": {
+        "GENE": "HFE",
+        "NOTE": "C282Y_hemochromatosis_pathogenic_but_common"
+      }
+    },
+    "hgvs_id": "chr6:g.26092913G>A",
+    "sources": [
+      "MyVariant.info (ClinVar, gnomAD, dbNSFP)",
+      "Ensembl VEP REST"
+    ],
+    "found": true,
+    "myvariant_id": "chr6:g.26092913G>A",
+    "clinvar_significance": "Pathogenic",
+    "clinvar_review_status": "criteria provided, multiple submitters, no conflicts",
+    "gnomad_af": 0.0332118,
+    "cadd_phred": null,
+    "sift_pred": "D",
+    "polyphen_pred": [
+      "D",
+      "P"
+    ],
+    "gene": "HFE",
+    "_raw_keys": [
+      "_id",
+      "_score",
+      "chrom",
+      "clingen",
+      "clinvar",
+      "dbnsfp",
+      "dbsnp",
+      "emv",
+      "evs",
+      "gnomad_exome",
+      "gnomad_genome",
+      "hg38",
+      "observed",
+      "query",
+      "snpeff",
+      "uniprot",
+      "vcf"
+    ],
+    "most_severe_consequence": "missense_variant",
+    "vep_gene_symbol": "HFE",
+    "classification": {
+      "hgvs_id": "chr6:g.26092913G>A",
+      "classification": "Likely benign",
+      "criteria": [
+        {
+          "code": "PP3",
+          "direction": "pathogenic",
+          "strength": "supporting",
+          "rationale": "Multiple in-silico predictors suggest a deleterious effect (SIFT=D, PolyPhen=D,P)."
+        },
+        {
+          "code": "PP5",
+          "direction": "pathogenic",
+          "strength": "supporting",
+          "rationale": "ClinVar reports 'Pathogenic' (PP5 is deprecated; teaching signal only)."
+        },
+        {
+          "code": "BS1",
+          "direction": "benign",
+          "strength": "strong",
+          "rationale": "gnomAD AF=0.033 greater than expected for a rare disorder (> 0.01)."
+        }
+      ],
+      "rationale": "Simplified combine: pathogenic weight=2, benign weight=4. Criteria fired: PP3, PP5, BS1."
+    }
+  }
+]
