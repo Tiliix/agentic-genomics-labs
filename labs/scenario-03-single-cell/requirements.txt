@@ -1,0 +1,29 @@
+# Single-cell analysis training lab — Python dependencies
+# Pin to known-good ranges; the lab is validated against these.
+#
+# Target interpreter: Python 3.11 (x64 / win_amd64, or linux x86_64).
+# NOTE: The scanpy stack has no wheels for Windows on ARM64 (win_arm64) —
+#       numba, llvmlite, statsmodels, tables (PyTables) and leidenalg are
+#       unavailable there. On an ARM64 Windows host, use the x64 build of
+#       Python (runs under emulation) or the provided Dev Container.
+
+# --- Scientific base (pinned so numba/numpy stay compatible) ---
+numpy==1.26.4            # numba 0.60 requires numpy < 2.1
+scipy==1.13.1
+pandas==2.2.3
+scikit-learn==1.5.2
+numba==0.60.0            # JIT backend pulled in by Scanpy (UMAP / neighbors)
+matplotlib==3.9.2
+
+# --- Core scRNA-seq stack ---
+scanpy==1.10.4            # end-to-end single-cell toolkit (QC, clustering, DE)
+anndata==0.10.9          # annotated data matrix backing Scanpy
+leidenalg==0.10.2        # Leiden community detection (clustering backend)
+igraph==0.11.8           # graph library leidenalg builds on (PyPI package name: igraph)
+celltypist==1.6.3        # reference-based automated cell-type annotation (optional cross-check)
+
+# --- LLM annotation agent (Azure OpenAI) ---
+openai>=1.40             # OpenAI Python SDK v1.x with AzureOpenAI client
+python-dotenv==1.0.1     # load Azure OpenAI secrets from .env
+azure-identity==1.17.1   # DefaultAzureCredential / Entra ID token auth for Azure OpenAI
+azure-ai-ml==1.19.0      # Azure ML SDK v2 (submit jobs / manage compute, optional)

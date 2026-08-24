@@ -1,0 +1,13 @@
+# Secrets
+.env
+
+# Data + results (regenerate with scripts/download_data.py, src/pipeline.py,
+# and src/annotate_agent.py)
+data/
+results/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.ruff_cache/
