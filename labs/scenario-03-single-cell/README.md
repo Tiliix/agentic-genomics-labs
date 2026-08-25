@@ -1,18 +1,18 @@
-﻿# Scenario 03 Ã¢â‚¬â€ Single-Cell Analysis Agent
+# Scenario 03 — Single-Cell Analysis Agent
 
 A runnable training lab: a **Scanpy** single-cell RNA-seq pipeline
-(QC Ã¢â€ â€™ normalization Ã¢â€ â€™ clustering Ã¢â€ â€™ marker genes) where an **Azure OpenAI** agent
+(QC → normalization → clustering → marker genes) where an **Azure OpenAI** agent
 performs marker-gene-based **cell-type annotation** in the style of
-[GPTCelltype](https://github.com/Winnie09/GPTCelltype) (markers Ã¢â€ â€™ GPT Ã¢â€ â€™ label),
+[GPTCelltype](https://github.com/Winnie09/GPTCelltype) (markers → GPT → label),
 with a cautious **self-critique** pass that flags ambiguous clusters
 (e.g. cycling vs. exhausted T cells), plus a **cross-readout disagreement** pass that flags gene programs whose disease/state signal is significant by *intensity* (mean score per cell) or *prevalence* (fraction of cells in the state) but not both -- the "both answers are defensible" failure class.
 
-**Dataset:** 10x Genomics **PBMC 3k** Ã¢â‚¬â€ ~2,700 peripheral blood mononuclear cells,
+**Dataset:** 10x Genomics **PBMC 3k** — ~2,700 peripheral blood mononuclear cells,
 the classic Scanpy clustering tutorial dataset. At runtime you can instead pick a
 **complex profile** (`PBMC 68k reduced`), a more heterogeneous, ambiguity-prone
 dataset used to stress-test the cross-readout disagreement check (see below).
 
-**Stack:** Azure (Azure ML compute + Azure OpenAI + Blob) Ã‚Â· GitHub Ã‚Â· VS Code Dev Containers.
+**Stack:** Azure (Azure ML compute + Azure OpenAI + Blob) · GitHub · VS Code Dev Containers.
 
 ---
 
@@ -22,7 +22,7 @@ dataset used to stress-test the cross-readout disagreement check (see below).
 flowchart LR
     subgraph Dev["Local / VS Code Dev Container (Python 3.11)"]
         DL["scripts/download_data.py<br/>scanpy.datasets.pbmc3k()"]
-        PIPE["src/pipeline.py<br/>QC Ã‚Â· normalize Ã‚Â· HVG Ã‚Â· PCA<br/>Ã‚Â· Leiden Ã‚Â· rank_genes_groups"]
+        PIPE["src/pipeline.py<br/>QC · normalize · HVG · PCA<br/>· Leiden · rank_genes_groups"]
         AGENT["src/annotate_agent.py<br/>markers -> label + self-critique"]
     end
 
@@ -52,7 +52,7 @@ chat deployment.
 
 - **Docker** + **VS Code** with the *Dev Containers* extension (or local Python 3.11).
 - An **Azure subscription** with access to **Azure OpenAI** (approved).
-- **Azure CLI** (`az`) for provisioning Ã¢â‚¬â€ see [`infra/azure-setup.md`](infra/azure-setup.md).
+- **Azure CLI** (`az`) for provisioning — see [`infra/azure-setup.md`](infra/azure-setup.md).
 - An Azure OpenAI **chat model deployment** (e.g. `gpt-4o`).
 - Internet access on first run (to download PBMC3k and Python wheels).
 
@@ -62,7 +62,7 @@ chat deployment.
 > `tables` (PyTables) and `leidenalg` are unavailable there, and `numba` is a required
 > dependency of `scanpy`, so `pip install -r requirements.txt` fails to resolve.
 > On an **ARM64 Windows** machine, either use the **Dev Container** (Linux x86_64) or
-> install the **x64 build of Python 3.11** (it runs under emulation) Ã¢â‚¬â€ see below.
+> install the **x64 build of Python 3.11** (it runs under emulation) — see below.
 
 ---
 
@@ -70,28 +70,28 @@ chat deployment.
 
 ```
 .
-Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ README.md
-Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ requirements.txt
-Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ .env.example                 # copy to .env and fill in Azure OpenAI vars
-Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ .devcontainer/
-Ã¢â€â€š   Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ devcontainer.json        # Python 3.11 dev container
-Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ scripts/
-Ã¢â€â€š   Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ download_data.py         # PBMC3k via Scanpy (+ manual 10x fallback)
-Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ src/
-Ã¢â€â€š   Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ pipeline.py              # Scanpy QC -> clustering -> markers
-Ã¢â€â€š   Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ annotate_agent.py        # Azure OpenAI annotation + self-critique
-Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ infra/
-Ã¢â€â€š   Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ azure-setup.md           # az CLI: Azure ML + compute + Azure OpenAI
-Ã¢â€Å“Ã¢â€â‚¬Ã¢â€â‚¬ examples/
-Ã¢â€â€š   Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ report.md                # example PI-style summary (committed output)
-Ã¢â€â€š   Ã¢â€â€œÃ¢â€â‚¬Ã¢â€â‚¬ agent_report_simple.md  # example agent report -- simple PBMC3k run
-Ã¢â€â€š   Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ agent_report_complex.md # example agent report -- complex Kang 2018 run
-Ã¢â€â€š   Ã¢â€â€œÃ¢â€â‚¬Ã¢â€â‚¬ umap_leiden_simple.png  # example clustering UMAP -- simple PBMC3k
-Ã¢â€â€š   Ã¢â€â€œÃ¢â€â‚¬Ã¢â€â‚¬ umap_leiden_complex.png # example clustering UMAP -- complex Kang 2018
-Ã¢â€â€š   Ã¢â€â€œÃ¢â€â‚¬Ã¢â€â‚¬ umap_celltype_simple.png  # example cell-type UMAP -- simple PBMC3k
-Ã¢â€â€š   Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ umap_celltype_complex.png # example cell-type UMAP -- complex Kang 2018
-Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ .github/workflows/
-    Ã¢â€â€Ã¢â€â‚¬Ã¢â€â‚¬ ci.yml                   # ruff lint + smoke import
+├── README.md
+├── requirements.txt
+├── .env.example                 # copy to .env and fill in Azure OpenAI vars
+├── .devcontainer/
+│   └── devcontainer.json        # Python 3.11 dev container
+├── scripts/
+│   └── download_data.py         # PBMC3k via Scanpy (+ manual 10x fallback)
+├── src/
+│   ├── pipeline.py              # Scanpy QC -> clustering -> markers
+│   └── annotate_agent.py        # Azure OpenAI annotation + self-critique
+├── infra/
+│   └── azure-setup.md           # az CLI: Azure ML + compute + Azure OpenAI
+├── examples/
+│   ├── report.md                # example PI-style summary (committed output)
+│   ├── agent_report_simple.md   # example agent report -- simple PBMC3k run
+│   ├── agent_report_complex.md  # example agent report -- complex Kang 2018 run
+│   ├── umap_leiden_simple.png   # example clustering UMAP -- simple PBMC3k
+│   ├── umap_leiden_complex.png  # example clustering UMAP -- complex Kang 2018
+│   ├── umap_celltype_simple.png # example cell-type UMAP -- simple PBMC3k
+│   └── umap_celltype_complex.png # example cell-type UMAP -- complex Kang 2018
+└── .github/workflows/
+    └── ci.yml                   # ruff lint + smoke import
 ```
 
 ---
@@ -106,7 +106,7 @@ chat deployment.
    ```powershell
    # Confirm an x64 (AMD64) Python 3.11 is installed:
    py -3.11 -c "import platform; print(platform.python_version(), platform.machine())"
-   # Expect: 3.11.x  AMD64   (NOT ARM64 Ã¢â‚¬â€ the Scanpy stack has no ARM64 wheels)
+   # Expect: 3.11.x  AMD64   (NOT ARM64 — the Scanpy stack has no ARM64 wheels)
 
    py -3.11 -m venv .venv
    .\.venv\Scripts\python.exe -m pip install --upgrade pip
@@ -166,14 +166,14 @@ chat deployment.
    Produces `results/pbmc3k_processed.h5ad`, `results/markers_top.csv`,
    `results/program_contrasts.csv` (per-cluster **intensity vs prevalence**
    program tests), `results/run_metadata.json`, and
-   `results/umap_leiden.png` (takes ~1Ã¢â‚¬â€œ2 min; yields 9 Leiden clusters on PBMC3k).
+   `results/umap_leiden.png` (takes ~1–2 min; yields 9 Leiden clusters on PBMC3k).
 
    > On Windows you may see a few `ValueError: high is out of bounds for int32`
    > lines tagged `Exception ignored in:` at the very end. These are a harmless
-   > shutdown-time warning from the `leiden`/`umap` native RNG cleanup Ã¢â‚¬â€ the run
+   > shutdown-time warning from the `leiden`/`umap` native RNG cleanup — the run
    > still exits 0 and all outputs are written correctly.
 
-6. **Run the annotation agent.** *(requires the Azure OpenAI setup from steps 2Ã¢â‚¬â€œ3)*
+6. **Run the annotation agent.** *(requires the Azure OpenAI setup from steps 2–3)*
    ```bash
    python src/annotate_agent.py
    ```
@@ -185,13 +185,13 @@ chat deployment.
    or *prevalence* but not both; the agent weighs in on each discordant contrast
    and writes `results/cross_readout_disagreements.csv` and a human-readable
    `results/agent_report.md`. The report is **advisory only** -- the final call on
-   every ambiguous or discordant result stays with the researcher. It also renders `results/umap_celltype.png` Ã¢â‚¬â€ the UMAP
+   every ambiguous or discordant result stays with the researcher. It also renders `results/umap_celltype.png` — the UMAP
    coloured by the assigned **cell types** (a companion to the pipeline's
    `umap_leiden.png`, which is coloured by cluster number). Without a configured
    `.env`, this step stops with a clear message telling you which variables to set.
 
 7. **Review flagged clusters.** Open `results/cell_type_annotations.csv` and focus
-   on rows where `ambiguous = True` Ã¢â‚¬â€ these are where the agent is least certain
+   on rows where `ambiguous = True` — these are where the agent is least certain
    (e.g. cycling vs. exhausted, monocyte vs. dendritic) and warrant a human check
    against the markers and the UMAP plot.
 
@@ -224,7 +224,7 @@ confidently wrong.
   with a reference-based method (e.g. `celltypist`, included in `requirements.txt`)
   and canonical marker panels.
 - Results vary with model version and marker selection; pin both for reproducibility.
-- CI (`.github/workflows/ci.yml`) only lints and smoke-imports Ã¢â‚¬â€ it does not call
+- CI (`.github/workflows/ci.yml`) only lints and smoke-imports — it does not call
   Azure or download data.
 - **Windows on ARM64 is unsupported for the Scanpy stack.** `numba`, `llvmlite`,
   `statsmodels`, `tables` and `leidenalg` publish no `win_arm64` wheels, so install
