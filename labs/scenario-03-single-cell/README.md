@@ -9,8 +9,9 @@ with a cautious **self-critique** pass that flags ambiguous clusters
 
 **Dataset:** 10x Genomics **PBMC 3k** — ~2,700 peripheral blood mononuclear cells,
 the classic Scanpy clustering tutorial dataset. At runtime you can instead pick a
-**complex profile** (`PBMC 68k reduced`), a more heterogeneous, ambiguity-prone
-dataset used to stress-test the cross-readout disagreement check (see below).
+**complex profile** (`Kang et al. 2018 IFN-beta PBMC`, ~24,700 cells, `ctrl` vs
+`stim`), a two-condition dataset used to stress-test the cross-readout
+disagreement check (see below).
 
 **Stack:** Azure (Azure ML compute + Azure OpenAI + Blob) · GitHub · VS Code Dev Containers.
 
@@ -157,7 +158,7 @@ chat deployment.
    python src/pipeline.py
    ```
    The script first prompts for a **dataset profile** (1 = simple PBMC3k, 2 =
-   complex PBMC68k reduced) and a **run mode** (1 = fixed resolution, 2 = the
+   complex Kang 2018 IFN-beta) and a **run mode** (1 = fixed resolution, 2 = the
    agent iterates resolutions). You can skip the prompts non-interactively:
    ```bash
    python src/pipeline.py --dataset simple --mode 1
