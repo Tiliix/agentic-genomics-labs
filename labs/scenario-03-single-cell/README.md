@@ -219,6 +219,64 @@ confidently wrong.
 
 ---
 
+## The adversarial cross-readout disagreement check
+
+The self-critique pass catches *confident-but-wrong* labels. It does **not**
+catch a subtler failure: two legitimate analyses of the same biology that quietly
+reach different conclusions. This third pass is built for exactly that case.
+
+### The problem: two defensible readouts can disagree
+
+For any gene program (e.g. an interferon-response signature), you can score every
+cell and then summarize a cluster two equally valid ways:
+
+- **Intensity** -- the *mean* program score per cell. "How strongly does a typical
+  cell respond?"
+- **Prevalence** -- the *fraction* of cells above an "on" threshold. "How many
+  cells respond at all?"
+
+A cluster can shift on one readout but not the other. Many cells switching on with
+only a mild per-cell change moves **prevalence** but not **intensity**; a few cells
+responding very strongly moves **intensity** but not **prevalence**. Neither result
+is an error -- each is internally consistent -- yet they disagree. That is the
+"both answers are defensible" failure class, and no single readout flags it on its
+own.
+
+### How it works
+
+1. `pipeline.py` scores a set of canonical PBMC programs (interferon response,
+   cytotoxicity, antigen presentation, cell cycle, stress) with
+   `sc.tl.score_genes`, using the raw gene set so program genes are not dropped by
+   HVG selection.
+2. For every `(cluster, program)` contrast, it tests both readouts against **one
+   shared null** (the rest of the cells):
+   - **intensity** via a Mann-Whitney U test on per-cell scores;
+   - **prevalence** via a Fisher exact test on "on/off" counts, where "on" is the
+     90th percentile of the null score distribution.
+3. Both p-values are Benjamini-Hochberg corrected. A contrast is **discordant**
+   when exactly one readout is significant (a logical XOR). Results are written to
+   `results/program_contrasts.csv`.
+4. `annotate_agent.py` runs an **adversarial pass** over the discordant contrasts.
+   The LLM is prompted as a reviewer whose job is *not* to resolve the
+   disagreement but to explain the likely biology (a few cells activated strongly
+   vs many cells mildly activated) and recommend a concrete next step. Each
+   affected cluster is flagged with `cross_readout_conflict` in
+   `cell_type_annotations.csv`, and the discordant contrasts plus the agent's
+   reasoning are written to `results/cross_readout_disagreements.csv` and the
+   dataset-specific `results/agent_report_{simple,complex}.md`.
+
+### The final call stays with the researcher
+
+The agent **flags, explains, and hands back** every discordant contrast -- it never
+silently resolves one. The report ends with an explicit line to that effect, and
+the recommendation defers the biological decision (cell-state abundance vs per-cell
+activity) to the person who knows the experiment. See
+[`examples/agent_report_complex.md`](examples/agent_report_complex.md) for a full
+run on the Kang 2018 IFN-beta dataset, where 80 program contrasts yielded 11
+discordant ones surfaced for review.
+
+---
+
 ## Notes & caveats
 
 - LLM annotations are a **first-pass hypothesis**, not ground truth. Cross-check
