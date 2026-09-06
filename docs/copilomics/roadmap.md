@@ -111,4 +111,4 @@ Readiness inspection, complete-result querying and sourced method explanation ar
 
 ## Keeping this roadmap durable
 
-The [tracking guide](tracking-guide.md) defines issue state and evidence rules. Change this roadmap only when outcomes, scientific support boundaries, admission gates or milestone strategy change. Put task progress, blockers, assignments, PRs, test/build links and go/no-go decisions in the corresponding GitHub Issues, using canonical project fields when a board is available. A missing project permission must be reported as a real blocker, not worked around or represented as a completed board setup.
+The [tracking guide](tracking-guide.md) defines issue state and evidence rules. Change this roadmap only when outcomes, scientific support boundaries, admission gates or milestone strategy change. Put acceptance decisions, blocker details and PR/test/build evidence in the corresponding GitHub Issues; keep current workflow metadata in the live Project. If Project access is unavailable in a future session, report the blocker rather than claiming an update succeeded.
