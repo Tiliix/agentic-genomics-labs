@@ -1,14 +1,19 @@
 # Copilomics prototype tracker
 
-Start with the **[pinned roadmap issue](https://github.com/Tiliix/agentic-genomics-labs/issues/1)**.
-It links five workstreams and nineteen actionable issues with acceptance criteria,
+Start with the **[Copilomics Project board](https://github.com/users/Tiliix/projects/1)**,
+or its **[Ready next view](https://github.com/users/Tiliix/projects/1/views/2)**.
+The board is private: sign in as Tiliix or use an account granted project access.
+The public [pinned roadmap issue](https://github.com/Tiliix/agentic-genomics-labs/issues/1)
+links five workstreams and nineteen actionable issues with acceptance criteria,
 scientific validation requirements, native parent/sub-issue relationships and blockers.
 
 ## Current setup state
 
-- Repository issues and four milestones are live.
-- The GitHub Project board is pending owner authorization for the `project` permission.
-  Repository access alone does not grant it. No board or project automation is claimed yet.
+- The private Project, 25 linked issue records, and four milestones are live.
+- Six workflow statuses and the Priority, Journey, Work type and Deployment fields are configured.
+- Eight views provide delivery, ready work, P0 work, three journeys, workstreams and an intake inbox.
+- New items enter Backlog; sub-issues are automatically added to the Project.
+- Automatic issue closure and completion/PR-driven status transitions are disabled.
 - This documentation-only change does not publish application code or deploy Copilomics.
 - The issue form, PR template and scoped instructions take effect after this change is merged.
 - No implementation assignees, due dates or completed prototype work have been invented.
@@ -17,6 +22,9 @@ scientific validation requirements, native parent/sub-issue relationships and bl
 
 | Need | Location |
 |---|---|
+| Daily delivery board | [Project board](https://github.com/users/Tiliix/projects/1) |
+| Work ready to start | [Ready next](https://github.com/users/Tiliix/projects/1/views/2) |
+| New items needing triage | [Inbox](https://github.com/users/Tiliix/projects/1/views/8) |
 | Direction and workstreams | [Pinned roadmap](https://github.com/Tiliix/agentic-genomics-labs/issues/1) |
 | Pending tasks | [Open Copilomics issues](https://github.com/Tiliix/agentic-genomics-labs/issues?q=is%3Aissue+is%3Aopen+label%3Acopilomics) |
 | Release gates | [Milestones](https://github.com/Tiliix/agentic-genomics-labs/milestones) |
@@ -44,9 +52,11 @@ but not Ready until its prerequisites are verified. Claim a real owner when work
 4. Verify acceptance and applicable deployment before Done.
 
 Workflow: **Backlog -> Ready -> In progress -> Review -> Validation -> Done**.
-Blocked is a flag with a reason, dependency and next action, not a replacement status.
-Until the board is authorized, keep status in the issue's latest explicit status update.
-Once available, Project fields become canonical; do not maintain competing live trackers.
+Project fields are canonical for status, priority, journey, work type and deployment.
+Use native blocked-by links for prerequisites; record an external blocker, its owner
+and next action on the issue, with the `blocked` label where appropriate.
+After acceptance and applicable deployment are verified, set Done and close the issue.
+Neither action is automated from a PR merge. Do not maintain competing live status records.
 
 ## Contribution templates
 
@@ -54,7 +64,10 @@ Once available, Project fields become canonical; do not maintain competing live 
 - [Copilomics PR template](../../.github/PULL_REQUEST_TEMPLATE/copilomics.md)
 - [Scoped Copilot tracking instructions](../../.github/instructions/copilomics-tracking.instructions.md)
 
-After merge, select the Copilomics issue form from New issue. For a browser-created
+After merge, select the Copilomics issue form from New issue. Its `projects` setting
+adds submissions to this Project when the submitting account has write access.
+Triage new items from Inbox: set Priority, Journey, Work type and Deployment before
+considering Ready. For a browser-created
 Copilomics PR, select `template=copilomics.md` in the PR creation URL; other lab PRs
 are not forced to use the Copilomics template.
 

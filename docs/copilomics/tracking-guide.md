@@ -2,13 +2,13 @@
 
 ## Source of truth and publication
 
-The live [GitHub Issues](https://github.com/Tiliix/agentic-genomics-labs/issues) own acceptance criteria, dependency relationships and validation evidence. GitHub Project fields become canonical for workflow status and other project metadata **when a board is available**. Until then, record an explicit `Status: Backlog/Ready/In progress/Review/Validation/Done` and any blocked details in the live issue body or latest status comment. GitHub open/closed state alone does not encode this workflow. When a board becomes available, reconcile those records into its fields and avoid maintaining competing live status records.
+The live [GitHub Issues](https://github.com/Tiliix/agentic-genomics-labs/issues) own acceptance criteria, dependency relationships and validation evidence. The private [Copilomics Project](https://github.com/users/Tiliix/projects/1) owns Status, Priority, Journey, Work type and Deployment. Sign in as Tiliix or use an account granted Project access. Creation-time metadata in issue bodies and the seed JSON is historical, not a competing live tracker. GitHub open/closed state alone does not encode the workflow.
 
-`backlog.json` is a versioned seed and finding-coverage snapshot; `roadmap.md` is durable outcome/support policy, not a second status board. Repository authorization does not imply project authorization. If project scope requires unavailable user approval, publishing repository issues and documentation may proceed under existing permission while board creation remains explicitly blocked. Do not claim a board, configured fields or automation exists until verified. Do not bypass the approval requirement.
+`backlog.json` is a versioned seed and finding-coverage snapshot; `roadmap.md` is durable outcome/support policy, not a second status board. Project authorization was approved separately from repository access. If access is unavailable in a future session, record the blocker and proposed update explicitly; do not claim that a Project field changed or reset live work from the initial seed.
 
-Publish five epic containers and nineteen actionable child issues. Preserve **EP-CORE / EP-BULK / EP-SC / EP-TARGET / EP-OPS** and **CP-01 ... CP-19** in published titles. Resolve stable keys to actual GitHub issue links after creation. Use GitHub parent/sub-issue relationships where available; otherwise retain explicit epic and child links. Preserve dependency links independently of parentage.
+Five epic containers, nineteen actionable child issues and the roadmap record are linked to the Project. Preserve **EP-CORE / EP-BULK / EP-SC / EP-TARGET / EP-OPS** and **CP-01 ... CP-19** in titles. Native parent/sub-issue and blocked-by relationships are configured. Preserve dependency links independently of parentage.
 
-No deadlines or implementation assignees have been fabricated. Field creation, GitHub authentication and publication are handled separately from preparing these files.
+No deadlines or implementation assignees have been fabricated. Start from Ready next, claim a real owner when work begins, and use Inbox to triage newly added items.
 
 ### Seed schema
 
@@ -26,13 +26,26 @@ No deadlines or implementation assignees have been fabricated. Field creation, G
 - **Finding coverage:** one record per original finding ID, with `disposition`, `issue_keys`, `note`. There are 26 records: 23 mapped action findings and 3 non-action safeguards. B10 is a bounded explanatory improvement, not a fabrication defect. B11, PA-F08 and PUBLIC-B-07 preserve correct refusal behavior; future extensions do not turn honest unsupported behavior into a retroactive bug.
 - Every child issue body contains scope, acceptance checkboxes and validation evidence requirements. `finding_ids` records direct assignments; explanatory references to related findings need not repeat those assignments.
 
-Suggested project fields, to configure only when board access is authorized: Status, Priority, Journey, Type, Epic, Milestone, Blocked, Blocked reason, Blocked owner and links to validation/deployment evidence. Stable issue keys belong in titles/body links; GitHub numbers are publication identifiers, not replacement planning keys. Use built-in fields where available rather than duplicating them. These are workflow requirements and recommendations, not a claim that fields or transition automation have already been installed.
+Configured custom metadata is Status, Priority, Journey, Work type and Deployment. Built-in fields retain title, assignees, labels, milestone, repository and linked-PR information where available. Native issue relationships carry parentage and prerequisites; external blocker reasons and owners belong on the issue. Stable issue keys remain in titles/body links; GitHub numbers are publication identifiers, not replacement planning keys.
 
-**Canonical metadata:** use Project fields for Priority, Journey and Status once authorized. Do not create duplicate priority, journey or status labels. Repository labels are limited to `copilomics` plus the relevant issue type: `bug`, `enhancement`, `documentation`, `type:validation` or `type:epic`. Map seed types Bug -> `bug`, Feature -> `enhancement`, Documentation -> `documentation`, Validation -> `type:validation`; epic containers use `type:epic`. Until board access is available, retain priority/journey metadata alongside explicit status in the issue, then reconcile into canonical fields. Use native sub-issue and blocked-by relationships where supported; retain stable-key links for traceability. Configurable project views and filters are optional presentation after authorization, not proof that the board has already been created.
+**Canonical metadata:** do not create duplicate priority, journey or status labels. Use `copilomics` plus the relevant issue-type label: `bug`, `enhancement`, `documentation`, `type:validation`, `type:epic` or `type:roadmap`. The `blocked` label may flag an external impediment; `needs-scientific-review` may flag an outstanding scientific review, with details on the issue. Neither replaces Status or native dependency links. Map seed type to Project Work type during intake.
+
+### Views and automation
+
+- **Delivery board:** implementation cards, grouped by the six Status columns; excludes structural epic and roadmap records.
+- **Ready next:** the starting queue, initially CP-01 and CP-02.
+- **Integrity blockers:** P0 implementation work; critical does not necessarily mean ready.
+- **Bulk alpha / Single-cell / Target evidence:** journey-specific views with parent context.
+- **Workstreams:** the five epic containers and their child progress.
+- **Inbox:** items without Priority. Set Priority, Journey, Work type and Deployment and check prerequisites before moving to Ready.
+
+Built-in intake places new Project items in Backlog, and sub-issues are automatically added. Automatic issue closure, Item closed status changes, PR-linked status changes and PR-merged status changes were removed. After verified acceptance and applicable deployment, explicitly set Done and close the issue so both Project status and native issue roll-ups agree. No PR event performs those steps for you.
+
+After the tracking PR is merged, the Copilomics issue form's `projects: ["Tiliix/1"]` setting adds submissions when the creator has Project write access. Check Inbox after creating work; no token-bearing Actions workflow is required.
 
 ### Evidence publication safety
 
-Replace **`evaluation-baseline.md`** with the actual published **sanitized evidence index URL** before publishing any body or roadmap. Generated finding URL anchors must be **lowercase**, for example `#finding-pa-f01`, while visible finding IDs retain their original uppercase form, for example **PA-F01**. Preserve the token until substitution and verify every generated lowercase anchor against the published index. Conversation/turn coordinates refer to internal evaluation records without exposing them; the public index should provide compact sanitized summaries and traceability.
+Seed issue bodies retain the explicit **`{{EVIDENCE_URL}}`** import token. Resolve it to the published sanitized index before creating an issue; repository Markdown uses relative links instead. Generated finding URL anchors must be **lowercase**, for example `#finding-pa-f01`, while visible finding IDs retain their original uppercase form, for example **PA-F01**. Verify generated anchors against the published index. Conversation/turn coordinates refer to retained evaluation records without exposing the raw corpus.
 
 Publish planning text, aggregate counts, finding IDs/coordinates and approved source/test/build/deployment references only. Do **not** upload full raw conversations, screenshots, downloaded inputs/results, raw private source excerpts, machine paths, credentials or private customer/participant data. Do not attach a file merely because it was used during evaluation. The schema's `finding_coverage` notes intentionally consolidate root-cause duplicates instead of opening one ticket per finding.
 
@@ -47,7 +60,7 @@ Publish planning text, aggregate counts, finding IDs/coordinates and approved so
 | **Validation** | Acceptance tests, scientific checks and applicable runtime/deployment checks are being performed on a named candidate. | All criteria have linked evidence and required reviewers accept the result; failures return to In progress or remain blocked. |
 | **Done** | All issue acceptance criteria are verified, evidence linked and deployment status stated truthfully. | Reopen if a regression invalidates acceptance, or open a linked newly scoped follow-up. |
 
-**Blocked is a flag, not a seventh status.** Keep the current workflow status, set Blocked, and record:
+**Blocked is not a seventh status.** Keep the current workflow status, use native blocked-by relationships for issue prerequisites or the `blocked` label for an external impediment, and record:
 
 - the exact unmet dependency or external decision;
 - the concrete condition needed to unblock;

@@ -2,6 +2,7 @@ name: Copilomics work item
 description: Propose a scoped prototype change with evidence and verifiable acceptance criteria.
 title: "[Copilomics] "
 labels: ["copilomics"]
+projects: ["Tiliix/1"]
 body:
   - type: markdown
     attributes:
