@@ -1,0 +1,855 @@
+{
+  "schema_version": "1.0",
+  "repository": "Tiliix/agentic-genomics-labs",
+  "prepared_on": "2026-09-06",
+  "purpose": "Publication-ready planning input only. No application implementation, GitHub publication, deployment or scientific qualification is claimed by this file.",
+  "schema": {
+    "issues": "Actionable GitHub issue seeds. Required fields: key, title, body, epic_key, priority, journey, type, milestone, depends_on, initial_status, basis, finding_ids. body is public-safe Markdown containing scope, acceptance checkboxes and validation evidence requirements. Metadata outside body is authoritative for publishing.",
+    "key": "CP-01 through CP-19 are stable identifiers, not GitHub issue numbers. Preserve the key in the published title.",
+    "epics": "Five structural containers with key, title, body, priority, journey, milestone and issue_keys. They are not additional implementation tasks. Their milestone is their final intended outcome; children may belong to earlier milestones. Epic roll-up progress must not replace child issue status.",
+    "enums": {
+      "priority": [
+        "P0",
+        "P1",
+        "P2"
+      ],
+      "journey": [
+        "Shared",
+        "Bulk RNA-seq",
+        "Single-cell",
+        "Target evidence",
+        "Advanced"
+      ],
+      "type": [
+        "Bug",
+        "Feature",
+        "Validation",
+        "Documentation"
+      ],
+      "initial_status": [
+        "Ready",
+        "Backlog"
+      ],
+      "basis": [
+        "Observed defect",
+        "New product requirement",
+        "Mixed",
+        "Baseline operational gap",
+        "Validation requirement"
+      ]
+    },
+    "depends_on": "An array of CP keys. A prerequisite must have verified acceptance evidence; merging its PR alone does not unblock execution. No dependency cycles. Initial Ready means the list is empty; otherwise Backlog. Dependencies express hard prerequisites, not a mandatory serial delivery schedule.",
+    "finding_coverage": "Exactly one record per original finding ID. disposition is action or safeguard. action has issue_keys and a consolidation rationale. safeguard has an empty issue_keys array and a non-action preservation note. issue.finding_ids lists findings directly assigned to that issue; safeguard references in narrative do not create implementation work.",
+    "evidence": "Use {{EVIDENCE_URL}} as the sole base URL placeholder for a published, sanitized index. Generated finding anchors must be lowercase, for example #finding-pa-f01, while displayed finding IDs remain in their original uppercase form, for example PA-F01. Conversation and turn numbers are human-readable coordinates, not links to raw conversations. Replace the placeholder before public publication and verify lowercase anchors exist. Do not publish the underlying raw conversation corpus, screenshots, data downloads or source excerpts.",
+    "milestones": "Exact names are supplied below. No due dates or implementation assignees are set.",
+    "source_of_truth": "After publication, live GitHub Issues own acceptance criteria, dependency relationships and validation records. GitHub Project fields become canonical for workflow status and other project metadata when a board is available. Until then, record explicit status and blocked details in the live issue; do not imply a board or automation exists. This JSON is a seed and traceability snapshot, not a second live task board."
+  },
+  "baseline": {
+    "remote_main": "80e0f0f",
+    "remote_main_state": "Predates Copilomics and is the base of the separate documentation-only tracking branch, not the evaluated application baseline.",
+    "evaluated_app_branch": "agents/copilomics-pipeline-error-fix",
+    "evaluated_app_branch_base": "438b069",
+    "evaluated_app_state": "The evaluated application worktree branch contains unpublished prototype commits and uncommitted original fixes verified by 39 regression tests. It is distinct from the documentation-only tracking branch.",
+    "tracking_docs_branch": "docs/copilomics-prototype-tracking",
+    "tracking_docs_branch_base": "80e0f0f",
+    "tracking_docs_state": "A separate documentation-only tracking worktree based on remote main. Publishing its roadmap, issue templates and tracking instructions does not publish or deploy the evaluated application changes.",
+    "deployment_state": "The original live service was not rebuilt. The evaluation used a separate frozen runtime. Neither the evaluated application branch, the documentation-only tracking branch nor the 39 passing tests proves application deployment.",
+    "evaluation": {
+      "conversations": 50,
+      "replies": 302,
+      "bundled_conversations": 20,
+      "bundled_with_any_completed_step": 19,
+      "public_conversations": 30,
+      "public_with_any_completed_step": 0,
+      "capabilities_intended": 13,
+      "capabilities_with_completed_steps": 12
+    },
+    "interpretation": "Scripted engineering evaluation, not a clinical or independent numerical gold standard. Completed steps are not completed professional workflows. Some public cases must continue to refuse for precise scientific reasons."
+  },
+  "milestones": [
+    {
+      "name": "M0 - Trustworthy foundation",
+      "goal": "Reconcile and publish the source baseline; verify a separately controlled pilot build; lock the support promise; eliminate wrong bindings, ignored settings, unrequested dispatch and stale-result narration.",
+      "exit_gate": "Foundation reproductions pass on an identified build; all thirteen support dispositions are explicit; simulation recall is not misleading; no claim that all catalogue entries support external data."
+    },
+    {
+      "name": "M1 - Bulk RNA-seq alpha",
+      "goal": "One narrow, complete external counts-and-metadata workflow with QC, explicit DE, real enrichment, read-only follow-ups, native results and verified exports.",
+      "exit_gate": "Bundled and at least two independent suitable public bulk sources complete the approved journey; intended negative controls reach the correct scientific checks."
+    },
+    {
+      "name": "M2 - Three-journey beta",
+      "goal": "Add independent raw/processed single-cell exploration and selected-snapshot target evidence review without expanding the scientific support promise beyond their bounded contracts.",
+      "exit_gate": "Each added journey passes positive, negative, follow-up and export checks using at least two independent suitable public sources; no demo substitution."
+    },
+    {
+      "name": "M3 - Internal pilot",
+      "goal": "Qualify persistence, job controls, project isolation, reproducibility and practitioner usability on approved non-sensitive data.",
+      "exit_gate": "All integrity gates pass; fifty-case replay, held-out tasks and a three-to-five-practitioner pilot are documented on the actual pilot build."
+    }
+  ],
+  "epics": [
+    {
+      "key": "EP-CORE",
+      "title": "Trust foundations: validated requests and auditable evidence",
+      "body": "## Outcome\nUsers can tell which data, settings, approvals and run support every answer. Shared deterministic contracts take precedence over adding agents or changing the model.\n\n## Boundaries\nCover support tiers, typed input bindings, parameter fidelity, execution intent, immutable run/failure records and full-result retrieval. Preserve appropriate scientific refusal and distinguish explanation from computation.\n\n## Exit criteria\n- [ ] Child issues have verified acceptance evidence, not just merged PRs.\n- [ ] Wrong-input, silently ignored-parameter, unrequested-dispatch and stale-result regressions pass.\n- [ ] All thirteen capabilities have explicit, bounded support dispositions.\n\n## Validation evidence\nLink child issue evidence, approved contracts and the release qualification record. Baseline context: [B1, B4 and PA-F01]({{EVIDENCE_URL}}); conversation 16 turn 1, conversation 15 turns 5-7, conversation 21 turns 1 and 3. No deployment is asserted.",
+      "priority": "P0",
+      "journey": "Shared",
+      "milestone": "M0 - Trustworthy foundation",
+      "issue_keys": [
+        "CP-02",
+        "CP-03",
+        "CP-04",
+        "CP-05",
+        "CP-06",
+        "CP-07"
+      ]
+    },
+    {
+      "key": "EP-BULK",
+      "title": "Bulk RNA-seq: complete external-data analysis and enrichment",
+      "body": "## Outcome\nDeliver the first usable alpha: counts plus metadata, auditable QC/design/contrast, complete DE results and actual downstream over-representation analysis.\n\n## Boundaries\nSupport a documented small design set; reject invalid or unsupported designs rather than simplifying them silently. Ranked enrichment is not interchangeable with over-representation analysis and is deferred.\n\n## Exit criteria\n- [ ] Selected external files drive the complete QC-to-DE-to-enrichment journey.\n- [ ] Two independent suitable public sources plus bundled controls pass; technical replicates are not advertised as biological replication.\n- [ ] Full-result questions, a requested change, comparison and export work through shared UI contracts.\n\n## Validation evidence\nLink child acceptance traces, numerical reference checks and exports. [B3]({{EVIDENCE_URL}}#finding-b3), conversation 5 turns 1-2; [PA-F06]({{EVIDENCE_URL}}#finding-pa-f06), conversations 29-30 turn 1.",
+      "priority": "P0",
+      "journey": "Bulk RNA-seq",
+      "milestone": "M1 - Bulk RNA-seq alpha",
+      "issue_keys": [
+        "CP-10",
+        "CP-11"
+      ]
+    },
+    {
+      "key": "EP-SC",
+      "title": "Single-cell: independent raw-count and processed-data exploration",
+      "body": "## Outcome\nMake storage-compatible single-cell files scientifically inspectable, then deliver separate raw-count and already-processed exploration branches with provisional cluster evidence.\n\n## Boundaries\nDo not route standalone single-cell work through multiome or force processed/scaled matrices through raw-count normalization. Donor-aware pseudobulk inference is later work, not a claim implied by clustering.\n\n## Exit criteria\n- [ ] Legacy and modern supported H5AD encodings are profiled without unhandled exceptions.\n- [ ] H5AD and a documented Matrix Market intake path retain assay, units, layers and donor metadata.\n- [ ] Independent raw-count and processed controls produce appropriate evidence, comparisons and exports.\n\n## Validation evidence\nLink import profiles, branch-selection traces, scientific checks and object round-trip tests. [PA-F04]({{EVIDENCE_URL}}#finding-pa-f04), conversations 31-32 turn 1; [PA-F08]({{EVIDENCE_URL}}#finding-pa-f08), conversation 35 turn 1.",
+      "priority": "P1",
+      "journey": "Single-cell",
+      "milestone": "M2 - Three-journey beta",
+      "issue_keys": [
+        "CP-08",
+        "CP-13"
+      ]
+    },
+    {
+      "key": "EP-TARGET",
+      "title": "Target evidence: selected-source dossiers with explicit gaps",
+      "body": "## Outcome\nReview and rank the evidence actually present in a selected external disease snapshot, retaining source scores and missingness.\n\n## Boundaries\nEvidence review is not clinical recommendation, calibrated causal scoring or genome-wide discovery from a small downloaded subset. Absent safety and tractability fields remain absent.\n\n## Exit criteria\n- [ ] External asthma and a second independent suitable source drive their own results without bundled-cache substitution.\n- [ ] Source identity, date, scores, filtering, ranking and subset limits are inspectable.\n- [ ] Missing evidence and research limitations survive native display and dossier export.\n\n## Validation evidence\nLink source-schema fixture checks and exported dossier audits. [PUBLIC-B-03]({{EVIDENCE_URL}}#finding-public-b-03), conversation 44 turn 1 and conversation 45 turn 3. Preserve [B11]({{EVIDENCE_URL}}#finding-b11), conversation 17 turn 5.",
+      "priority": "P1",
+      "journey": "Target evidence",
+      "milestone": "M2 - Three-journey beta",
+      "issue_keys": [
+        "CP-14"
+      ]
+    },
+    {
+      "key": "EP-OPS",
+      "title": "UX and runtime: reliable handoff, operation and pilot qualification",
+      "body": "## Outcome\nA researcher can import approved data, inspect and export evidence, resume a project and control its execution on a traceable pilot build.\n\n## Boundaries\nThe baseline source and deployment gap must be closed explicitly. New intake, persistence, jobs and pilot requirements were not established as failures by the fifty-conversation study. Fix the demonstrated simulation metric without promoting the demonstration to experimental screen inference.\n\n## Exit criteria\n- [ ] Published source, tested build and actual pilot deployment have linked, distinct identities.\n- [ ] Native results, verified downloads, persistence, cancellation and two-project isolation pass.\n- [ ] Release gates and practitioner validation pass before a pilot-ready claim.\n\n## Validation evidence\nLink child test reports, build/deployment records, scientific sign-off and pilot findings. [B8]({{EVIDENCE_URL}}#finding-b8), conversation 13 turn 5; [B7]({{EVIDENCE_URL}}#finding-b7), conversation 19 turns 3 and 5. Baseline: evaluated application branch agents/copilomics-pipeline-error-fix is based at 438b069 with unpublished prototype commits and uncommitted original fixes. Separate documentation-only tracking branch docs/copilomics-prototype-tracking is based on remote main 80e0f0f, which predates Copilomics. Publishing tracking documentation does not publish or deploy the application.",
+      "priority": "P0",
+      "journey": "Shared",
+      "milestone": "M3 - Internal pilot",
+      "issue_keys": [
+        "CP-01",
+        "CP-09",
+        "CP-12",
+        "CP-15",
+        "CP-16",
+        "CP-17",
+        "CP-18",
+        "CP-19"
+      ]
+    }
+  ],
+  "issues": [
+    {
+      "key": "CP-01",
+      "title": "Reconcile unpublished Copilomics source and verify an identified pilot build",
+      "body": "## Basis: baseline operational gap\nRemote GitHub main at 80e0f0f predates Copilomics. The evaluated application worktree branch agents/copilomics-pipeline-error-fix is based at 438b069 and contains unpublished prototype commits plus uncommitted original fixes verified by 39 regression tests. The separate documentation-only tracking branch docs/copilomics-prototype-tracking is based on remote main 80e0f0f; publishing its documentation does not publish or deploy those application changes. The original live service was not rebuilt; the frozen evaluation ran separately. Neither branch publication nor a passing test is proof of application deployment. These facts are the approved planning baseline, not a new defect reproduction.\n\n## Scope\nInventory the unpublished application commit range and the exact uncommitted application fix diff, review what may safely be published, and integrate through reviewed source changes separately from the tracking documentation. Record provenance for application, lab adapters, dependencies, model configuration and runtime. Build a separately identified controlled pilot candidate with a rollback record. Do not silently overwrite an existing service or publish evaluation/private artifacts. Deployment to any existing live environment requires the responsible operator's explicit authorization; record authorization or a blocking reason.\n\n## Acceptance criteria\n- [ ] Record remote main, evaluated application branch/base, prototype commits, uncommitted original fixes and separate tracking documentation branch/base as distinct source facts; inspect for sensitive material before public publication.\n- [ ] Publish approved application source through reviewed PRs and record resulting commit IDs; no uncommitted patch remains an undocumented prerequisite of the candidate. A tracking-documentation PR alone does not satisfy this criterion.\n- [ ] Re-run the existing 39 regression tests on the published application candidate and reconcile any drift from the frozen evaluation source inventory.\n- [ ] Produce an immutable application build/environment identifier and verify the running pilot candidate serves that identifier with its intended adapters and dependencies.\n- [ ] Record separate merged, built and deployed states, smoke checks and rollback steps; state explicitly whether the original live service remains unchanged.\n\n## Validation evidence requirements\nAttach sanitized application source-range/diff inventory, application PR and commit links distinct from tracking-documentation PRs, the 39-test output with test command and environment, build identifier, authorized deployment record and observed health/smoke results. Do not include machine paths, secrets or raw source excerpts in the evidence index. Link the [sanitized baseline index]({{EVIDENCE_URL}}). Cross-check an existing bundled smoke scenario such as conversation 1 turn 1 without presenting it as proof of the new deployment.",
+      "epic_key": "EP-OPS",
+      "priority": "P0",
+      "journey": "Shared",
+      "type": "Validation",
+      "milestone": "M0 - Trustworthy foundation",
+      "depends_on": [],
+      "initial_status": "Ready",
+      "basis": "Baseline operational gap",
+      "finding_ids": []
+    },
+    {
+      "key": "CP-02",
+      "title": "Freeze thirteen capability support contracts and regression fixture expectations",
+      "body": "## Basis: validation requirement\nThe evaluation intended thirteen capabilities; twelve completed a step. Nineteen of twenty bundled cases completed at least one step and none of thirty public cases did. This is not a workflow pass rate, and incompatible controls should not be forced to run. Capture known defect reproductions before repairs and declare which scientific checks remain untested.\n\n## Scope\nPublish a versioned compatibility/admission matrix and fixture manifest. Core alpha: rnaseq-qc, bulk-rnaseq-de, rnaseq-pathway-enrichment. Bounded core beta: single-cell-annotation and target-discovery. Experimental: multiome-annotation, multiomics-factor-hypothesis, variant-cohort-bayesian and vus-deep-curation. Annotated research input only: variant-interpretation. Demonstration/research synthesis only: multiomics-tumor-board. Bundle-limited demonstration: spatial-target-validation. Explicit simulation demonstration: perturbation-design. Label unsupported external schemas and network needs honestly in the catalogue.\n\n## Acceptance criteria\n- [ ] Each of the thirteen entries documents accepted roles, assay/units/preprocessing, required evidence, parameter/design limits, outputs, network requirements and support tier; unknown properties stay unknown.\n- [ ] Retain failing reproductions for dropped initial settings, ignored aliases, wrong metadata binding, no-run clarification, stale 13-versus-11 narration, profiling exceptions and misleading recall; catalogue clicks and natural-language launches have separate expectations.\n- [ ] Classify fixtures as compatible positive, processed/readiness, intended scientific refusal or unsupported format; record source identity, transforms, checksums and expected stopping stage.\n- [ ] Preserve safe controls: offline unannotated variants, RNA-only multiome, incomplete spatial/tumor-board evidence and unmatched multi-view inputs do not acquire substitute results. Generic refusal or an unrelated error is not credited as a specific biological check.\n- [ ] Define independent-reference methods/tolerances and required artifact schemas before scoring each supported journey; distinguish technical SEQC library replicates from biological subjects and derivatives from independent studies.\n- [ ] Publish the bounded nonclinical research promise and explicit non-goals, with later capability admission in the roadmap rather than speculative implementation tickets.\n\n## Validation evidence requirements\nProvide the versioned matrix, fixture manifest and a runnable failing/passing reproduction inventory tagged with intended check and source provenance. Link [PA-F08]({{EVIDENCE_URL}}#finding-pa-f08), conversation 35 turn 1 and conversation 28 turn 3; [PUBLIC-B-07]({{EVIDENCE_URL}}#finding-public-b-07), conversations 36, 37, 40, 46 and 50 turn 1. Preserve [B11]({{EVIDENCE_URL}}#finding-b11), conversation 10 turn 4 and conversation 17 turn 5. This issue establishes expectations; it does not claim new scientific validation has already passed.",
+      "epic_key": "EP-CORE",
+      "priority": "P0",
+      "journey": "Shared",
+      "type": "Validation",
+      "milestone": "M0 - Trustworthy foundation",
+      "depends_on": [],
+      "initial_status": "Ready",
+      "basis": "Validation requirement",
+      "finding_ids": []
+    },
+    {
+      "key": "CP-03",
+      "title": "Bind typed dataset roles and enforce explicit scientific readiness",
+      "body": "## Basis: observed defect\nCounts and supplied sample metadata were planned as two expression inputs, with the metadata reaching expression adapters. Spatial protein H5AD was labelled transcriptomics from its container/coordinates. These are contract defects, not evidence that external DE or protein normalization produced incorrect numerical results.\n\n## Scope\nIntroduce a shared, versioned dataset manifest used by intake, planner and adapters. Represent primary matrix, sample metadata, feature metadata, annotations and supporting assays separately, with stable artifact identity, full content hashes, source/transform provenance, sample/cell IDs, dimensions, assay, organism, units, reference/identifier namespace and preprocessing state. Distinguish user-supplied assertions from inspected facts. Compile explicit named input bindings; never select the newest compatible artifact implicitly.\n\n## Acceptance criteria\n- [ ] Counts plus metadata yield one intended QC/DE input group; supplied metadata is never silently replaced by a default filename, latest artifact or bundled example.\n- [ ] Readiness checks validate orientation, identity uniqueness/alignment, finite count properties, missingness, paired modalities and required metadata before dispatch; incompatible or non-estimable designs remain blocked despite confirmation.\n- [ ] Ambiguity returns field-specific questions and accepts role corrections; absent scientific evidence is not replaced with guessed assay, organism or processing state.\n- [ ] H5AD and spatial coordinates do not imply RNA; IMC protein intensities, targeted panels and scaled matrices retain their measured semantics.\n- [ ] All executable steps contain explicit dataset/artifact/role bindings, and changing dataset creates a new validated analysis boundary.\n\n## Validation evidence requirements\nShow manifest/schema tests and adapter-call traces for source-verified SEQC and mouse count/metadata fixtures, reordered inputs, conflicting IDs and absent roles. Include intentional CPM, protein-as-counts and RNA-only multiome controls that reach their named readiness check, not an earlier incidental error. Link [PA-F01]({{EVIDENCE_URL}}#finding-pa-f01), conversation 21 turns 1 and 3, conversation 25 turn 3; [PUBLIC-B-04]({{EVIDENCE_URL}}#finding-public-b-04), conversations 47-49 turn 1. Retain no-substitution controls from PUBLIC-B-07.",
+      "epic_key": "EP-CORE",
+      "priority": "P0",
+      "journey": "Shared",
+      "type": "Bug",
+      "milestone": "M0 - Trustworthy foundation",
+      "depends_on": [
+        "CP-02"
+      ],
+      "initial_status": "Backlog",
+      "basis": "Observed defect",
+      "finding_ids": [
+        "PA-F01",
+        "PUBLIC-B-04"
+      ]
+    },
+    {
+      "key": "CP-04",
+      "title": "Validate and record requested versus effective parameters on every execution",
+      "body": "## Basis: observed defect\nInitial requests for five factors, four rounds and one hundred permutations executed defaults of ten, eight and two hundred. Some follow-up aliases and categorical reference changes appeared accepted but were not effective. Empty provenance alone does not prove a parsing failure; effective execution evidence establishes the cited mismatches. Catalogue launches that did not transmit the full prose must be tested separately.\n\n## Scope\nValidate model-proposed settings against each capability's deterministic schema, normalize declared aliases, reject unknown/unsupported settings, bind effective values into the actual adapter invocation and persist requested/default/effective values. Apply the same contract to initial requests, refinements and structured controls. Do not silently replace unsupported factorial or paired designs with a simpler analysis.\n\n## Acceptance criteria\n- [ ] Five factors, four rounds of eight and one hundred permutations reach effective execution unchanged, or are explicitly rejected before dispatch.\n- [ ] Supported low-count, top-count and permutation aliases normalize to canonical adapter names; unknown settings cannot disappear through catch-all arguments.\n- [ ] Categorical reference levels, condition columns and single-cell dataset mode survive both initial planning and subsequent correction.\n- [ ] A rerun acknowledgment requires evidence of applied configuration; read-only threshold filtering is distinguished from a refit and a no-op from a changed run.\n- [ ] Supported alpha/resolution positive controls remain effective; unsupported model formulas produce an actionable limit, not an unadjusted substitute.\n\n## Validation evidence requirements\nProvide schema/unit tests plus actual adapter-call and effective-setting records, not only plan JSON. Link [B1]({{EVIDENCE_URL}}#finding-b1), conversations 16, 19 and 20 turn 1; [B2]({{EVIDENCE_URL}}#finding-b2), conversation 2 turn 4, conversation 4 turn 3, conversation 18 turn 3 and conversation 20 turn 4; [PA-F02]({{EVIDENCE_URL}}#finding-pa-f02), conversation 34 turn 1 and conversation 28 turn 1. Confirm existing alpha and resolution positive controls, conversation 3 turn 3 and conversation 15 turn 5.",
+      "epic_key": "EP-CORE",
+      "priority": "P0",
+      "journey": "Shared",
+      "type": "Bug",
+      "milestone": "M0 - Trustworthy foundation",
+      "depends_on": [
+        "CP-03"
+      ],
+      "initial_status": "Backlog",
+      "basis": "Observed defect",
+      "finding_ids": [
+        "B1",
+        "B2",
+        "PA-F02"
+      ]
+    },
+    {
+      "key": "CP-05",
+      "title": "Separate readiness, explanation and approval from scientific dispatch",
+      "body": "## Basis: observed defect\nA request for readiness without fitting DE resumed an unresolved plan and attempted two DE calls. Corrections and minimum-data checklists also triggered unrequested attempts. These attempts failed; do not describe them as completed prohibited fits.\n\n## Scope\nImplement explicit proposed, needs-information, ready, queued, running, succeeded, partially-completed, failed and cancelled states with an approval record. Model intent proposes actions; deterministic validation decides whether dispatch is allowed. Preserve no-analysis, no-network and resource constraints throughout clarification and scope changes.\n\n## Acceptance criteria\n- [ ] Readiness inspection, explanations, comparisons and checklists emit no scientific execution events; useful read-only tools are allowed and labelled.\n- [ ] Clarification names unresolved fields, applies the answer, then revalidates roles/design/parameters rather than clearing a confirmation flag.\n- [ ] A direct request can authorize an already-valid bounded plan without redundant confirmation loops; unresolved or materially changed scope, external transfer and out-of-budget work require fresh approval.\n- [ ] Approval is bound to a plan revision and invalidated by material changes; invalid scientific requirements cannot be overridden by approval.\n- [ ] Failed, rejected and cancelled plans cannot be resumed automatically by a later conceptual question; selected inputs and a concrete recovery action remain available.\n\n## Validation evidence requirements\nAttach state-transition tests and execution/network event assertions for both rejected and authorized paths. Replay [PA-F03]({{EVIDENCE_URL}}#finding-pa-f03), conversation 23 turn 4, conversation 21 turns 1 and 3, conversation 28 turn 3; [PUBLIC-B-02]({{EVIDENCE_URL}}#finding-public-b-02), conversations 36, 39 and 49 turn 4. Include stale-approval, explicit no-network, budget change and valid one-step run controls.",
+      "epic_key": "EP-CORE",
+      "priority": "P0",
+      "journey": "Shared",
+      "type": "Bug",
+      "milestone": "M0 - Trustworthy foundation",
+      "depends_on": [
+        "CP-03",
+        "CP-04"
+      ],
+      "initial_status": "Backlog",
+      "basis": "Observed defect",
+      "finding_ids": [
+        "PA-F03",
+        "PUBLIC-B-02"
+      ]
+    },
+    {
+      "key": "CP-06",
+      "title": "Create an immutable run and failure ledger with artifact-backed current metrics",
+      "body": "## Basis: observed defect\nA multiome refinement computed thirteen clusters but its reply and final summary repeated the earlier eleven. Failed attempts also lost their useful conversational audit trail. A larger concatenated summary limit is not an adequate repair.\n\n## Scope\nRecord immutable dataset/plan/run/step/artifact identities and answer evidence. Keep append-only events for attempts, errors, partial completions, reuse and cancellation, with timestamps, source hashes, effective methods/settings, environment identity and parent-run relationships. Current selection is explicit; run status may evolve through recorded events but completed run facts are never overwritten. Persisting projects across process restarts is CP-16, not implied by this contract alone.\n\n## Acceptance criteria\n- [ ] Current headline metrics are rendered from the selected structured artifact; the refined multiome run reports thirteen clusters and the prior run eleven.\n- [ ] Every answer evidence reference resolves to a named run/step/artifact; conflicts between narrative and structured metrics are corrected visibly or blocked, never silently narrated.\n- [ ] A failed analysis retains selected data, inspected profile, attempted plan, error category, effective invocation and zero/completed step counts even when no successful summary exists.\n- [ ] Partial success preserves upstream artifacts and distinguishes unavailable downstream output from an empty or nonsignificant result.\n- [ ] Switching datasets, interleaving runs and selecting historical results never changes immutable provenance or uses a previous result as recovery.\n\n## Validation evidence requirements\nProvide ledger/schema tests, selected-run consistency assertions and replayed failure traces. Link [B4]({{EVIDENCE_URL}}#finding-b4), conversation 15 turns 5-7; [PUBLIC-B-01]({{EVIDENCE_URL}}#finding-public-b-01), conversation 37 turns 1 and 6, conversation 44 turn 2. Include long histories exceeding the former summary budget and evidence that the thirteen/eleven distinction comes from producing artifacts, not hard-coded text.",
+      "epic_key": "EP-CORE",
+      "priority": "P0",
+      "journey": "Shared",
+      "type": "Bug",
+      "milestone": "M0 - Trustworthy foundation",
+      "depends_on": [
+        "CP-03"
+      ],
+      "initial_status": "Backlog",
+      "basis": "Observed defect",
+      "finding_ids": [
+        "B4",
+        "PUBLIC-B-01"
+      ]
+    },
+    {
+      "key": "CP-07",
+      "title": "Query complete result and failure evidence without rerunning analysis",
+      "body": "## Basis: observed defect with bounded explanatory improvement\nResult questions and method questions receive different incomplete context, so known provenance, skip reasons, full tables and failure details become inaccessible. General scientific explanation can also be over-restricted. Correct abstention about unavailable case-specific evidence must remain intact.\n\n## Scope\nExpose read-only artifact tools for schemas, row counts, lookup, filtering/sorting, provenance and explicit two-run comparison. Retrieve question-specific evidence from the ledger instead of global summary truncation. Separate computed findings, supplied/retrieved source context and general scientific explanation in responses. A source-aware method lookup may explain an established concept but cannot invent implementation details or assign unsupported variant criteria.\n\n## Acceptance criteria\n- [ ] A gene outside the top-ten preview is retrieved from the complete table or correctly reported absent; all clusters/factors and their fields can be enumerated.\n- [ ] Method/source/version/settings, result identity and artifact availability are consistently available to query and explain routes.\n- [ ] Failed/pending cases answer what was selected, attempted, blocked and completed, without asking users to start again or substituting a demo.\n- [ ] Comparisons name both run IDs, inputs and effective parameter differences; cluster numbers are not assumed to be matched identities.\n- [ ] General PVS1 explanation can be clearly labelled and sourced while its applicability to a variant remains unasserted without evidence; implementation-specific rules are retrieved or explicitly unknown.\n- [ ] Read-only follow-ups trigger no scientific rerun and do not mutate the selected run or original configuration.\n\n## Validation evidence requirements\nAttach API/tool tests with complete-table fixtures and execution-count assertions, evidence-reference resolution checks and human review of sourced versus computed claims. Link [B5]({{EVIDENCE_URL}}#finding-b5), conversation 1 turn 6, conversation 6 turn 4 and conversation 13 turn 6; [PA-F05]({{EVIDENCE_URL}}#finding-pa-f05), conversation 22 turn 6 and conversation 34 turn 6; [B10]({{EVIDENCE_URL}}#finding-b10), conversation 9 turn 4 and conversation 2 turn 3. Downloads are implemented and independently verified in CP-12.",
+      "epic_key": "EP-CORE",
+      "priority": "P0",
+      "journey": "Shared",
+      "type": "Bug",
+      "milestone": "M0 - Trustworthy foundation",
+      "depends_on": [
+        "CP-06"
+      ],
+      "initial_status": "Backlog",
+      "basis": "Mixed",
+      "finding_ids": [
+        "B5",
+        "PA-F05",
+        "B10"
+      ]
+    },
+    {
+      "key": "CP-08",
+      "title": "Profile legacy and modern H5AD safely without confusing encoding with readiness",
+      "body": "## Basis: observed defect\nPBMC68k profiling crashes because a valid legacy structured HDF5 dataset is treated as a group. The preserved file is a processed 700-cell, 765-feature reference with scaled negative X, not a raw-count positive control. Kang also produced a profiling exception, but its precise cause was not established and must be investigated independently rather than assumed identical.\n\n## Scope\nSupport declared AnnData encodings across groups, structured datasets, sparse/dense matrices and available layers. Inspect storage compatibility separately from assay and preprocessing suitability. Preserve originals and emit actionable unsupported/malformed diagnostics. Do not rename arbitrary HDF5 into apparent H5AD or normalize a scaled matrix as counts.\n\n## Acceptance criteria\n- [ ] Supported legacy PBMC68k and modern H5AD profiles return dimensions, available layers/embeddings, field names and known provenance without Dataset.keys failures.\n- [ ] The Kang reproduction is localized and either repaired or returns a precise supported-format limit with selected-input/failure context retained; do not attribute its cause without evidence.\n- [ ] Raw counts, normalized/logged/scaled values and unknown processing remain distinct; valid storage alone never authorizes raw-count analysis.\n- [ ] Non-AnnData HDF5, malformed structures and missing required elements return bounded diagnostics rather than an unhandled exception or unrelated dataset-mode failure.\n- [ ] Assay, species, targeted panel and donor/sample fields are retained without inferring RNA from spatial coordinates.\n\n## Validation evidence requirements\nProvide fixture encoding inventories, independent AnnData readability checks, profile expectations and no-execution assertions for readiness-only requests. Link [PA-F04]({{EVIDENCE_URL}}#finding-pa-f04), conversations 31-32 turn 1 and conversation 31 turn 3; [B6]({{EVIDENCE_URL}}#finding-b6), conversation 14 turns 1, 4 and 7. Include processed PBMC, source-processed Paul15 and an actual raw-count fixture with scientific labels, not just extension tests.",
+      "epic_key": "EP-SC",
+      "priority": "P0",
+      "journey": "Single-cell",
+      "type": "Bug",
+      "milestone": "M0 - Trustworthy foundation",
+      "depends_on": [
+        "CP-03"
+      ],
+      "initial_status": "Backlog",
+      "basis": "Observed defect",
+      "finding_ids": [
+        "PA-F04",
+        "B6"
+      ]
+    },
+    {
+      "key": "CP-09",
+      "title": "Add a project dataset library with bounded file and public-source intake",
+      "body": "## Basis: new product requirement, not an observed upload failure\nEvaluation downloads were performed by its harness. They do not demonstrate an application upload, mounted-folder picker or public-data importer. Build these as product capabilities without claiming the fifty conversations tested them.\n\n## Scope\nProvide multi-file upload and selection from approved mounted folders without requiring users to type container paths. Store originals and named derivatives in a project dataset library. Add a small allowlisted public-source import path for the flagship fixtures, not arbitrary web scraping. Feed all intake paths into the shared manifest/readiness contracts.\n\n## Acceptance criteria\n- [ ] Users can select counts plus metadata, H5AD or documented Matrix Market sidecars, and target snapshots with explicit roles; validation errors name the affected file/field.\n- [ ] Library cards show selected dataset identity, assay, organism, dimensions, processing state, source, readiness and transformations; user assertions and inspected properties are differentiated.\n- [ ] Imported originals are unchanged and content-addressed; derivatives record the transform and source relationship. A previewed filename is not treated as a verified import.\n- [ ] Public imports show source/accession, expected size, permitted source, licensing/use constraints and network permission before acquisition; record hashes and acquisition date.\n- [ ] File-size/resource limits, inaccessible mounts, malformed/truncated files and interrupted transfers give bounded failure states without leaving an executable incomplete dataset.\n- [ ] Selecting a new dataset creates a visible analysis boundary and revalidation, never silent reuse of a prior project result.\n\n## Validation evidence requirements\nProvide browser-level import/select tests, manifest/hash checks, allowed-source and explicit no-network tests, and malformed/oversized/interrupted intake controls. Use approved non-sensitive fixtures; do not attach downloaded datasets to public evidence. Motivation: [PA-F01]({{EVIDENCE_URL}}#finding-pa-f01), conversation 21 turn 1, and [PUBLIC-B-03]({{EVIDENCE_URL}}#finding-public-b-03), conversation 44 turn 1 demonstrate binding/support gaps, not tested import UI failures.",
+      "epic_key": "EP-OPS",
+      "priority": "P1",
+      "journey": "Shared",
+      "type": "Feature",
+      "milestone": "M1 - Bulk RNA-seq alpha",
+      "depends_on": [
+        "CP-03",
+        "CP-05"
+      ],
+      "initial_status": "Backlog",
+      "basis": "New product requirement",
+      "finding_ids": []
+    },
+    {
+      "key": "CP-10",
+      "title": "Qualify external bulk counts, QC and explicit differential-expression designs",
+      "body": "## Basis: mixed observed failure and scientific qualification requirement\nCompatible public counts/metadata did not reach successful computation because of shared binding and configuration defects. This does not establish numerical miscalibration of the unexecuted DE model. After shared repairs, qualify a bounded external-data QC/DE workflow end to end.\n\n## Scope\nDefine the supported count orientation, design set, contrasts, filtering and inference method. Inspect library sizes, missingness, sample relationships and replication. Support explicit condition/reference choices and publish full DE outputs with effect direction, tested universe, multiplicity correction and provenance. Unsupported interactions, confounding and insufficient replication must not be silently simplified.\n\n## Acceptance criteria\n- [ ] Bundled pasilla and at least two independent suitable public source datasets pass intake-to-QC/DE checks with intended metadata/sample alignment and exact effective settings; derivatives of one study count once.\n- [ ] Mouse mammary subsets are tested with their actual identities and reference levels. SEQC is labelled technical reference RNA and is not counted as independent human biological replication.\n- [ ] QC definitions, filtering, library/sample plots and the full tested-gene table are available; contrast reversal has a documented direction and filtering/fit reuse policy.\n- [ ] CPM/processed counts, duplicate or mismatched samples, single-condition/confounded designs and unsupported factorial formulas stop at their intended scientific checks.\n- [ ] A user performs gene lookup outside the preview, method/provenance explanation, one setting/contrast change, named two-run comparison and export without code or container-path intervention.\n- [ ] Native displays and exported tables reconcile with producing artifacts; appropriate no-significant-findings output is distinct from model or infrastructure failure.\n\n## Validation evidence requirements\nRecord source/transform manifests, selected/effective designs, independent method/reference outputs with justified numeric tolerances, expected effect direction and multiple-testing checks, and complete browser journey traces. Human scientific review must verify replication and design interpretation. Link [PA-F01]({{EVIDENCE_URL}}#finding-pa-f01), conversations 21 and 25 turn 3; [PA-F02]({{EVIDENCE_URL}}#finding-pa-f02), conversation 27 turn 3 and conversation 28 turn 1. Do not claim the original cases already verified their intended statistical guards.",
+      "epic_key": "EP-BULK",
+      "priority": "P0",
+      "journey": "Bulk RNA-seq",
+      "type": "Validation",
+      "milestone": "M1 - Bulk RNA-seq alpha",
+      "depends_on": [
+        "CP-04",
+        "CP-05",
+        "CP-06",
+        "CP-09",
+        "CP-12"
+      ],
+      "initial_status": "Backlog",
+      "basis": "Mixed",
+      "finding_ids": []
+    },
+    {
+      "key": "CP-11",
+      "title": "Preserve and execute the DE-to-enrichment artifact dependency chain",
+      "body": "## Basis: observed defect\nCompound DE-then-enrichment requests produced only DE nodes. There is no evidence from those attempts of enrichment service outage, identifier-mapping failure or incorrect pathway statistics, because enrichment was not reached.\n\n## Scope\nCompile all requested stages into a validated dependency graph and bind enrichment to the exact completed DE artifact. Begin with a documented over-representation method and its actual background support. Preserve completed DE if enrichment is blocked, unavailable or fails; allow a corrected downstream retry without changing upstream evidence unnecessarily.\n\n## Acceptance criteria\n- [ ] A request for DE then enrichment creates both stages with explicit prerequisites and a declared gene-selection rule; DE alone is never labelled the complete request.\n- [ ] Record species, input identifier namespace, mapping version, duplicate handling, mapped/unmapped counts, selected genes, tested/background universe, enrichment library/version and multiple-testing method.\n- [ ] Background comes from an appropriate assay/tested universe; an unsupported custom background is explicitly rejected or offered through a method that truly supports it, never falsely recorded as applied.\n- [ ] Enrichment executes only from the intended upstream run/artifact and approved network scope; cross-species, missing identifiers, empty selection and unavailable services produce distinct outcomes.\n- [ ] Network prohibition, downstream failure or cancellation preserves DE results and an actionable partial-success record; retry and cache reuse identify exactly which steps ran.\n- [ ] Full pathway tables, contributing genes, parameters and limitations are available through queries, native views and verified report/export. Ranked enrichment remains deferred.\n\n## Validation evidence requirements\nShow plan graph assertions and event traces proving an actual downstream invocation, plus offline/mock-service fault tests and a reference-checked supported-method run with justified statistics/background expectations. Test bounded human and mouse identifier fixtures, mapping losses and custom-background rejection. Link [B3]({{EVIDENCE_URL}}#finding-b3), conversation 5 turns 1, 2 and 4; [PA-F06]({{EVIDENCE_URL}}#finding-pa-f06), conversation 29 turns 1 and 4, conversation 30 turns 1 and 3.",
+      "epic_key": "EP-BULK",
+      "priority": "P1",
+      "journey": "Bulk RNA-seq",
+      "type": "Bug",
+      "milestone": "M1 - Bulk RNA-seq alpha",
+      "depends_on": [
+        "CP-10",
+        "CP-07"
+      ],
+      "initial_status": "Backlog",
+      "basis": "Observed defect",
+      "finding_ids": [
+        "B3",
+        "PA-F06"
+      ]
+    },
+    {
+      "key": "CP-12",
+      "title": "Render a native evidence workspace with verified report and artifact downloads",
+      "body": "## Basis: mixed observed UI defects and new handoff requirements\nNon-DE tables rendered as literal Markdown pipes, failed attempts displayed Computed by, and generic RNA actions appeared in unrelated contexts. Artifact labels were observed, but their underlying files/download behavior was not independently validated. Reports and reproducible handoff are product requirements, not a claim of an observed failed download.\n\n## Scope\nBuild a small shared workspace using the typed contracts: selected dataset/goal/current run, editable validated configuration, run history/differences, native result and failure panels, accessible typed tables and artifact-backed figures. Add an export bundle/HTML report and actual artifact downloads. Avoid coupling this to a general UI redesign. Bulk, single-cell and target adapters qualify their own modality-specific result content in CP-10, CP-13 and CP-14.\n\n## Acceptance criteria\n- [ ] The selected dataset and current run agree across sidebar, configuration, plan and results; requested/effective/default settings and named comparisons are visible.\n- [ ] Typed result tables support full rows, accessible interaction, units and missing values; figures derive from real artifacts. Schema-backed fixture rendering supports bulk, cluster and target evidence without fabricated scientific results.\n- [ ] Attempted, completed, reused, failed, partial and cancelled steps have truthful labels; Computed by appears only for successful computation.\n- [ ] Suggestions and result-dependent actions respect modality, available artifacts, no-run intent and remaining budget; absent prerequisites disable actions and explain why. No unrelated demo invitation is used as recovery.\n- [ ] Downloads return actual full tables, available processed objects and figures with producing-run checksums; missing artifacts fail clearly. A displayed label or successful HTTP response alone does not satisfy download verification.\n- [ ] HTML reports and machine-readable run manifests include source data identity, methods, settings, results, missing evidence and limitations. Export reproducible configuration/command from the validated plan, not newly generated analysis code.\n\n## Validation evidence requirements\nAttach component/accessibility and browser interaction tests, data-to-display consistency checks and downloaded-byte/hash/row-count validation. Reload exported objects and reproduce one supported output from the exported configuration. Public evidence should summarize checks without attaching raw downloads or the original screenshot corpus. Link [B8]({{EVIDENCE_URL}}#finding-b8), conversation 13 turn 5; [B9]({{EVIDENCE_URL}}#finding-b9), conversation 16 turn 1; [PA-F07]({{EVIDENCE_URL}}#finding-pa-f07), conversation 25 turn 3; [PUBLIC-B-05]({{EVIDENCE_URL}}#finding-public-b-05), conversation 47 turn 3; [PUBLIC-B-06]({{EVIDENCE_URL}}#finding-public-b-06), conversation 44 turn 1.",
+      "epic_key": "EP-OPS",
+      "priority": "P1",
+      "journey": "Shared",
+      "type": "Feature",
+      "milestone": "M1 - Bulk RNA-seq alpha",
+      "depends_on": [
+        "CP-07",
+        "CP-09"
+      ],
+      "initial_status": "Backlog",
+      "basis": "Mixed",
+      "finding_ids": [
+        "B8",
+        "B9",
+        "PA-F07",
+        "PUBLIC-B-05",
+        "PUBLIC-B-06"
+      ]
+    },
+    {
+      "key": "CP-13",
+      "title": "Deliver independent raw-count and processed single-cell exploration paths",
+      "body": "## Basis: bounded new capability qualification with observed intake limitations\nLegacy H5AD repair does not itself establish scientific suitability or a complete single-cell workflow. Matrix Market was honestly refused, not numerically misanalysed. This issue is an independent single-cell journey after shared contracts; it does not depend on bulk DE, multiome or donor-level differential analysis.\n\n## Scope\nSupport documented H5AD and Matrix Market matrix/feature/barcode import, then explicitly branch into raw-count QC/preprocessing or processed-data inspection. Expose supported embedding, clustering and exploratory markers, all cluster sizes/evidence and inherited source labels. Preserve originals and record new transformations in a processed derivative.\n\n## Acceptance criteria\n- [ ] A genuine public raw-count fixture and a processed reference exercise different branches; qualify at least two independent suitable public sources overall plus bundled controls. PBMC68k scaled X and processed/debatched Paul15 are not promoted to raw-count positives.\n- [ ] Matrix Market orientation, feature/barcode lengths, duplicate IDs and sidecars are validated as one dataset; missing or malformed pieces do not become independent bulk inputs.\n- [ ] Raw processing records filtering, normalization, selected features, dimensions, seeds, clustering settings and marker method. Processed input is not renormalized as counts; missing raw data limits available operations explicitly.\n- [ ] Targeted panels receive panel-aware QC and cannot imply that unmeasured genes are absent. Assay/species/sample/donor metadata remain available throughout the workflow.\n- [ ] All cluster sizes, markers and provisional identities are inspectable; source labels are identified as inherited. Cell-level exploratory tests are not presented as donor-level biological inference.\n- [ ] Parameter refinements create distinct run IDs; comparisons use cell membership or explicit matching rather than equal cluster numbers. Five meaningful follow-ups and verified processed-object/table/figure/report export work.\n\n## Validation evidence requirements\nProvide raw and processed source manifests, branch-selection and no-renormalization tests, independently justified numeric/invariant checks for QC and cluster totals, marker plausibility review and a processed-object reload audit. Check deterministic outputs where supported and document stochastic tolerances/seeds otherwise. Link [PA-F08]({{EVIDENCE_URL}}#finding-pa-f08), conversation 35 turn 1, [PA-F04]({{EVIDENCE_URL}}#finding-pa-f04), conversation 31 turns 1 and 3, and [B8]({{EVIDENCE_URL}}#finding-b8), conversation 13 turn 5. Donor-aware pseudobulk remains a separate parking-lot capability with its own replicated-design gate.",
+      "epic_key": "EP-SC",
+      "priority": "P1",
+      "journey": "Single-cell",
+      "type": "Feature",
+      "milestone": "M2 - Three-journey beta",
+      "depends_on": [
+        "CP-08",
+        "CP-09",
+        "CP-12",
+        "CP-04",
+        "CP-05"
+      ],
+      "initial_status": "Backlog",
+      "basis": "Mixed",
+      "finding_ids": []
+    },
+    {
+      "key": "CP-14",
+      "title": "Read selected external target snapshots and export evidence-gap dossiers",
+      "body": "## Basis: observed support restriction plus bounded product extension\nAn explicitly selected asthma snapshot was rejected because only a bundled diabetes cache was accepted; a flattened target table was routed as counts. The honest restriction did not fabricate results. The same finding also records an intentional experimental-counts versus simulation mismatch: that boundary remains unchanged.\n\n## Scope\nAdd versioned adapters for supported Open Targets response JSON and explicitly documented flattened evidence tables. Selected input drives disease/target identity, source fields/scores and filtering/ranking. Build native target evidence views and a dossier through the shared result/export contracts. No genome-wide or causal conclusion may be inferred from reranking a limited supplied subset.\n\n## Acceptance criteria\n- [ ] The selected asthma snapshot retains MONDO_0004979 and its source-provided fields/scores; a second independent suitable public source is qualified. No bundled diabetes cache or unrelated dataset is substituted.\n- [ ] Record source URL/accession where available, acquisition/snapshot date, schema/transform versions, hashes, disease/target identifiers and the boundary of the returned subset.\n- [ ] Filter/rank uses a visible rule and stable handling of ties/missing values; a top-twenty source subset is not described as finding the best genome-wide target.\n- [ ] Evidence matrices distinguish available genetic/drug/other support from missing, negative and unmeasured evidence. Missing safety/tractability remains missing, not safe or zero risk.\n- [ ] Explanations distinguish association, causal support and therapeutic feasibility without clinical recommendations or an invented calibrated score.\n- [ ] Lookup, source/method explanation, one ranking/filter change, named comparison and verified dossier/full-table export preserve evidence gaps and source attribution.\n\n## Validation evidence requirements\nAttach adapter/schema tests for original and labelled transformed snapshots, exact score/identity round-trips, invalid-schema/unknown-disease/no-network tests and an independent dossier audit against the selected source. Link [PUBLIC-B-03]({{EVIDENCE_URL}}#finding-public-b-03), conversation 44 turn 1, conversation 43 turn 3 and conversation 45 turn 3. Preserve [B11]({{EVIDENCE_URL}}#finding-b11), conversation 17 turn 5. Public evidence links should identify sources and validation conclusions, not republish downloaded source files.",
+      "epic_key": "EP-TARGET",
+      "priority": "P1",
+      "journey": "Target evidence",
+      "type": "Feature",
+      "milestone": "M2 - Three-journey beta",
+      "depends_on": [
+        "CP-03",
+        "CP-07",
+        "CP-09",
+        "CP-12",
+        "CP-04",
+        "CP-05"
+      ],
+      "initial_status": "Backlog",
+      "basis": "Mixed",
+      "finding_ids": [
+        "PUBLIC-B-03"
+      ]
+    },
+    {
+      "key": "CP-15",
+      "title": "Correct simulation hit precision and true-positive recall definitions",
+      "body": "## Basis: observed defect in an existing demonstration\nSimulated pathway recovery reported two detected hits against one true hit as two hundred percent, and reported detected hits where ground-truth positives were zero. The narrator cautioned against interpreting those counts as real recovery. Repair the metric while keeping perturbation-design explicitly simulation-only.\n\n## Scope\nSeparate detected hits from the intersection with ground-truth hits at the appropriate gene/pathway scope. Define and display precision, recall, numerator/denominator, thresholds and matched-budget comparison rules consistently across artifacts, UI, narration and export. This is a repair, not experimental CRISPR inference support.\n\n## Acceptance criteria\n- [ ] Recall uses unique true-positive intersection divided by actual positives and remains between zero and one (or zero and one hundred percent); zero actual positives yields an explicit undefined value.\n- [ ] Precision uses true positives divided by detected positives, with documented undefined handling when no positives are called; noisy false hits remain visible rather than relabelled as recovery.\n- [ ] Duplicate hits and pathway membership cannot inflate numerators; aggregation and membership rules are documented.\n- [ ] Comparisons use the same budget, seed/control policy and truth definition, or explicitly state why results are not comparable.\n- [ ] Simulation truth, source assumptions and limitations are visible; experimental guide counts cannot be loaded as fabricated simulation ground truth.\n\n## Validation evidence requirements\nAttach small exact-reference confusion-matrix tests covering false positives, no truth positives, no calls, duplicated calls and overlapping pathway membership, plus a rerun reconciling narrative and exported metrics. Link [B7]({{EVIDENCE_URL}}#finding-b7), conversation 19 turns 3, 5 and 6. Preserve the intentional experimental-count rejection in [PUBLIC-B-03]({{EVIDENCE_URL}}#finding-public-b-03), conversation 41 turn 1.",
+      "epic_key": "EP-OPS",
+      "priority": "P1",
+      "journey": "Advanced",
+      "type": "Bug",
+      "milestone": "M0 - Trustworthy foundation",
+      "depends_on": [
+        "CP-02"
+      ],
+      "initial_status": "Backlog",
+      "basis": "Observed defect",
+      "finding_ids": [
+        "B7"
+      ]
+    },
+    {
+      "key": "CP-16",
+      "title": "Persist projects and immutable artifact references across refresh and restart",
+      "body": "## Basis: new product requirement\nThe scripted fifty-conversation evaluation did not establish project persistence or browser/process restart behavior. Qualify these explicitly rather than reporting an observed data-loss defect.\n\n## Scope\nPersist project metadata, dataset manifests, plan revisions/approvals, run ledger and result references in a small local metadata store with project/run artifact directories. Reuse the shared contracts rather than introducing a distributed platform. Define schema migration, artifact integrity, retention/deletion and recovery behavior for the controlled non-sensitive pilot.\n\n## Acceptance criteria\n- [ ] Refresh, reconnect and application restart restore selected dataset, active run, completed results, run history and actionable failure state without rerunning completed science.\n- [ ] Immutable source/result hashes are verified or visibly unavailable; missing/moved/corrupt artifacts cannot masquerade as valid historical results.\n- [ ] Atomic persistence and interrupted-write recovery do not leave partially saved plans approved or incomplete runs marked successful.\n- [ ] Restarted in-flight jobs are reconciled to an explicit recoverable/interrupted state; no ghost success or automatic duplicate execution is created.\n- [ ] Save/reopen, schema upgrade and project deletion/retention rules are documented and tested; one project's operation cannot alter another project's records.\n\n## Validation evidence requirements\nProvide browser refresh and real process-restart tests with before/after run IDs, checksums and adapter invocation counts, plus corrupt/missing-artifact and interrupted-write controls. Link the [sanitized evaluation limitations]({{EVIDENCE_URL}}); [PUBLIC-B-01]({{EVIDENCE_URL}}#finding-public-b-01), conversation 37 turn 6 motivates retained failure context but does not prove a restart defect. Record the build and storage schema versions used.",
+      "epic_key": "EP-OPS",
+      "priority": "P1",
+      "journey": "Shared",
+      "type": "Feature",
+      "milestone": "M3 - Internal pilot",
+      "depends_on": [
+        "CP-06",
+        "CP-09",
+        "CP-12"
+      ],
+      "initial_status": "Backlog",
+      "basis": "New product requirement",
+      "finding_ids": []
+    },
+    {
+      "key": "CP-17",
+      "title": "Run bounded background jobs with cancellation and project isolation",
+      "body": "## Basis: new runtime qualification requirement\nFour isolated evaluation servers did not test same-process multi-user execution, cancellation, resource limits or production load. These are product/runtime requirements, not observed evaluation failures.\n\n## Scope\nSeparate scientific jobs from HTTP request and model availability. Start with bounded worker processes and one scientific job per worker, durable job identity, stage progress, timeout/cancel controls and explicit resources. Tie cache reuse to dataset hashes, effective parameters and tool versions. Scope the pilot to approved non-sensitive data with controlled access; broader exposure requires authentication, authorization, user isolation and private-data review before rollout.\n\n## Acceptance criteria\n- [ ] Jobs report queued/running/partial/succeeded/failed/cancelled states from actual worker events; disconnect or model outage cannot fabricate completion or lose the job identity.\n- [ ] Cancellation/timeout targets only the selected job and its child work, preserves completed artifacts and prevents downstream dispatch; unrelated jobs/services remain running.\n- [ ] Interleaved use of two projects in the same application instance never mixes dataset selection, approvals, events, artifacts or cached results.\n- [ ] Cache hits verify source hashes, effective settings and tool/environment versions and are labelled reused; mismatches trigger recomputation or rejection, not stale output.\n- [ ] Concurrency/resource limits and restart reconciliation are documented and exercised. Pilot access and data restrictions are enforced; no production multi-tenant claim is made from a two-project test.\n- [ ] A rollout beyond the controlled pilot remains blocked until authentication, authorization, user isolation and sensitive-data controls receive explicit qualification.\n\n## Validation evidence requirements\nAttach cancellation during each meaningful stage, timeout, browser disconnect, worker crash, model outage, cache mismatch and two-project interleaving tests with process/job identities and artifact hashes. Record the actual build and resource configuration. Link [the evaluation limitations]({{EVIDENCE_URL}}); [B4]({{EVIDENCE_URL}}#finding-b4), conversation 15 turns 5-7 is a stale-result regression to preserve, not evidence of a tested concurrency defect.",
+      "epic_key": "EP-OPS",
+      "priority": "P1",
+      "journey": "Shared",
+      "type": "Feature",
+      "milestone": "M3 - Internal pilot",
+      "depends_on": [
+        "CP-05",
+        "CP-06",
+        "CP-16"
+      ],
+      "initial_status": "Backlog",
+      "basis": "New product requirement",
+      "finding_ids": []
+    },
+    {
+      "key": "CP-18",
+      "title": "Qualify the release with frozen replay, held-out workflows and scientific checks",
+      "body": "## Basis: validation requirement, not achieved results\nThe fifty scripted conversations and 39 preceding regression tests do not establish general external-data usability, an independent numerical gold standard or clinical fitness. Define eligibility and expected results before running new acceptance tests and qualify the exact release candidate.\n\n## Scope\nRun a stage-gated software/scientific qualification across the three journeys. Preserve the original frozen evidence; write a distinct replay record. Require two independent suitable public source datasets per flagship journey plus retained bundled fixtures. Derivatives and subsets of one study do not count as independent sources. Retain deliberate scientific refusals and add genuine positive fixtures where the original study mainly tested rejection.\n\n## Acceptance criteria\n- [ ] All fifty original conversations are replayed without overwriting baseline evidence; catalogue clicks and natural-language requests are evaluated separately and comparisons are tagged with model/build/tool versions.\n- [ ] At least twenty held-out supported conversations across all three journeys reach at least ninety percent end-to-end task completion; eligibility, distribution and expected artifacts are frozen in advance and every eligible attempt remains in the denominator.\n- [ ] Zero-tolerance gates all pass: exact artifact-backed headline values including thirteen versus eleven, all accepted settings applied, intended bindings, no unapproved execution/network activity, no substituted/stale results and mathematically valid recall.\n- [ ] Negative controls reach the specific assay/design/evidence guard being claimed; generic refusal or a missing file does not count. Preserve clinical/causal cautions, offline boundaries and missing-versus-negative evidence.\n- [ ] Each journey completes specific lookup, provenance explanation, a requested change, explicit two-run comparison and verified export, and recovers from a supported failure while retaining upstream work.\n- [ ] Independently justified reference methods/tolerances check numeric outputs, effect directions, denominators, multiple testing, mapping/background and source-score fidelity; qualified human scientific review, not a model grader alone, checks interpretation.\n- [ ] Persistence, restart, cancellation and same-instance two-project isolation pass on the candidate; merged commit, built artifact and actual tested deployment are linked.\n- [ ] Publish separate intake, scientific task, read-only follow-up, specific refusal, numerical-consistency and export scores with failures and support limitations. No HTTP/screenshot/ran-count proxy is used as task success.\n\n## Validation evidence requirements\nAttach a sanitized release qualification matrix containing fixture IDs/provenance, commands, assertions, reference/tolerance rationale, build and environment IDs, all eligible outcomes and reviewer sign-off or explicit unresolved blockers. Link [the sanitized baseline index]({{EVIDENCE_URL}}), including B4 conversation 15 turns 5-7, PA-F03 conversation 23 turn 4 and B7 conversation 19 turn 3. Do not publish raw conversations, screenshot archives or downloaded input/output datasets. Any integrity failure blocks pilot readiness regardless of aggregate completion percentage.",
+      "epic_key": "EP-OPS",
+      "priority": "P0",
+      "journey": "Shared",
+      "type": "Validation",
+      "milestone": "M3 - Internal pilot",
+      "depends_on": [
+        "CP-01",
+        "CP-02",
+        "CP-10",
+        "CP-11",
+        "CP-13",
+        "CP-14",
+        "CP-15",
+        "CP-16",
+        "CP-17"
+      ],
+      "initial_status": "Backlog",
+      "basis": "Validation requirement",
+      "finding_ids": []
+    },
+    {
+      "key": "CP-19",
+      "title": "Run a three-to-five-practitioner pilot and record the support decision",
+      "body": "## Basis: new human usability qualification\nThe frozen evaluation used prewritten follow-ups, not an adaptive human trial. A usable research prototype needs observed practitioner success, explicit limitations and a reproducible handoff, not simply plausible model replies.\n\n## Scope\nInvite three to five practicing bioinformaticians to the qualified controlled pilot on approved public/non-sensitive data. Give scripted tasks plus self-chosen tasks within the declared bulk, single-cell and target-evidence scope. Observe without developer intervention; record help requests as such rather than rewriting tasks into successes. Participants, reviewers and implementation owners must be named only when actually agreed, not invented by this plan.\n\n## Acceptance criteria\n- [ ] Three to five practitioners complete recorded sessions across all three supported journeys with task eligibility, assistance, failures and interpretation concerns preserved.\n- [ ] Participants inspect intended data/settings, perform five meaningful follow-ups, change a setting, compare named runs, verify an export and resume a project; outcomes are scored against predefined tasks.\n- [ ] At least one independent practitioner reproduces a supported result from the exported configuration and source provenance within the declared reference tolerances.\n- [ ] Report where users needed help, whether evidence was sufficient, which limits were unclear and whether safe refusals were specific/useful. Do not count developer-assisted completion as unassisted success.\n- [ ] User-facing support matrix, bounded research disclaimer, recovery/export guide and build/deployment identity are current for the pilot actually tested.\n- [ ] Record an explicit pilot go/no-go decision. Integrity or scientific failures remain blocking; new confirmed defects become linked follow-up issues, while advanced ideas remain in the parking lot unless admitted deliberately.\n\n## Validation evidence requirements\nProvide a sanitized participant/task outcome table without personal or sensitive data, assistance log, reproducibility check, consolidated usability findings and decision rationale linked to the CP-18 candidate evidence. The [baseline index]({{EVIDENCE_URL}}) is context only: none of its fifty scripted conversations proves practitioner acceptance. Close only when the agreed pilot criteria are verified; a merged implementation PR or scheduled invitation is insufficient.",
+      "epic_key": "EP-OPS",
+      "priority": "P1",
+      "journey": "Shared",
+      "type": "Validation",
+      "milestone": "M3 - Internal pilot",
+      "depends_on": [
+        "CP-18"
+      ],
+      "initial_status": "Backlog",
+      "basis": "Validation requirement",
+      "finding_ids": []
+    }
+  ],
+  "finding_coverage": [
+    {
+      "finding_id": "B1",
+      "disposition": "action",
+      "issue_keys": [
+        "CP-04"
+      ],
+      "note": "Initial parameter propagation is one contract defect, consolidated with B2 and PA-F02."
+    },
+    {
+      "finding_id": "B2",
+      "disposition": "action",
+      "issue_keys": [
+        "CP-04"
+      ],
+      "note": "Alias and categorical-setting fidelity share the requested/effective parameter contract; no separate rerun ticket."
+    },
+    {
+      "finding_id": "B3",
+      "disposition": "action",
+      "issue_keys": [
+        "CP-11"
+      ],
+      "note": "Missing downstream stage and public planning continuity share the DE-to-enrichment graph repair."
+    },
+    {
+      "finding_id": "B4",
+      "disposition": "action",
+      "issue_keys": [
+        "CP-06"
+      ],
+      "note": "Primary remedy is immutable selected-run evidence and structured current metrics; complete query retrieval in CP-07 builds on it."
+    },
+    {
+      "finding_id": "B6",
+      "disposition": "action",
+      "issue_keys": [
+        "CP-08"
+      ],
+      "note": "Investigate Kang profiling independently; the matching exception does not prove the same root cause as PA-F04. Failure retention is shared CP-06 behavior."
+    },
+    {
+      "finding_id": "PA-F01",
+      "disposition": "action",
+      "issue_keys": [
+        "CP-03"
+      ],
+      "note": "Counts/metadata misclassification and implicit latest-artifact selection form one typed-binding repair; workflow qualification is CP-10."
+    },
+    {
+      "finding_id": "PA-F02",
+      "disposition": "action",
+      "issue_keys": [
+        "CP-04"
+      ],
+      "note": "Public initial-setting and design loss is consolidated with B1/B2, not another parser issue."
+    },
+    {
+      "finding_id": "PA-F03",
+      "disposition": "action",
+      "issue_keys": [
+        "CP-05"
+      ],
+      "note": "Opaque clarification and unsafe resumption share the validated intent/approval state machine."
+    },
+    {
+      "finding_id": "PA-F04",
+      "disposition": "action",
+      "issue_keys": [
+        "CP-08"
+      ],
+      "note": "Verified legacy AnnData structured-dataset handling; scientific readiness remains separate from storage validity."
+    },
+    {
+      "finding_id": "PUBLIC-B-01",
+      "disposition": "action",
+      "issue_keys": [
+        "CP-06"
+      ],
+      "note": "Persist attempted/failed run evidence; CP-07 makes the shared ledger answerable. Avoid a duplicate failure-context ticket."
+    },
+    {
+      "finding_id": "PUBLIC-B-02",
+      "disposition": "action",
+      "issue_keys": [
+        "CP-05"
+      ],
+      "note": "Readiness/comparison requests causing attempts are the same execution-intent boundary as PA-F03."
+    },
+    {
+      "finding_id": "B10",
+      "disposition": "action",
+      "issue_keys": [
+        "CP-07"
+      ],
+      "note": "Bounded explanatory improvement: allow sourced general definitions while preserving case-specific abstention. It is not evidence fabrication."
+    },
+    {
+      "finding_id": "B5",
+      "disposition": "action",
+      "issue_keys": [
+        "CP-07"
+      ],
+      "note": "Unify full results, provenance, method and artifact query context; verified downloads are the shared CP-12 handoff."
+    },
+    {
+      "finding_id": "B7",
+      "disposition": "action",
+      "issue_keys": [
+        "CP-15"
+      ],
+      "note": "Correct an existing misleading simulation metric without expanding to real-screen inference."
+    },
+    {
+      "finding_id": "B8",
+      "disposition": "action",
+      "issue_keys": [
+        "CP-12"
+      ],
+      "note": "Native schema-backed result rendering is shared across journeys rather than one ticket per modality."
+    },
+    {
+      "finding_id": "PA-F05",
+      "disposition": "action",
+      "issue_keys": [
+        "CP-07"
+      ],
+      "note": "Failure/pending read-only retrieval shares the result/context access repair; ledger storage lives in CP-06."
+    },
+    {
+      "finding_id": "PA-F06",
+      "disposition": "action",
+      "issue_keys": [
+        "CP-11"
+      ],
+      "note": "Public compound-goal continuity is consolidated with B3; do not infer an unobserved enrichment outage."
+    },
+    {
+      "finding_id": "PA-F07",
+      "disposition": "action",
+      "issue_keys": [
+        "CP-12"
+      ],
+      "note": "Truthful state labels, selected dataset, available actions and visible provenance share a UI contract; underlying evidence comes from CP-03/CP-06."
+    },
+    {
+      "finding_id": "PUBLIC-B-03",
+      "disposition": "action",
+      "issue_keys": [
+        "CP-14"
+      ],
+      "note": "Implement external target snapshots for the bounded beta. Preserve intentional rejection of experimental CRISPR counts by the simulator; real-screen inference is parking-lot work, not a required fix."
+    },
+    {
+      "finding_id": "PUBLIC-B-04",
+      "disposition": "action",
+      "issue_keys": [
+        "CP-03"
+      ],
+      "note": "Assay identity and numerical semantics belong to shared scientific readiness, not suffix-based routing."
+    },
+    {
+      "finding_id": "PUBLIC-B-05",
+      "disposition": "action",
+      "issue_keys": [
+        "CP-12"
+      ],
+      "note": "Non-RNA demo prompts share the context-aware guidance repair with B9."
+    },
+    {
+      "finding_id": "PUBLIC-B-06",
+      "disposition": "action",
+      "issue_keys": [
+        "CP-12"
+      ],
+      "note": "Attempted versus computed labeling is consolidated with PA-F07."
+    },
+    {
+      "finding_id": "B11",
+      "disposition": "safeguard",
+      "issue_keys": [],
+      "note": "Preserve appropriate refusals of unsupported inheritance, patient risk, causal/clinical claims, specific experiments from aggregate evidence and safety conclusions from missing fields. Retain as CP-02/CP-18 regression safeguards, not an implementation defect or new feature."
+    },
+    {
+      "finding_id": "B9",
+      "disposition": "action",
+      "issue_keys": [
+        "CP-12"
+      ],
+      "note": "Capability-aware suggestions and prerequisite gating are one shared UI repair with PUBLIC-B-05 and PA-F07."
+    },
+    {
+      "finding_id": "PA-F08",
+      "disposition": "safeguard",
+      "issue_keys": [],
+      "note": "Honest Matrix Market refusal is not a numerical defect; intentional bounded support is a new requirement in CP-13. Preserve no-fabrication and require CPM, factorial and non-AnnData controls to reach their actual scientific checks in CP-02/CP-18; unrelated earlier errors are not safe-check passes."
+    },
+    {
+      "finding_id": "PUBLIC-B-07",
+      "disposition": "safeguard",
+      "issue_keys": [],
+      "note": "Preserve offline annotation/cache limits, RNA-only multiome refusal, non-substitution of curated VUS cases and incomplete bundle rejection. Generic refusal does not establish assay/cross-species/pairing validation. CP-02/CP-18 retain these controls without forcing invalid inputs to run."
+    }
+  ],
+  "publication_policy": {
+    "evidence_base_url": "{{EVIDENCE_URL}}",
+    "allowed": [
+      "This backlog and its public-safe issue bodies",
+      "Durable roadmap and tracking guide",
+      "Sanitized finding summaries, conversation/turn coordinates and aggregate metrics",
+      "Reviewed source/build/test/deployment references after publication"
+    ],
+    "excluded": [
+      "Raw conversation transcripts",
+      "Original screenshot corpus",
+      "Downloaded datasets or result files",
+      "Raw private source excerpts",
+      "Local machine paths",
+      "Credentials or tokens",
+      "Private customer or participant data"
+    ],
+    "owners_and_dates": "No implementation owners or deadlines are invented. The publisher may populate agreed assignees and schedule only when actually decided."
+  },
+  "publication_snapshot": {
+    "note": "A seed/traceability snapshot, not live status. Live issue and Project records are authoritative.",
+    "roadmap_url": "https://github.com/Tiliix/agentic-genomics-labs/issues/1",
+    "issues": {
+      "ROADMAP": {
+        "number": 1,
+        "url": "https://github.com/Tiliix/agentic-genomics-labs/issues/1"
+      },
+      "EP-CORE": {
+        "number": 2,
+        "url": "https://github.com/Tiliix/agentic-genomics-labs/issues/2"
+      },
+      "EP-BULK": {
+        "number": 3,
+        "url": "https://github.com/Tiliix/agentic-genomics-labs/issues/3"
+      },
+      "EP-SC": {
+        "number": 4,
+        "url": "https://github.com/Tiliix/agentic-genomics-labs/issues/4"
+      },
+      "EP-TARGET": {
+        "number": 5,
+        "url": "https://github.com/Tiliix/agentic-genomics-labs/issues/5"
+      },
+      "EP-OPS": {
+        "number": 6,
+        "url": "https://github.com/Tiliix/agentic-genomics-labs/issues/6"
+      },
+      "CP-01": {
+        "number": 7,
+        "url": "https://github.com/Tiliix/agentic-genomics-labs/issues/7"
+      },
+      "CP-02": {
+        "number": 8,
+        "url": "https://github.com/Tiliix/agentic-genomics-labs/issues/8"
+      },
+      "CP-03": {
+        "number": 9,
+        "url": "https://github.com/Tiliix/agentic-genomics-labs/issues/9"
+      },
+      "CP-04": {
+        "number": 10,
+        "url": "https://github.com/Tiliix/agentic-genomics-labs/issues/10"
+      },
+      "CP-05": {
+        "number": 11,
+        "url": "https://github.com/Tiliix/agentic-genomics-labs/issues/11"
+      },
+      "CP-06": {
+        "number": 12,
+        "url": "https://github.com/Tiliix/agentic-genomics-labs/issues/12"
+      },
+      "CP-07": {
+        "number": 13,
+        "url": "https://github.com/Tiliix/agentic-genomics-labs/issues/13"
+      },
+      "CP-08": {
+        "number": 14,
+        "url": "https://github.com/Tiliix/agentic-genomics-labs/issues/14"
+      },
+      "CP-09": {
+        "number": 15,
+        "url": "https://github.com/Tiliix/agentic-genomics-labs/issues/15"
+      },
+      "CP-10": {
+        "number": 16,
+        "url": "https://github.com/Tiliix/agentic-genomics-labs/issues/16"
+      },
+      "CP-11": {
+        "number": 17,
+        "url": "https://github.com/Tiliix/agentic-genomics-labs/issues/17"
+      },
+      "CP-12": {
+        "number": 18,
+        "url": "https://github.com/Tiliix/agentic-genomics-labs/issues/18"
+      },
+      "CP-13": {
+        "number": 19,
+        "url": "https://github.com/Tiliix/agentic-genomics-labs/issues/19"
+      },
+      "CP-14": {
+        "number": 20,
+        "url": "https://github.com/Tiliix/agentic-genomics-labs/issues/20"
+      },
+      "CP-15": {
+        "number": 21,
+        "url": "https://github.com/Tiliix/agentic-genomics-labs/issues/21"
+      },
+      "CP-16": {
+        "number": 22,
+        "url": "https://github.com/Tiliix/agentic-genomics-labs/issues/22"
+      },
+      "CP-17": {
+        "number": 23,
+        "url": "https://github.com/Tiliix/agentic-genomics-labs/issues/23"
+      },
+      "CP-18": {
+        "number": 24,
+        "url": "https://github.com/Tiliix/agentic-genomics-labs/issues/24"
+      },
+      "CP-19": {
+        "number": 25,
+        "url": "https://github.com/Tiliix/agentic-genomics-labs/issues/25"
+      }
+    }
+  }
+}

@@ -1,0 +1,88 @@
+name: Copilomics work item
+description: Propose a scoped prototype change with evidence and verifiable acceptance criteria.
+title: "[Copilomics] "
+labels: ["copilomics"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use one issue for one independently verifiable outcome. Link existing work
+        rather than duplicating it. Do not post patient data, credentials, private
+        source data, or local-only file links in this public repository.
+  - type: dropdown
+    id: journey
+    attributes:
+      label: Journey
+      options:
+        - Shared foundations
+        - Bulk RNA-seq
+        - Single-cell exploration
+        - Target evidence review
+        - Prototype operations and UX
+        - Advanced or experimental capability
+    validations:
+      required: true
+  - type: dropdown
+    id: work-kind
+    attributes:
+      label: Work type
+      options:
+        - Bug
+        - Feature
+        - Scientific or release validation
+        - Documentation
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem and user impact
+      description: Describe the specific user task that fails or the capability that is missing.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence or requirement
+      description: Link an existing finding, public-safe reproduction, source, or unmet requirement. Distinguish measured defects from proposed features.
+      placeholder: "Finding B4; conversation 15 turn 5: 13 clusters computed, earlier 11 reported."
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Expected behavior and scope
+      description: Include explicit non-goals and any scientific applicability limits.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Use checkboxes describing observable outcomes, not implementation activity.
+      placeholder: |
+        - [ ] The active result agrees with its producing run artifact.
+        - [ ] Previous runs remain separately identifiable.
+    validations:
+      required: true
+  - type: textarea
+    id: validation
+    attributes:
+      label: Validation and scientific review
+      description: Specify regression tests, suitable real data, negative controls, UI evidence, and required scientific review.
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies and next action
+      description: Link the parent workstream and blocking issues. State who or what can unblock the work; do not invent an owner.
+    validations:
+      required: false
+  - type: textarea
+    id: deployment
+    attributes:
+      label: Deployment and completion evidence
+      description: Record the PR, tested revision, artifact links, target environment/build, and remaining limitations when available. A merge alone is not deployment.
+    validations:
+      required: false
