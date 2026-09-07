@@ -1,0 +1,7 @@
+#!/bin/sh
+set -eu
+scanner=$(git config --get hooks.gitleaksPath || true)
+if [ -z "$scanner" ]; then
+  scanner=gitleaks
+fi
+exec "$scanner" git --pre-commit --staged --redact --no-banner

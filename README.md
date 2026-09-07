@@ -37,7 +37,8 @@ inside a public repository does not provide confidentiality.
 5. Open a public pull request, review the diff, and publish a tag/release for the
    newsletter edition after merging.
 
-Enable the local push guard once per clone:
+Install the pinned gitleaks version described in [SECURITY.md](SECURITY.md), then
+enable the local commit and push guards once per clone:
 
 ```console
 git config core.hooksPath .githooks
