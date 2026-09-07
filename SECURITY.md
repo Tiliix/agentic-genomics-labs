@@ -23,23 +23,27 @@ configuration from environment variables at runtime.
 ## Automated secret scanning
 
 A [gitleaks](https://github.com/gitleaks/gitleaks) pre-commit hook blocks commits
-that contain secrets. Enable it once per clone:
+that contain secrets. Install the pinned version from `.pre-commit-config.yaml`
+and enable the committed hooks once per clone:
 
 ```bash
-pip install pre-commit
-pre-commit install
+git config core.hooksPath .githooks
 ```
+
+The configured development clone has gitleaks installed. If it is not on PATH,
+set `git config hooks.gitleaksPath "<absolute-path-to-gitleaks>"`. A missing scanner
+blocks commits. Do not use `pre-commit install` over these committed hooks.
 
 Scan on demand (including full history):
 
 ```bash
-pre-commit run gitleaks --all-files
-# or, with gitleaks installed directly:
-gitleaks detect --source .
+gitleaks git --pre-commit --staged --redact
+# Full reachable Git history:
+gitleaks git --redact --log-opts="--all" .
 ```
 
-We also recommend enabling **GitHub Secret Scanning + Push Protection**
-(repo → *Settings → Code security*).
+**GitHub Secret Scanning + Push Protection** are enabled for this public
+repository (repo → *Settings → Code security*).
 
 ## If a secret is ever committed
 

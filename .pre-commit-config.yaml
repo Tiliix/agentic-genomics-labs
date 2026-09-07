@@ -1,6 +1,6 @@
-# Pre-commit hooks for this repo. Enable once per clone:
-#   pip install pre-commit && pre-commit install
-# Keep pinned versions current with:  pre-commit autoupdate
+# Pinned scanner for the committed hooks. See SECURITY.md for installation.
+# Enable with: git config core.hooksPath .githooks
+# This configuration also supports manually running pre-commit.
 repos:
   - repo: https://github.com/gitleaks/gitleaks
     rev: v8.30.1
