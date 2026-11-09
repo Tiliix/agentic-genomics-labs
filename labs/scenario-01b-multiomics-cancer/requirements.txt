@@ -1,0 +1,15 @@
+# Agentic Multi-Omics Tumor Board lab dependencies.
+#
+# The deterministic core (src/omics.py, src/router.py, tests/) is PURE PYTHON and
+# needs none of these -- so tests/test_router.py runs in CI with zero secrets and
+# zero network. The packages below are only needed for the live data pull and the
+# Azure OpenAI agent.
+
+requests>=2.31           # cBioPortal public REST API client (scripts/download_data.py)
+pandas>=2.0              # optional tabular handling of omics layers
+numpy>=1.24              # numeric helpers
+openai>=1.40             # Azure OpenAI via the AzureOpenAI client (src/agent.py)
+python-dotenv>=1.0       # load .env config
+azure-identity>=1.16     # keyless AAD auth (DefaultAzureCredential)
+ruff>=0.5               # linter (used in CI)
+pytest>=8.0             # test runner (tests/test_router.py)

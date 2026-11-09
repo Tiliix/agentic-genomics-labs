@@ -1,0 +1,280 @@
+[
+  {
+    "case_id": "A",
+    "label": "HER2_AMP",
+    "sample_type": "primary tumor",
+    "hint": "HER2-enriched: ERBB2 amplified & overexpressed, hormone-receptor neg.",
+    "expression": {
+      "ESR1": 2.0,
+      "PGR": 1.4,
+      "ERBB2": 13.6,
+      "MKI67": 9.5,
+      "EGFR": 6.5,
+      "MYC": 9.2,
+      "GATA3": 5.0,
+      "FOXA1": 6.0,
+      "KRT5": 3.0,
+      "KRT14": 2.8,
+      "GZMA": 4.0,
+      "PRF1": 3.8,
+      "IFNG": 2.5,
+      "CD8A": 4.2,
+      "CXCL9": 4.0,
+      "BRCA1": 7.0,
+      "BRCA2": 6.5,
+      "TP53": 8.5,
+      "PIK3CA": 8.0,
+      "PTEN": 8.0,
+      "RB1": 8.0,
+      "CCND1": 7.5,
+      "ACTB": 12.1,
+      "GAPDH": 11.8
+    },
+    "expression_normal": {
+      "ESR1": 7.5,
+      "PGR": 6.0,
+      "ERBB2": 9.0,
+      "MKI67": 4.0,
+      "EGFR": 6.5,
+      "MYC": 8.0,
+      "GATA3": 7.0,
+      "FOXA1": 7.0,
+      "KRT5": 6.0,
+      "KRT14": 6.0,
+      "GZMA": 5.0,
+      "PRF1": 5.0,
+      "IFNG": 4.5,
+      "CD8A": 5.0,
+      "CXCL9": 5.0,
+      "BRCA1": 7.0,
+      "BRCA2": 6.5,
+      "TP53": 8.5,
+      "PIK3CA": 8.0,
+      "PTEN": 8.0,
+      "RB1": 8.0,
+      "CCND1": 7.5,
+      "ACTB": 12.0,
+      "GAPDH": 11.8
+    },
+    "mutations": [
+      {
+        "gene": "TP53",
+        "protein_change": "R273H",
+        "variant_type": "missense",
+        "pathogenic": true
+      },
+      {
+        "gene": "PIK3CA",
+        "protein_change": "H1047R",
+        "variant_type": "missense",
+        "pathogenic": true
+      }
+    ],
+    "mutation_burden_count": 60,
+    "cna": {
+      "ERBB2": 2,
+      "MYC": 1,
+      "CCND1": 0,
+      "TP53": 0,
+      "PTEN": 0,
+      "RB1": 0
+    },
+    "hrd_score": 12.0,
+    "clinical": {
+      "subtype": "HER2-enriched",
+      "er_status": "Negative",
+      "pr_status": "Negative",
+      "her2_status": "Positive",
+      "stage": "II"
+    },
+    "methylation": {
+      "BRCA1": 0.12,
+      "RB1": 0.2,
+      "CDKN2A": 0.3,
+      "MLH1": 0.1
+    }
+  },
+  {
+    "case_id": "B",
+    "label": "TNBC_BRCA",
+    "sample_type": "primary tumor",
+    "hint": "Basal/triple-negative: BRCA1 pathogenic, high TMB, immune-hot.",
+    "expression": {
+      "ESR1": 2.3,
+      "PGR": 1.1,
+      "ERBB2": 9.2,
+      "MKI67": 11.0,
+      "EGFR": 9.0,
+      "MYC": 10.5,
+      "GATA3": 3.0,
+      "FOXA1": 3.5,
+      "KRT5": 9.5,
+      "KRT14": 9.0,
+      "GZMA": 9.5,
+      "PRF1": 9.2,
+      "IFNG": 8.0,
+      "CD8A": 9.0,
+      "CXCL9": 9.3,
+      "BRCA1": 5.0,
+      "BRCA2": 6.5,
+      "TP53": 9.0,
+      "PIK3CA": 8.0,
+      "PTEN": 6.0,
+      "RB1": 6.5,
+      "CCND1": 7.5,
+      "ACTB": 12.0,
+      "GAPDH": 11.9
+    },
+    "expression_normal": {
+      "ESR1": 7.5,
+      "PGR": 6.0,
+      "ERBB2": 9.0,
+      "MKI67": 4.0,
+      "EGFR": 6.5,
+      "MYC": 8.0,
+      "GATA3": 7.0,
+      "FOXA1": 7.0,
+      "KRT5": 6.0,
+      "KRT14": 6.0,
+      "GZMA": 5.0,
+      "PRF1": 5.0,
+      "IFNG": 4.5,
+      "CD8A": 5.0,
+      "CXCL9": 5.0,
+      "BRCA1": 7.0,
+      "BRCA2": 6.5,
+      "TP53": 8.5,
+      "PIK3CA": 8.0,
+      "PTEN": 8.0,
+      "RB1": 8.0,
+      "CCND1": 7.5,
+      "ACTB": 12.0,
+      "GAPDH": 11.8
+    },
+    "mutations": [
+      {
+        "gene": "BRCA1",
+        "protein_change": "c.68_69delAG",
+        "variant_type": "frameshift",
+        "pathogenic": true
+      },
+      {
+        "gene": "TP53",
+        "protein_change": "R175H",
+        "variant_type": "missense",
+        "pathogenic": true
+      },
+      {
+        "gene": "PTEN",
+        "protein_change": "R130*",
+        "variant_type": "nonsense",
+        "pathogenic": true
+      }
+    ],
+    "mutation_burden_count": 520,
+    "cna": {
+      "ERBB2": 0,
+      "MYC": 1,
+      "TP53": -1,
+      "PTEN": -1,
+      "RB1": -1,
+      "BRCA1": -1
+    },
+    "hrd_score": 68.0,
+    "clinical": {
+      "subtype": "Basal-like",
+      "er_status": "Negative",
+      "pr_status": "Negative",
+      "her2_status": "Negative",
+      "stage": "III"
+    }
+  },
+  {
+    "case_id": "C",
+    "label": "LUMINAL_A",
+    "sample_type": "primary tumor",
+    "hint": "Luminal A: ER/PR high, HER2 low, low TMB, no actionable mutation.",
+    "expression": {
+      "ESR1": 12.4,
+      "PGR": 10.1,
+      "ERBB2": 9.5,
+      "MKI67": 5.0,
+      "EGFR": 6.5,
+      "MYC": 8.0,
+      "GATA3": 11.0,
+      "FOXA1": 11.5,
+      "KRT5": 2.5,
+      "KRT14": 2.0,
+      "GZMA": 3.5,
+      "PRF1": 3.2,
+      "IFNG": 2.0,
+      "CD8A": 3.5,
+      "CXCL9": 3.0,
+      "BRCA1": 7.0,
+      "BRCA2": 6.5,
+      "TP53": 8.5,
+      "PIK3CA": 9.0,
+      "PTEN": 8.0,
+      "RB1": 8.0,
+      "CCND1": 11.0,
+      "ACTB": 12.2,
+      "GAPDH": 11.7
+    },
+    "expression_normal": {
+      "ESR1": 7.5,
+      "PGR": 6.0,
+      "ERBB2": 9.0,
+      "MKI67": 4.0,
+      "EGFR": 6.5,
+      "MYC": 8.0,
+      "GATA3": 7.0,
+      "FOXA1": 7.0,
+      "KRT5": 6.0,
+      "KRT14": 6.0,
+      "GZMA": 5.0,
+      "PRF1": 5.0,
+      "IFNG": 4.5,
+      "CD8A": 5.0,
+      "CXCL9": 5.0,
+      "BRCA1": 7.0,
+      "BRCA2": 6.5,
+      "TP53": 8.5,
+      "PIK3CA": 8.0,
+      "PTEN": 8.0,
+      "RB1": 8.0,
+      "CCND1": 7.5,
+      "ACTB": 12.0,
+      "GAPDH": 11.8
+    },
+    "mutations": [
+      {
+        "gene": "GATA3",
+        "protein_change": "M294K",
+        "variant_type": "missense",
+        "pathogenic": false
+      }
+    ],
+    "mutation_burden_count": 75,
+    "cna": {
+      "ERBB2": 0,
+      "CCND1": 2,
+      "MYC": 0,
+      "TP53": 0,
+      "PTEN": 0,
+      "RB1": 0
+    },
+    "hrd_score": 8.0,
+    "clinical": {
+      "subtype": "Luminal A",
+      "er_status": "Positive",
+      "pr_status": "Positive",
+      "her2_status": "Negative",
+      "stage": "I"
+    },
+    "methylation": {
+      "BRCA1": 0.12,
+      "ESR1": 0.05,
+      "MLH1": 0.08
+    }
+  }
+]

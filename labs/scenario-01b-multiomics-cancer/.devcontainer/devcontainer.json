@@ -1,0 +1,34 @@
+{
+  // VS Code Dev Container for the Multi-Omics Cancer Tumor Board training lab.
+  // Opens in a reproducible Python 3.11 environment with all deps installed.
+  "name": "scenario-01b-multiomics-cancer",
+  "image": "mcr.microsoft.com/devcontainers/python:3.11-bookworm",
+
+  "features": {
+    // Azure CLI is handy for the infra/azure-setup.md steps.
+    "ghcr.io/devcontainers/features/azure-cli:1": {}
+  },
+
+  // Install Python dependencies and materialize the synthetic & TCGA-BRCA cases.
+  "postCreateCommand": "pip install --upgrade pip && pip install -r requirements.txt && python scripts/download_data.py",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "charliermarsh.ruff",
+        "ms-azuretools.vscode-azureresourcegroups"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "editor.formatOnSave": true,
+        "[python]": {
+          "editor.defaultFormatter": "charliermarsh.ruff"
+        }
+      }
+    }
+  },
+
+  "remoteUser": "vscode"
+}

@@ -1,0 +1,14 @@
+# Minimal config so `ruff check src scripts tests` in CI is deterministic.
+[tool.ruff]
+line-length = 92
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+# agent.py / download_data.py import the Azure + requests SDKs lazily inside
+# functions (so the deterministic core imports with no heavy deps); router.py and
+# the scripts/tests use sys.path before importing local modules. Both are E402.
+ignore = ["E402"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
