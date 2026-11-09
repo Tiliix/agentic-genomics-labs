@@ -8,6 +8,7 @@ Readers do not need access to any private repository.
 | Challenge | Lab |
 | --- | --- |
 | 01 | [Pipeline automation](labs/scenario-01-pipeline-automation/README.md) |
+| 01-b | [Multi-omics tumor board](labs/scenario-01b-multiomics-cancer/README.md) |
 | 02 | [Variant interpretation](labs/scenario-02-variant-interpretation/README.md) |
 | 03 | [Single-cell analysis](labs/scenario-03-single-cell/README.md) |
 

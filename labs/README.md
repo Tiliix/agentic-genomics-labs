@@ -4,11 +4,12 @@ A growing series of six self-contained training labs that let you test agentic-A
 
 > **How to use:** Push this folder to your own GitHub account (e.g. `github.com/<your-username>/agentic-genomics-labs`), then open any scenario folder in VS Code and "Reopen in Container". Each `README.md` has a numbered, step-by-step run guide. All labs run **offline with a synthetic fallback** and **at full scale once you add an Azure OpenAI resource + internet**.
 
-> **Availability:** **Challenges 01 (Pipeline automation), 02 (Variant interpretation), and 03 (Single-cell analysis)** ship in this repo today. The remaining rows are the roadmap — each lab lands here as its newsletter issue goes live.
+> **Availability:** **Challenges 01 (Pipeline automation), 01-b (Multi-omics tumor board), 02 (Variant interpretation), and 03 (Single-cell analysis)** ship in this repo today. The remaining rows are the roadmap — each lab lands here as its newsletter issue goes live.
 
 | # | Scenario | Classic stack | Agent does | Public dataset | Explainer |
 |---|----------|---------------|------------|----------------|-----------|
 | 01 | Pipeline automation | Salmon · pyDESeq2 · gseapy | Orchestrates QC → DE → pathway enrichment | nf-core / pasilla RNA-seq | — |
+| 01-b | Multi-omics tumor board | Expression · CNA · somatic mutations · HRD · methylation · TME immune score | Conditionally routes across 12 deterministic omics skills and synthesizes a tumor board summary | TCGA-BRCA PanCanAtlas (cBioPortal) + synthetic teaching cohort | — |
 | 02 | Variant interpretation | VCF · MyVariant.info · Ensembl VEP · ACMG | Writes cited interpretation memo | GIAB NA12878 / bundled VCF | — |
 | 02-b | Real-world variant classification | VCF · federated annotations · Bayesian ACMG evidence model | Performs VUS triage/re-curation and drafts evidence-grounded cohort reports | GIAB + ClinVar + gnomAD + optional phenotype/segregation sidecar | [HTML](scenario-2-b-realworld-variant-classification/lab-explainer.html) |
 | 02-c | VUS deep classification | ACMG/AMP + Bayesian calibration + phenotype/segregation context | Resolves VUS with evidence-weighted triage and report synthesis | GIAB + ClinVar + gnomAD + PanelApp/ClinGen | [HTML](scenario-2-c-vus-deep-classification/lab-explainer.html) |
